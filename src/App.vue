@@ -1,17 +1,11 @@
 <script setup>
 import {RouterView} from 'vue-router';
 import TheMainNavigation from "@/components/TheMainNavigation.vue";
-
-const apiUrl = import.meta.env.VITE_API_URL;
 </script>
 
 <template>
     <header>
         <TheMainNavigation />
-
-        <div class="debug">
-            API server at <code>{{ apiUrl }}</code>.
-        </div>
     </header>
 
     <main>
