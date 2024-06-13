@@ -1,16 +1,19 @@
-# th-wiki-ui
 
-This template should help get you started developing with Vue 3 in Vite.
+tH-Wiki
+========
 
-## Recommended IDE Setup
+Useful links
+-------------
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Configure Vite: https://vitejs.dev/config/
+- Vue Test Utils (Wrappers): https://test-utils.vuejs.org/api/
+- Cypress: https://docs.cypress.io/api/
 
-## Customize configuration
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+Useful commands
+----------------
 
-## Project Setup
+### Project Setup
 
 ```sh
 npm install
@@ -52,6 +55,14 @@ npm run test:e2e
 
 ### Lint with [ESLint](https://eslint.org/)
 
+Without changing the code:
+
 ```sh
 npm run lint
+```
+
+With `--fix`, which changes the code:
+
+```sh
+npm run lint:fix
 ```
