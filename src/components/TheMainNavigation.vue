@@ -1,7 +1,3 @@
-<script setup>
-import {RouterLink} from 'vue-router';
-</script>
-
 <template>
     <nav class="navbar is-primary is-background-primary-25 p-1">
         <div class="navbar-brand">
@@ -36,6 +32,10 @@ import {RouterLink} from 'vue-router';
         </div>
     </nav>
 </template>
+
+<script setup>
+import {RouterLink} from 'vue-router';
+</script>
 
 <style lang="scss" scoped>
 nav {

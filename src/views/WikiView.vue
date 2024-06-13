@@ -1,18 +1,3 @@
-<script setup>
-import axios from "@/axios.js";
-import {ref} from 'vue';
-
-const wikiPages = ref([]);
-const loading = ref(true);
-
-axios
-    .get('/wiki-pages')
-    .then(response => {
-        loading.value = false;
-        wikiPages.value = response.data;
-    });
-</script>
-
 <template>
     <h1 class="title">Wiki pages</h1>
 
@@ -38,3 +23,18 @@ axios
         </tbody>
     </table>
 </template>
+
+<script setup>
+import axios from "@/axios.js";
+import {ref} from 'vue';
+
+const wikiPages = ref([]);
+const loading = ref(true);
+
+axios
+    .get('/wiki-pages')
+    .then(response => {
+        loading.value = false;
+        wikiPages.value = response.data;
+    });
+</script>
