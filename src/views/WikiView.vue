@@ -14,18 +14,27 @@ axios
 </script>
 
 <template>
-    <h1>Wiki pages</h1>
+    <h1 class="title">Wiki pages</h1>
 
-    <div v-if="loading">Loading…</div>
+    <div v-if="loading" class="icon-text">
+        <span class="icon">
+            <i class="fas fa-spinner fa-pulse fa-2x" />
+        </span>
+        <span class="pl-2">Loading…</span>
+    </div>
 
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Title</th>
-        </tr>
-        <tr v-for="wikiPage in wikiPages">
-            <td>{{ wikiPage.id }}</td>
-            <td>{{ wikiPage.title }}</td>
-        </tr>
+    <table v-if="!loading" class="table is-hoverable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="wikiPage in wikiPages">
+                <td>{{ wikiPage.id }}</td>
+                <td>{{ wikiPage.title }}</td>
+            </tr>
+        </tbody>
     </table>
 </template>

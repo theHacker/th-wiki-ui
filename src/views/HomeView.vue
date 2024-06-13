@@ -1,7 +1,9 @@
 <template>
-    <h1>This is home. Nothing to see here.</h1>
+    <h1 class="title">Home</h1>
 
-    <h2>Bulma test</h2>
+    <p class="block">This is home. Nothing to see here.</p>
+
+    <h2 class="subtitle">Bulma test</h2>
     <p class="mb-5">
         <button class="button is-primary">Hello Bulma</button>
     </p>
@@ -25,13 +27,13 @@
             <nav class="level is-mobile">
                 <div class="level-left">
                     <a class="level-item">
-                        <span class="icon is-small"><i class="fa fa-reply"></i></span>
+                        <span class="icon is-small"><i class="fas fa-reply"></i></span>
                     </a>
                     <a class="level-item">
-                        <span class="icon is-small"><i class="fa fa-retweet"></i></span>
+                        <span class="icon is-small"><i class="fas fa-retweet"></i></span>
                     </a>
                     <a class="level-item">
-                        <span class="icon is-small"><i class="fa fa-heart"></i></span>
+                        <span class="icon is-small"><i class="fas fa-heart"></i></span>
                     </a>
                 </div>
             </nav>

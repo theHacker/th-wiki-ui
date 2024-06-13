@@ -8,41 +8,11 @@ import TheMainNavigation from "@/components/TheMainNavigation.vue";
         <TheMainNavigation />
     </header>
 
-    <main>
+    <main class="p-4 pb-5">
         <RouterView />
     </main>
+
+    <footer class="py-3 is-size-7 has-text-centered has-background-dark">
+        powered by <b>tH-Wiki</b>
+    </footer>
 </template>
-
-<style>
-@import "style/style.scss";
-@import "../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css";
-@import "../node_modules/@fortawesome/fontawesome-free/css/regular.css";
-</style>
-
-<style lang="scss" scoped>
-header {
-    line-height: 1.5;
-    max-height: 100vh;
-
-    .debug {
-        background: rgba(orange, .25);
-    }
-}
-
-@media (min-width: 1024px) {
-    header {
-        display: flex;
-        place-items: center;
-        padding-right: calc(var(--section-gap) / 2);
-    }
-
-    nav {
-        text-align: left;
-        margin-left: -1rem;
-        font-size: 1rem;
-
-        padding: 1rem 0;
-        margin-top: 1rem;
-    }
-}
-</style>
