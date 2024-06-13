@@ -2,6 +2,12 @@
 tH-Wiki
 ========
 
+Setup
+------
+
+Copy `.env.local.template` to `.env.local` and point it to the API.
+
+
 Useful links
 -------------
 

@@ -1,11 +1,17 @@
 <script setup>
 import {RouterView} from 'vue-router';
 import TheMainNavigation from "@/components/TheMainNavigation.vue";
+
+const apiUrl = import.meta.env.VITE_API_URL;
 </script>
 
 <template>
     <header>
         <TheMainNavigation />
+
+        <div class="debug">
+            API server at <code>{{ apiUrl }}</code>.
+        </div>
     </header>
 
     <main>
@@ -19,10 +25,14 @@ import TheMainNavigation from "@/components/TheMainNavigation.vue";
 @import "../node_modules/@fortawesome/fontawesome-free/css/regular.css";
 </style>
 
-<style scoped>
+<style lang="scss" scoped>
 header {
     line-height: 1.5;
     max-height: 100vh;
+
+    .debug {
+        background: rgba(orange, .25);
+    }
 }
 
 @media (min-width: 1024px) {
