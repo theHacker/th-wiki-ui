@@ -14,14 +14,9 @@ import TheMainNavigation from "@/components/TheMainNavigation.vue";
 </template>
 
 <style>
-@import "../node_modules/bulma/css/bulma.css";
+@import "style/style.scss";
 @import "../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css";
 @import "../node_modules/@fortawesome/fontawesome-free/css/regular.css";
-
-:root {
-    --bulma-primary-h: 225deg;
-    --bulma-primary-l: 42%;
-}
 </style>
 
 <style scoped>

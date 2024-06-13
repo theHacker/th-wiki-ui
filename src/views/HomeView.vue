@@ -41,3 +41,13 @@
         </div>
     </article>
 </template>
+
+<style lang="scss" scoped>
+article {
+    $color: red;
+
+    div {
+        background: rgba($color, .25);
+    }
+}
+</style>

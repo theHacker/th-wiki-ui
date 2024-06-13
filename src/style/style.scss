@@ -1,0 +1,17 @@
+@use "bulma/sass/utilities/index" with (
+    $primary: hsl(225deg, 100%, 42%)
+);
+
+@forward "bulma/sass/base/index";
+
+@forward "bulma/sass/elements/button";
+@forward "bulma/sass/elements/icon";
+@forward "bulma/sass/elements/image";
+
+@forward "bulma/sass/components/navbar";
+
+@forward "bulma/sass/layout/media";
+
+@forward "bulma/sass/helpers/spacing";
+
+@forward "bulma/sass/themes/index";
