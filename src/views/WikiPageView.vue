@@ -57,7 +57,7 @@
                 </div>
 
                 <div v-if="showMarkdown" class="markdown">
-                    <pre><code class="language-md">{{ wikiPage.markdown }}</code></pre>
+                    <pre><code v-html="wikiPage.highlightedMarkdown" class="hljs language-markdown" /></pre>
                 </div>
             </div>
         </div>
@@ -66,11 +66,21 @@
 
 <script>
 import {Marked} from 'marked';
+import hljs from 'highlight.js/lib/core';
+import markdown from 'highlight.js/lib/languages/markdown';
+
+import 'highlight.js/styles/night-owl.css';
 
 const marked = new Marked();
 
+hljs.registerLanguage('markdown', markdown);
+
 function renderMarkdown(markdown) {
     return marked.parse(markdown); // TODO Warning: We don't have any protection against malicious HTML! See https://marked.js.org/#installation
+}
+
+function highlightMarkdown(markdown) {
+    return hljs.highlight(markdown, { language: 'markdown' }).value;
 }
 </script>
 
@@ -100,7 +110,8 @@ async function fetchData(id) {
         .then(response => {
             wikiPage.value = {
                 ...response.data,
-                renderedMarkdown: renderMarkdown(response.data.markdown)
+                renderedMarkdown: renderMarkdown(response.data.markdown),
+                highlightedMarkdown: highlightMarkdown(response.data.markdown)
             };
         })
         .catch(e => {
