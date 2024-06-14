@@ -14,11 +14,15 @@
 @forward "bulma/sass/form";
 
 @forward "bulma/sass/components/navbar";
+@forward "bulma/sass/components/panel";
+
+@forward "bulma/sass/grid/columns";
 
 @forward "bulma/sass/layout/level"; // demo only
 @forward "bulma/sass/layout/media"; // demo only
 @forward "bulma/sass/layout/section";
 
+@forward "bulma/sass/helpers/flexbox";
 @forward "bulma/sass/helpers/color";
 @forward "bulma/sass/helpers/spacing";
 @forward "bulma/sass/helpers/typography";
