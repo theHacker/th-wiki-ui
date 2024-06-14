@@ -31,25 +31,46 @@
             <div v-if="wikiPage">
                 <h1 class="title">{{ wikiPage.title }}</h1>
 
-                <div class="tabs">
-                    <ul>
-                        <li :class="{ 'is-active': !showMarkdown }" @click="showMarkdown = false">
-                            <a>
+                <div class="columns">
+                    <div class="column">
+                        <div class="tabs">
+                            <ul>
+                                <li :class="{ 'is-active': !showMarkdown }" @click="showMarkdown = false">
+                                    <a>
+                                        <span class="icon is-small">
+                                            <i class="fas fa-image" />
+                                        </span>
+                                        <span>Content</span>
+                                    </a>
+                                </li>
+                                <li :class="{ 'is-active': showMarkdown }" @click="showMarkdown = true">
+                                    <a>
+                                        <span class="icon is-small">
+                                            <i class="fas fa-file-text" />
+                                        </span>
+                                        <span>Markdown</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="column is-narrow">
+                        <div class="buttons">
+                            <button class="button is-light">
                                 <span class="icon is-small">
-                                    <i class="fas fa-image" />
+                                    <i class="fas fa-pen" />
                                 </span>
-                                <span>Content</span>
-                            </a>
-                        </li>
-                        <li :class="{ 'is-active': showMarkdown }" @click="showMarkdown = true">
-                            <a>
+                                <span>Edit</span>
+                            </button>
+                            <button class="button is-danger">
                                 <span class="icon is-small">
-                                    <i class="fas fa-file-text" />
+                                    <i class="fas fa-trash" />
                                 </span>
-                                <span>Markdown</span>
-                            </a>
-                        </li>
-                    </ul>
+                                <span>Delete</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div v-if="!showMarkdown" class="content">
