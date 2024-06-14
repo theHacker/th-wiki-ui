@@ -1,10 +1,17 @@
 <template>
     <div class="panel">
         <div class="panel-block">
-            <p class="control has-icons-left">
+            <p class="control has-icons-left has-icons-right">
                 <input v-model="search" class="input" type="text" placeholder="Search" />
                 <span class="icon is-left">
                     <i class="fas fa-search" />
+                </span>
+                <span
+                    v-if="search"
+                    class="icon is-small is-right is-clickable"
+                    @click="search = ''"
+                >
+                    <i class="fas fa-xmark"></i>
                 </span>
             </p>
         </div>
@@ -52,7 +59,7 @@ const wikiPages = ref([]);
 const loading = ref(true);
 
 const filteredWikiPages = computed(() => {
-    if (search.value !== '') {
+    if (search.value) {
         const lowercase = search.value.toLowerCase();
 
         return wikiPages.value.filter(page => page.title.toLowerCase().includes(lowercase));
