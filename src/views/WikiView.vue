@@ -1,6 +1,4 @@
 <template>
-    <h1 class="title">Wiki pages</h1>
-
     <div class="columns">
         <div class="column is-3">
             <WikiPagesTree />

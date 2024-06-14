@@ -48,7 +48,7 @@ nav {
     }
 }
 
-nav a.router-link-exact-active:not(.logo-link) {
+nav a.router-link-active:not(.logo-link) {
     font-weight: bold;
     text-decoration: underline;
     text-decoration-thickness: 3px;
