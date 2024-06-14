@@ -31,11 +31,48 @@
             <div v-if="wikiPage">
                 <h1 class="title">{{ wikiPage.title }}</h1>
 
-                <pre><code class="language-md">{{ wikiPage.markdown }}</code></pre>
+                <div class="tabs">
+                    <ul>
+                        <li :class="{ 'is-active': !showMarkdown }" @click="showMarkdown = false">
+                            <a>
+                                <span class="icon is-small">
+                                    <i class="fas fa-image" />
+                                </span>
+                                <span>Content</span>
+                            </a>
+                        </li>
+                        <li :class="{ 'is-active': showMarkdown }" @click="showMarkdown = true">
+                            <a>
+                                <span class="icon is-small">
+                                    <i class="fas fa-file-text" />
+                                </span>
+                                <span>Markdown</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div v-if="!showMarkdown" class="content">
+                    <div v-html="wikiPage.renderedMarkdown" />
+                </div>
+
+                <div v-if="showMarkdown" class="markdown">
+                    <pre><code class="language-md">{{ wikiPage.markdown }}</code></pre>
+                </div>
             </div>
         </div>
     </div>
 </template>
+
+<script>
+import {Marked} from 'marked';
+
+const marked = new Marked();
+
+function renderMarkdown(markdown) {
+    return marked.parse(markdown); // TODO Warning: We don't have any protection against malicious HTML! See https://marked.js.org/#installation
+}
+</script>
 
 <script setup>
 import axios from "@/axios.js";
@@ -49,6 +86,8 @@ const loading = ref(false);
 const error = ref(null);
 const wikiPage = ref(null);
 
+const showMarkdown = ref(false);
+
 watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 
 async function fetchData(id) {
@@ -59,7 +98,10 @@ async function fetchData(id) {
     axios
         .get('/wiki-pages/' + id)
         .then(response => {
-            wikiPage.value = response.data;
+            wikiPage.value = {
+                ...response.data,
+                renderedMarkdown: renderMarkdown(response.data.markdown)
+            };
         })
         .catch(e => {
             if (e.response) {
