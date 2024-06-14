@@ -18,6 +18,11 @@ const router = createRouter({
             path: '/wiki',
             name: 'wiki',
             component: () => import('../views/WikiView.vue')
+        },
+        {
+            path: '/wiki/:wikiPageId([0-9a-f-]+)',
+            name: 'wikiPage',
+            component: () => import('../views/WikiPageView.vue')
         }
     ]
 });

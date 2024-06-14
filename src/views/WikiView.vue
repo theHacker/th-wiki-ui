@@ -26,14 +26,20 @@
                     <table class="table is-fullwidth is-hoverable">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>&nbsp;</th>
                                 <th>Title</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="wikiPage in wikiPages">
-                                <td>{{ wikiPage.id }}</td>
-                                <td>{{ wikiPage.title }}</td>
+                                <td><i class="fas fa-file" /></td>
+                                <td>
+                                    <RouterLink
+                                        :to="{ name: 'wikiPage', params: { wikiPageId: wikiPage.id } }"
+                                    >
+                                        {{ wikiPage.title }}
+                                    </RouterLink>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -84,3 +90,18 @@ axios
         wikiPages.value = response.data;
     });
 </script>
+
+<style lang="scss" scoped>
+table {
+    th:nth-child(1),
+    td:nth-child(1) {
+        width: 32px;
+        padding-right: 0;
+    }
+
+    th:nth-child(2),
+    td:nth-child(2) {
+        padding-left: 0;
+    }
+}
+</style>
