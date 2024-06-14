@@ -2,7 +2,7 @@
     <div class="panel">
         <div class="panel-block">
             <p class="control has-icons-left">
-                <input class="input" type="text" placeholder="Search" />
+                <input v-model="search" class="input" type="text" placeholder="Search" />
                 <span class="icon is-left">
                     <i class="fas fa-search" />
                 </span>
@@ -26,7 +26,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="wikiPage in wikiPages">
+                    <tr v-for="wikiPage in filteredWikiPages">
                         <td><i class="fas fa-file" /></td>
                         <td>
                             <RouterLink
@@ -44,10 +44,22 @@
 
 <script setup>
 import axios from "@/axios.js";
-import {ref} from 'vue';
+import {computed, ref} from 'vue';
+
+const search = ref('');
 
 const wikiPages = ref([]);
 const loading = ref(true);
+
+const filteredWikiPages = computed(() => {
+    if (search.value !== '') {
+        const lowercase = search.value.toLowerCase();
+
+        return wikiPages.value.filter(page => page.title.toLowerCase().includes(lowercase));
+    } else {
+        return wikiPages.value;
+    }
+});
 
 axios
     .get('/wiki-pages')
