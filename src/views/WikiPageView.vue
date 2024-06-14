@@ -35,7 +35,10 @@
                     <div class="column">
                         <div class="tabs">
                             <ul>
-                                <li :class="{ 'is-active': !showMarkdown }" @click="showMarkdown = false">
+                                <li
+                                    :class="{ 'is-active': tabState === TabStates.Content }"
+                                    @click="tabState = TabStates.Content"
+                                >
                                     <a>
                                         <span class="icon is-small">
                                             <i class="fas fa-image" />
@@ -43,12 +46,48 @@
                                         <span>Content</span>
                                     </a>
                                 </li>
-                                <li :class="{ 'is-active': showMarkdown }" @click="showMarkdown = true">
+                                <li
+                                    :class="{ 'is-active': tabState === TabStates.Markdown }"
+                                    @click="tabState = TabStates.Markdown"
+                                >
                                     <a>
                                         <span class="icon is-small">
                                             <i class="fas fa-file-text" />
                                         </span>
                                         <span>Markdown</span>
+                                    </a>
+                                </li>
+                                <li
+                                    :class="{ 'is-active': tabState === TabStates.Metadata }"
+                                    @click="tabState = TabStates.Metadata"
+                                >
+                                    <a>
+                                        <span class="icon is-small">
+                                            <i class="fas fa-tags" />
+                                        </span>
+                                        <span>Metadata</span>
+                                    </a>
+                                </li>
+                                <li
+                                    :class="{ 'is-active': tabState === TabStates.Attachments }"
+                                    @click="tabState = TabStates.Attachments"
+                                >
+                                    <a>
+                                        <span class="icon is-small">
+                                            <i class="fas fa-paperclip" />
+                                        </span>
+                                        <span>Attachments</span>
+                                    </a>
+                                </li>
+                                <li
+                                    :class="{ 'is-active': tabState === TabStates.Settings }"
+                                    @click="tabState = TabStates.Settings"
+                                >
+                                    <a>
+                                        <span class="icon is-small">
+                                            <i class="fas fa-gears" />
+                                        </span>
+                                        <span>Settings</span>
                                     </a>
                                 </li>
                             </ul>
@@ -63,12 +102,55 @@
                     </div>
                 </div>
 
-                <div v-if="!showMarkdown" class="content">
+                <div v-if="tabState === TabStates.Content" class="content">
                     <div v-html="wikiPage.renderedMarkdown" />
                 </div>
 
-                <div v-if="showMarkdown" class="markdown">
+                <div v-else-if="tabState === TabStates.Markdown" class="markdown">
                     <pre><code v-html="wikiPage.highlightedMarkdown" class="hljs language-markdown" /></pre>
+                </div>
+
+                <div v-else-if="tabState === TabStates.Metadata">
+                    <div class="fixed-grid has-4-cols">
+                        <div class="grid">
+                            <div class="cell">
+                                <div class="icon-text">
+                                    <span class="icon">
+                                        <i class="fas fa-clock" />
+                                    </span>
+                                    <span class="has-text-link-bold">Creation Time</span>
+                                </div>
+                                <p>{{ new Date(wikiPage.creationTime).toLocaleString() }}</p>
+                            </div>
+                            <div class="cell">
+                                <div class="icon-text">
+                                    <span class="icon">
+                                        <i class="fas fa-clock" />
+                                    </span>
+                                    <span class="has-text-link-bold">Modification Time</span>
+                                </div>
+                                <p>{{ new Date(wikiPage.modificationTime).toLocaleString() }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="tabState === TabStates.Attachments">
+                    <div class="icon-text is-background-warning-20 p-2">
+                        <span class="icon">
+                            <i class="fas fa-person-digging" />
+                        </span>
+                        <span>Not yet implemented.</span>
+                    </div>
+                </div>
+
+                <div v-if="tabState === TabStates.Settings">
+                    <div class="icon-text is-background-warning-20 p-2">
+                        <span class="icon">
+                            <i class="fas fa-person-digging" />
+                        </span>
+                        <span>Not yet implemented.</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -93,6 +175,14 @@ function renderMarkdown(markdown) {
 function highlightMarkdown(markdown) {
     return hljs.highlight(markdown, { language: 'markdown' }).value;
 }
+
+const TabStates = {
+    Content: Symbol('Content'),
+    Markdown: Symbol('Markdown'),
+    Metadata: Symbol('Metadata'),
+    Attachments: Symbol('Attachments'),
+    Settings: Symbol('Settings')
+};
 </script>
 
 <script setup>
@@ -108,7 +198,7 @@ const loading = ref(false);
 const error = ref(null);
 const wikiPage = ref(null);
 
-const showMarkdown = ref(false);
+const tabState = ref(TabStates.Content);
 
 watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 
