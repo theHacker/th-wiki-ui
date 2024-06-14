@@ -72,7 +72,7 @@
 
 <script setup>
 import axios from "@/axios.js";
-import {ref, defineModel} from 'vue';
+import {ref} from 'vue';
 import {useRouter} from "vue-router";
 
 const router = useRouter();
@@ -81,9 +81,9 @@ const saving = ref(false);
 const error = ref(null);
 const fieldErrors = ref({});
 
-const wikiPage = defineModel('wikiPage', {
-    type: Object,
-    default: () => ({ title: '', markdown: ''})
+const wikiPage = ref({
+    title: '',
+    markdown: ''
 });
 
 function save() {
