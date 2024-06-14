@@ -27,12 +27,11 @@
                 <div class="panel is-success">
                     <p class="panel-heading">Create a new wiki page</p>
                     <div class="panel-block is-justify-content-center">
-                        <button
-                            class="button is-primary"
+                        <Button
+                            title="Create new wiki page"
+                            color="primary"
                             @click="$router.push({name: 'wikiPageNew'})"
-                        >
-                            Create new wiki page
-                        </button>
+                        />
                     </div>
                 </div>
             </section>
@@ -42,4 +41,5 @@
 
 <script setup>
 import WikiPagesTree from "@/components/WikiPagesTree.vue";
+import Button from "@/components/Button.vue";
 </script>

@@ -57,18 +57,8 @@
 
                     <div class="column is-narrow">
                         <div class="buttons">
-                            <button class="button is-light">
-                                <span class="icon is-small">
-                                    <i class="fas fa-pen" />
-                                </span>
-                                <span>Edit</span>
-                            </button>
-                            <button class="button is-danger">
-                                <span class="icon is-small">
-                                    <i class="fas fa-trash" />
-                                </span>
-                                <span>Delete</span>
-                            </button>
+                            <Button icon="pen" title="Edit" color="light" />
+                            <Button icon="trash" title="Delete" color="danger" />
                         </div>
                     </div>
                 </div>
@@ -110,6 +100,7 @@ import axios from "@/axios.js";
 import {ref, watch} from 'vue';
 import {useRoute} from "vue-router";
 import WikiPagesTree from "@/components/WikiPagesTree.vue";
+import Button from "@/components/Button.vue";
 
 const route = useRoute();
 

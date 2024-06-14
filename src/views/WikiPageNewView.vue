@@ -49,20 +49,10 @@
 
                 <div class="field is-grouped">
                     <div class="control">
-                        <button class="button is-link" :class="{'is-loading': saving}" @click="save">
-                            <span class="icon">
-                              <i class="fas fa-check"></i>
-                            </span>
-                            <span>Create</span>
-                        </button>
+                        <Button icon="check" title="Create" color="link" :loading="saving" @click="save" />
                     </div>
                     <div class="control">
-                        <button class="button is-link is-light" @click="cancel">
-                            <span class="icon">
-                              <i class="fas fa-xmark"></i>
-                            </span>
-                            <span>Cancel</span>
-                        </button>
+                        <Button icon="xmark" title="Cancel" color="link" :light="true" @click="cancel" />
                     </div>
                 </div>
             </fieldset>
@@ -74,6 +64,7 @@
 import axios from "@/axios.js";
 import {ref} from 'vue';
 import {useRouter} from "vue-router";
+import Button from "@/components/Button.vue";
 
 const router = useRouter();
 

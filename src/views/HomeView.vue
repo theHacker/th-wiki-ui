@@ -5,7 +5,7 @@
 
     <h2 class="subtitle">Bulma test</h2>
     <p class="mb-5">
-        <button class="button is-primary">Hello Bulma</button>
+        <Button title="Hello Bulma" color="primary" />
     </p>
 
     <article class="media">
@@ -43,6 +43,10 @@
         </div>
     </article>
 </template>
+
+<script setup>
+import Button from "@/components/Button.vue";
+</script>
 
 <style lang="scss" scoped>
 article {
