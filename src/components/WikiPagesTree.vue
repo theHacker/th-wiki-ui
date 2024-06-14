@@ -1,19 +1,7 @@
 <template>
     <div class="panel">
         <div class="panel-block">
-            <p class="control has-icons-left has-icons-right">
-                <input v-model="search" class="input" type="text" placeholder="Search" />
-                <span class="icon is-left">
-                    <i class="fas fa-search" />
-                </span>
-                <span
-                    v-if="search"
-                    class="icon is-small is-right is-clickable"
-                    @click="search = ''"
-                >
-                    <i class="fas fa-xmark"></i>
-                </span>
-            </p>
+            <SearchInput v-model="search" />
         </div>
 
         <div v-if="loading" class="panel-block">
@@ -52,6 +40,7 @@
 <script setup>
 import axios from "@/axios.js";
 import {computed, ref} from 'vue';
+import SearchInput from "@/components/SearchInput.vue";
 
 const search = ref('');
 

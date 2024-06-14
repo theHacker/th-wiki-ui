@@ -21,12 +21,7 @@
 
             <div class="navbar-end">
                 <div class="navbar-item">
-                    <p class="control has-icons-left">
-                        <input class="input" type="text" placeholder="Search" />
-                        <span class="icon is-small is-left">
-                            <i class="fas fa-magnifying-glass" />
-                        </span>
-                    </p>
+                    <SearchInput />
                 </div>
             </div>
         </div>
@@ -35,6 +30,7 @@
 
 <script setup>
 import {RouterLink} from 'vue-router';
+import SearchInput from "@/components/SearchInput.vue";
 </script>
 
 <style lang="scss" scoped>

@@ -13,12 +13,7 @@
                 <div class="panel is-info">
                     <p class="panel-heading">Search for content</p>
                     <div class="panel-block">
-                        <p class="control has-icons-left">
-                            <input class="input" type="text" placeholder="Search" />
-                            <span class="icon is-left">
-                                <i class="fas fa-search" />
-                            </span>
-                        </p>
+                        <SearchInput />
                     </div>
                 </div>
             </section>
@@ -42,4 +37,5 @@
 <script setup>
 import WikiPagesTree from "@/components/WikiPagesTree.vue";
 import Button from "@/components/Button.vue";
+import SearchInput from "@/components/SearchInput.vue";
 </script>
