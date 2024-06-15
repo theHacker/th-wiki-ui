@@ -28,6 +28,35 @@
                 </article>
             </div>
 
+            <div class="modal" :class="{'is-active': deleteDialogOpen}">
+                <div class="modal-background" />
+                <div class="modal-content">
+                    <article class="panel is-danger">
+                        <p class="panel-heading">Really delete?</p>
+                        <div class="panel-block">
+                            <p>Do you really want to delete the wiki page "{{ wikiPage.title }}"?</p>
+                        </div>
+                        <div class="panel-block">
+                            <div class="buttons">
+                                <Button
+                                    icon="trash"
+                                    title="Delete"
+                                    color="danger"
+                                    :loading="deleting"
+                                    @click="deleteWikiPage"
+                                />
+                                <Button
+                                    icon="xmark"
+                                    title="Cancel"
+                                    color="light"
+                                    @click="deleteDialogOpen = false"
+                                />
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+
             <div v-if="wikiPage">
                 <h1 class="title">{{ wikiPage.title }}</h1>
 
@@ -97,7 +126,7 @@
                     <div class="column is-narrow">
                         <div class="buttons">
                             <Button icon="pen" title="Edit" color="light" />
-                            <Button icon="trash" title="Delete" color="danger" />
+                            <Button icon="trash" title="Delete" color="danger" @click="deleteDialogOpen = true" />
                         </div>
                     </div>
                 </div>
@@ -188,17 +217,21 @@ const TabStates = {
 <script setup>
 import axios from "@/axios.js";
 import {ref, watch} from 'vue';
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import WikiPagesTree from "@/components/WikiPagesTree.vue";
 import Button from "@/components/Button.vue";
 
 const route = useRoute();
+const router = useRouter();
 
 const loading = ref(false);
 const error = ref(null);
 const wikiPage = ref(null);
 
 const tabState = ref(TabStates.Content);
+
+const deleteDialogOpen = ref(false);
+const deleting = ref(false);
 
 watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 
@@ -229,4 +262,33 @@ function fetchData(id) {
             loading.value = false;
         });
 }
+
+function deleteWikiPage() {
+    deleting.value = true;
+    error.value = null;
+
+    axios
+        .delete('/wiki-pages/' + wikiPage.value.id)
+        .then(() => {
+            router.push({ name: 'wiki' });
+        })
+        .catch(e => {
+            if (e.response) {
+                error.value = e.response.data.message;
+            } else if (error.request) {
+                error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
+            } else {
+                error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
+            }
+        })
+        .finally(() => {
+            deleting.value = false;
+        });
+}
 </script>
+
+<style lang="scss" scoped>
+.modal-content, .modal-card {
+    overflow: unset; // fix Bulma cutting the box-shadow by "overflow: auto"
+}
+</style>
