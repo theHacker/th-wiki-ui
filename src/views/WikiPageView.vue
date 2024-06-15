@@ -37,21 +37,23 @@
                             <p>Do you really want to delete the wiki page "{{ wikiPage.title }}"?</p>
                         </div>
                         <div class="panel-block">
-                            <div class="buttons">
-                                <Button
-                                    icon="trash"
-                                    title="Delete"
-                                    color="danger"
-                                    :loading="deleting"
-                                    @click="deleteWikiPage"
-                                />
-                                <Button
-                                    icon="xmark"
-                                    title="Cancel"
-                                    color="light"
-                                    @click="deleteDialogOpen = false"
-                                />
-                            </div>
+                            <fieldset :disabled="deleting">
+                                <div class="buttons">
+                                    <Button
+                                        icon="trash"
+                                        title="Delete"
+                                        color="danger"
+                                        :loading="deleting"
+                                        @click="deleteWikiPage"
+                                    />
+                                    <Button
+                                        icon="xmark"
+                                        title="Cancel"
+                                        color="light"
+                                        @click="deleteDialogOpen = false"
+                                    />
+                                </div>
+                            </fieldset>
                         </div>
                     </article>
                 </div>
