@@ -15,7 +15,7 @@
             </div>
 
             <div v-if="error">
-                <article class="message is-warning">
+                <article class="message is-warning pb-4">
                     <div class="message-header">
                         <p>
                             <i class="fas fa-circle-info pr-1" />
@@ -282,6 +282,7 @@ function deleteWikiPage() {
             }
         })
         .finally(() => {
+            deleteDialogOpen.value = false;
             deleting.value = false;
         });
 }
