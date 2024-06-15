@@ -202,7 +202,7 @@ const tabState = ref(TabStates.Content);
 
 watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 
-async function fetchData(id) {
+function fetchData(id) {
     loading.value = true;
     error.value = null;
     wikiPage.value = null;
