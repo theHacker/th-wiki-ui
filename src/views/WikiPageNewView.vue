@@ -3,19 +3,7 @@
         <div class="column is-8 is-offset-2">
             <h1 class="title">New wiki page</h1>
 
-            <div v-if="error" class="pb-3">
-                <article class="message is-warning">
-                    <div class="message-header">
-                        <p>
-                            <i class="fas fa-circle-info pr-1" />
-                            Error
-                        </p>
-                    </div>
-                    <div class="message-body">
-                        {{ error }}
-                    </div>
-                </article>
-            </div>
+            <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
             <fieldset :disabled="saving">
                 <div class="field">
@@ -65,6 +53,7 @@ import axios from "@/axios.js";
 import {ref} from 'vue';
 import {useRouter} from "vue-router";
 import Button from "@/components/Button.vue";
+import ErrorMessage from "@/components/ErrorMessage.vue";
 
 const router = useRouter();
 

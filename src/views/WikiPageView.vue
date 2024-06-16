@@ -5,19 +5,7 @@
         </div>
 
         <div class="column is-9">
-            <div v-if="error">
-                <article class="message is-warning pb-4">
-                    <div class="message-header">
-                        <p>
-                            <i class="fas fa-circle-info pr-1" />
-                            Error
-                        </p>
-                    </div>
-                    <div class="message-body">
-                        {{ error }}
-                    </div>
-                </article>
-            </div>
+            <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
             <div v-if="!entry" class="mt-4">
                 <div class="icon-text">
@@ -207,6 +195,7 @@ import {useRoute, useRouter} from "vue-router";
 import WikiPagesTree from "@/components/WikiPagesTree.vue";
 import Button from "@/components/Button.vue";
 import Tab from "@/components/Tab.vue";
+import ErrorMessage from "@/components/ErrorMessage.vue";
 
 const route = useRoute();
 const router = useRouter();
