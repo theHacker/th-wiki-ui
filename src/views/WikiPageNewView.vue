@@ -22,7 +22,7 @@
                     <label class="label">Title</label>
                     <div class="control">
                         <input
-                            v-model="wikiPage.title"
+                            v-model="entry.title"
                             class="input"
                             :class="{'is-danger': !!fieldErrors.title}"
                             type="text"
@@ -36,14 +36,14 @@
                     <label class="label">Content</label>
                     <div class="control">
                         <textarea
-                            v-model="wikiPage.markdown"
+                            v-model="entry.content"
                             class="textarea"
-                            :class="{'is-danger': !!fieldErrors.markdown}"
+                            :class="{'is-danger': !!fieldErrors.content}"
                             rows="15"
-                            placeholder="Markdown"
+                            placeholder="Content"
                         />
                     </div>
-                    <p v-if="fieldErrors.markdown" class="help is-danger">{{ fieldErrors.markdown }}</p>
+                    <p v-if="fieldErrors.content" class="help is-danger">{{ fieldErrors.content }}</p>
                     <p class="help">Content will be parsed as Markdown.</p>
                 </div>
 
@@ -72,9 +72,10 @@ const saving = ref(false);
 const error = ref(null);
 const fieldErrors = ref({});
 
-const wikiPage = ref({
+const entry = ref({
     title: '',
-    markdown: ''
+    content: ''
+    // TODO new fields parentId and folder
 });
 
 function save() {
@@ -83,9 +84,12 @@ function save() {
     error.value = null;
 
     axios
-        .post('/wiki-pages', wikiPage.value)
+        .post('/entries', {
+            ...entry.value,
+            type: 'wiki'
+        })
         .then(response => {
-            router.push({ name: 'wikiPage', params: { wikiPageId: response.data.id } });
+            router.push({ name: 'wikiPage', params: { entryId: response.data.id } });
         })
         .catch(e => {
             handleError(e);

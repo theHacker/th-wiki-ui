@@ -25,7 +25,7 @@
                         <td><i class="fas fa-file" /></td>
                         <td>
                             <RouterLink
-                                :to="{ name: 'wikiPage', params: { wikiPageId: wikiPage.id } }"
+                                :to="{ name: 'wikiPage', params: { entryId: wikiPage.id } }"
                             >
                                 {{ wikiPage.title }}
                             </RouterLink>
@@ -58,7 +58,7 @@ const filteredWikiPages = computed(() => {
 });
 
 axios
-    .get('/wiki-pages')
+    .get('/entries') // TODO only wiki
     .then(response => {
         loading.value = false;
         wikiPages.value = response.data;
