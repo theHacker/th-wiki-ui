@@ -8,12 +8,7 @@
             <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
             <div v-if="!entry" class="mt-4">
-                <div class="icon-text">
-                    <span class="icon">
-                        <i class="fas fa-spinner fa-pulse fa-2x" />
-                    </span>
-                    <span class="pl-2">Loading entry…</span>
-                </div>
+                <Loading>Loading entry…</Loading>
             </div>
 
             <div v-if="entry" class="modal" :class="{'is-active': deleteDialogOpen}">
@@ -107,12 +102,7 @@
 
                 <div v-else-if="tabState === TabStates.Metadata">
                     <div v-if="!entryMetadata">
-                        <div class="icon-text">
-                            <span class="icon">
-                                <i class="fas fa-spinner fa-pulse fa-2x" />
-                            </span>
-                            <span class="pl-2">Loading metadata…</span>
-                        </div>
+                        <Loading>Loading metadata…</Loading>
                     </div>
                     <div v-if="entryMetadata" class="fixed-grid has-4-cols">
                         <div class="grid">
@@ -196,6 +186,7 @@ import WikiPagesTree from "@/components/WikiPagesTree.vue";
 import Button from "@/components/Button.vue";
 import Tab from "@/components/Tab.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
+import Loading from "@/components/Loading.vue";
 
 const route = useRoute();
 const router = useRouter();
