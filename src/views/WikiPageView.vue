@@ -66,64 +66,37 @@
                     <div class="column">
                         <div class="tabs">
                             <ul>
-                                <li
-                                    :class="{ 'is-active': tabState === TabStates.Content }"
+                                <Tab
+                                    icon="image"
+                                    title="Content"
+                                    :active="tabState === TabStates.Content"
                                     @click="tabState = TabStates.Content"
-                                >
-                                    <a>
-                                        <span class="icon is-small">
-                                            <i class="fas fa-image" />
-                                        </span>
-                                        <span>Content</span>
-                                    </a>
-                                </li>
-                                <li
-                                    :class="{ 'is-active': tabState === TabStates.Markdown }"
+                                />
+                                <Tab
+                                    icon="file-text"
+                                    title="Markdown"
+                                    :active="tabState === TabStates.Markdown"
                                     @click="tabState = TabStates.Markdown"
-                                >
-                                    <a>
-                                        <span class="icon is-small">
-                                            <i class="fas fa-file-text" />
-                                        </span>
-                                        <span>Markdown</span>
-                                    </a>
-                                </li>
-                                <li
-                                    :class="{ 'is-active': tabState === TabStates.Metadata }"
+                                />
+                                <Tab
+                                    icon="tags"
+                                    title="Metadata"
+                                    :active="tabState === TabStates.Metadata"
+                                    :loading="entryMetadata === null"
                                     @click="tabState = TabStates.Metadata"
-                                >
-                                    <a>
-                                        <span v-if="entryMetadata === null" class="icon">
-                                            <i class="fas fa-spinner fa-pulse" />
-                                        </span>
-                                        <span v-if="entryMetadata !== null" class="icon is-small">
-                                            <i class="fas fa-tags" />
-                                        </span>
-                                        <span>Metadata</span>
-                                    </a>
-                                </li>
-                                <li
-                                    :class="{ 'is-active': tabState === TabStates.Attachments }"
+                                />
+                                <Tab
+                                    icon="paperclip"
+                                    title="Attachments"
+                                    :active="tabState === TabStates.Attachments"
                                     @click="tabState = TabStates.Attachments"
-                                >
-                                    <a>
-                                        <span class="icon is-small">
-                                            <i class="fas fa-paperclip" />
-                                        </span>
-                                        <span>Attachments</span>
-                                    </a>
-                                </li>
-                                <li
-                                    :class="{ 'is-active': tabState === TabStates.Settings }"
+                                />
+                                <Tab
+                                    icon="gears"
+                                    title="Settings"
+                                    :active="tabState === TabStates.Settings"
                                     @click="tabState = TabStates.Settings"
-                                >
-                                    <a>
-                                        <span class="icon is-small">
-                                            <i class="fas fa-gears" />
-                                        </span>
-                                        <span>Settings</span>
-                                    </a>
-                                </li>
+                                />
                             </ul>
                         </div>
                     </div>
@@ -233,6 +206,7 @@ import {ref, watch} from 'vue';
 import {useRoute, useRouter} from "vue-router";
 import WikiPagesTree from "@/components/WikiPagesTree.vue";
 import Button from "@/components/Button.vue";
+import Tab from "@/components/Tab.vue";
 
 const route = useRoute();
 const router = useRouter();
