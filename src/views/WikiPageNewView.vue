@@ -21,6 +21,17 @@
                 </div>
 
                 <div class="field">
+                    <label class="label">Parent</label>
+                    <div class="control">
+                        <WikiPagesSelect
+                            v-model="entry.parentId"
+                            :error="!!fieldErrors.parentId"
+                        />
+                    </div>
+                    <p v-if="fieldErrors.parentId" class="help is-danger">{{ fieldErrors.parentId }}</p>
+                </div>
+
+                <div class="field">
                     <label class="label">Content</label>
                     <div class="control">
                         <textarea
@@ -54,6 +65,7 @@ import {ref} from 'vue';
 import {useRouter} from "vue-router";
 import Button from "@/components/Button.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
+import WikiPagesSelect from "@/components/WikiPagesSelect.vue";
 
 const router = useRouter();
 
@@ -63,8 +75,9 @@ const fieldErrors = ref({});
 
 const entry = ref({
     title: '',
+    parentId: null,
     content: ''
-    // TODO new fields parentId and folder
+    // TODO new field folder
 });
 
 function save() {
