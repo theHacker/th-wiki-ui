@@ -8,7 +8,17 @@
             <Loading />
         </div>
         <div v-if="!loading" class="panel-block">
-            <Tree :items="filteredWikiPages" />
+            <Tree :items="filteredWikiPages">
+                <template #label="{ item }">
+                    <RouterLink :to="{ name: 'wikiPage', params: { entryId: item.id } }">
+                        {{ item.title }}
+                    </RouterLink>
+                </template>
+                <template #icon="{ item }">
+                    <i v-if="item.folder" class="fas fa-folder" />
+                    <i v-if="!item.folder" class="fas fa-file" />
+                </template>
+            </Tree>
         </div>
     </div>
 </template>

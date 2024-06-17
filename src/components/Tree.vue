@@ -4,12 +4,10 @@
             <div>
                 <span class="icon-text">
                     <span class="icon">
-                        <i class="fas fa-file" />
+                        <slot name="icon" :item="item" />
                     </span>
                     <span>
-                        <RouterLink :to="{ name: 'wikiPage', params: { entryId: item.id } }">
-                            {{ item.title }}
-                        </RouterLink>
+                        <slot name="label" :item="item" />
                     </span>
                 </span>
             </div>
@@ -17,7 +15,15 @@
                 <Tree
                     v-if="item.children && item.children.length > 0"
                     :items="item.children"
-                />
+                >
+                    <!-- Note: Chain slots through, so it works recursive (see https://github.com/vuejs/vue/issues/5965) -->
+                    <template #icon="{ item }">
+                        <slot name="icon" :item="item" />
+                    </template>
+                    <template #label="{ item }">
+                        <slot name="label" :item="item" />
+                    </template>
+                </Tree>
             </div>
         </li>
     </ul>
