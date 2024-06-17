@@ -59,19 +59,6 @@ axios
 <style lang="scss" scoped>
 @use "bulma/sass/utilities/index" as bulma;
 
-table {
-    th:nth-child(1),
-    td:nth-child(1) {
-        width: 32px;
-        padding-right: 0;
-    }
-
-    th:nth-child(2),
-    td:nth-child(2) {
-        padding-left: 0;
-    }
-}
-
 .router-link-exact-active {
     font-weight: bold;
 }
