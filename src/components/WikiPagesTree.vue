@@ -57,6 +57,8 @@ axios
 </script>
 
 <style lang="scss" scoped>
+@use "bulma/sass/utilities/index" as bulma;
+
 table {
     th:nth-child(1),
     td:nth-child(1) {
@@ -68,5 +70,12 @@ table {
     td:nth-child(2) {
         padding-left: 0;
     }
+}
+
+.router-link-exact-active {
+    font-weight: bold;
+}
+:deep(li) :has(> .router-link-exact-active) {
+    background: bulma.$dark;
 }
 </style>
