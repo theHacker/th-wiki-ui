@@ -9,14 +9,27 @@
         </div>
         <div v-if="!loading" class="panel-block">
             <Tree :items="filteredWikiPages">
-                <template #label="{ item }">
-                    <RouterLink :to="{ name: 'wikiPage', params: { entryId: item.id } }">
-                        {{ item.title }}
+                <template #default="{ item }">
+                    <RouterLink
+                        v-slot="{ route, isExactActive, navigate }"
+                        :to="{ name: 'wikiPage', params: { entryId: item.id } }"
+                        custom
+                    >
+                        <div
+                            :class="{ nav: true, active: isExactActive, 'is-clickable': true, 'is-unselectable': true }"
+                            @click="navigate"
+                        >
+                            <span class="icon-text">
+                                <span class="icon">
+                                    <i v-if="item.folder" class="fas fa-folder" />
+                                    <i v-if="!item.folder" class="fas fa-file" />
+                                </span>
+                                <span>
+                                    <a :href="route.href">{{ item.title }}</a>
+                                </span>
+                            </span>
+                        </div>
                     </RouterLink>
-                </template>
-                <template #icon="{ item }">
-                    <i v-if="item.folder" class="fas fa-folder" />
-                    <i v-if="!item.folder" class="fas fa-file" />
                 </template>
             </Tree>
         </div>
@@ -57,12 +70,31 @@ axios
 </script>
 
 <style lang="scss" scoped>
-@use "bulma/sass/utilities/index" as bulma;
-
-.router-link-exact-active {
-    font-weight: bold;
+ul {
+    width: 100%;
 }
-:deep(li) :has(> .router-link-exact-active) {
-    background: bulma.$dark;
+
+.nav {
+    --bulma-duration: 0; // No color animations please.
+
+    a, .icon {
+        color: var(--bulma-text);
+    }
+
+    &:hover {
+        a, .icon {
+            color: var(--bulma-text-strong);
+        }
+    }
+
+    &.active {
+        a, .icon {
+            color: var(--bulma-link);
+        }
+        a {
+            background-color: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-20-l), .5);
+            padding: 2px 2px 2px 0;
+        }
+    }
 }
 </style>
