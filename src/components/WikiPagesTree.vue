@@ -1,7 +1,22 @@
 <template>
     <div class="panel">
         <div class="panel-block">
-            <SearchInput v-model="search" />
+            <div class="level">
+                <div class="level-left">
+                    <div class="level-item">
+                        <SearchInput v-model="search" />
+                    </div>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <Button
+                            title="New page"
+                            color="primary"
+                            @click="$router.push({name: 'wikiPageNew'})"
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div v-if="loading" class="panel-block">
@@ -43,6 +58,7 @@ import SearchInput from "@/components/SearchInput.vue";
 import Loading from "@/components/Loading.vue";
 import {arrayToTree} from "@/helper/tree.js";
 import Tree from "@/components/Tree.vue";
+import Button from "@/components/Button.vue";
 
 const search = ref('');
 
