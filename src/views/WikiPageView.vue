@@ -86,8 +86,18 @@
 
                     <div class="column is-narrow">
                         <div class="buttons">
-                            <Button icon="pen" title="Edit" color="light" />
-                            <Button icon="trash" title="Delete" color="danger" @click="deleteDialogOpen = true" />
+                            <Button
+                                icon="pen"
+                                title="Edit"
+                                color="light"
+                                @click="$router.push({ name: 'wikiPageEdit', params: { entryId: entry.id } });"
+                            />
+                            <Button
+                                icon="trash"
+                                title="Delete"
+                                color="danger"
+                                @click="deleteDialogOpen = true"
+                            />
                         </div>
                     </div>
                 </div>
