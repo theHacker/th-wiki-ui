@@ -3,11 +3,12 @@
         <div class="column is-8 is-offset-2">
             <h1 class="title">New wiki page</h1>
 
+            <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
+
             <WikiPageEditForm
                 v-model="entry"
                 submitLabel="Create"
                 :saving="saving"
-                :error="error"
                 :fieldErrors="fieldErrors"
                 @submit="save"
                 @cancel="cancel"
@@ -21,6 +22,7 @@ import axios from "@/axios.js";
 import {ref} from 'vue';
 import {useRouter} from "vue-router";
 import WikiPageEditForm from "@/components/WikiPageEditForm.vue";
+import ErrorMessage from "@/components/ErrorMessage.vue";
 
 const router = useRouter();
 

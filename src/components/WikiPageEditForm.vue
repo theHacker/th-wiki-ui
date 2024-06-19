@@ -1,7 +1,5 @@
 <template>
     <div>
-        <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
-
         <fieldset :disabled="saving">
             <div class="field">
                 <label class="label">Title</label>
@@ -57,7 +55,6 @@
 
 <script setup>
 import Button from "@/components/Button.vue";
-import ErrorMessage from "@/components/ErrorMessage.vue";
 import WikiPagesSelect from "@/components/WikiPagesSelect.vue";
 
 const entry = defineModel();
@@ -70,10 +67,6 @@ defineProps({
     saving: {
         type: Boolean,
         default: false
-    },
-    error: {
-        type: String,
-        default: null
     },
     fieldErrors: {
         type: Array,
