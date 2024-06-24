@@ -139,12 +139,58 @@
                 </div>
 
                 <div v-if="tabState === TabStates.Attachments">
-                    <div class="icon-text is-background-warning-20 p-2">
-                        <span class="icon">
-                            <i class="fas fa-person-digging" />
-                        </span>
-                        <span>Not yet implemented.</span>
-                    </div>
+                    <table class="attachments table is-fullwidth is-hoverable">
+                        <thead>
+                            <tr>
+                                <th>Icon</th>
+                                <th>Filename</th>
+                                <th>Description</th>
+                                <th>Size</th>
+                                <th>Commands</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="attachment in attachments">
+                                <td>
+                                   <span class="icon">
+                                       <i :class="attachmentIconClass(attachment)" />
+                                   </span>
+                                </td>
+                                <td>
+                                    {{ attachment.filename }}
+                                </td>
+                                <td>{{ attachment.description }}</td>
+                                <td>{{ attachment.size }}</td>
+                                <td>
+                                    <div class="field is-grouped">
+                                        <div class="control">
+                                            <Button
+                                                icon="eye"
+                                                tooltip="View"
+                                                size="small"
+                                                color="primary"
+                                                @click="openAttachment(attachment, false)"
+                                            />
+                                        </div>
+                                        <div class="control">
+                                            <Button
+                                                icon="download"
+                                                tooltip="Download"
+                                                size="small"
+                                                color="success"
+                                                @click="openAttachment(attachment, true)"
+                                            />
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr v-if="attachments.length === 0">
+                                <td colspan="5" class="has-text-centered">
+                                    <i>No attachments.</i>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
                 <div v-if="tabState === TabStates.Settings">
@@ -197,6 +243,7 @@ import Button from "@/components/Button.vue";
 import Tab from "@/components/Tab.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import Loading from "@/components/Loading.vue";
+import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -204,6 +251,7 @@ const router = useRouter();
 const error = ref(null);
 const entry = ref(null);
 const entryMetadata = ref(null);
+const attachments = ref([]);
 
 const tabState = ref(TabStates.Content);
 
@@ -216,16 +264,7 @@ function fetchData(id) {
     error.value = null;
     entry.value = null;
     entryMetadata.value = null;
-
-    const handleError = (e) => {
-        if (e.response) {
-            error.value = e.response.data.message;
-        } else if (error.request) {
-            error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
-        } else {
-            error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
-        }
-    };
+    attachments.value = [];
 
     axios
         .get('/entries/' + id)
@@ -244,6 +283,19 @@ function fetchData(id) {
             entryMetadata.value = response.data;
         })
         .catch(handleError);
+
+    loadAttachments(id);
+}
+
+function loadAttachments(entryId) {
+    attachments.value = [];
+
+    axios
+        .get('/attachments?entryId=' + entryId)
+        .then(response => {
+            attachments.value = response.data;
+        })
+        .catch(handleError);
 }
 
 function deleteEntry() {
@@ -255,24 +307,57 @@ function deleteEntry() {
         .then(() => {
             router.push({ name: 'wiki' });
         })
-        .catch(e => {
-            if (e.response) {
-                error.value = e.response.data.message;
-            } else if (error.request) {
-                error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
-            } else {
-                error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
-            }
-        })
+        .catch(handleError)
         .finally(() => {
             deleteDialogOpen.value = false;
             deleting.value = false;
         });
+}
+
+function handleError(e) {
+    if (e.response) {
+        error.value = e.response.data.message;
+    } else if (error.request) {
+        error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
+    } else {
+        error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
+    }
+}
+
+function attachmentIconClass(attachment) {
+    const icon = getIconForMimeType(attachment.mimeType);
+
+    return `fas fa-${icon}`;
+}
+
+function openAttachment(attachment, download) {
+    let url = '/api/attachments/' + attachment.id + '/file';
+
+    if (download) {
+        url += '?download=1';
+    }
+
+    window.open(url, '_blank');
 }
 </script>
 
 <style lang="scss" scoped>
 .modal-content, .modal-card {
     overflow: unset; // fix Bulma cutting the box-shadow by "overflow: auto"
+}
+
+.table.attachments {
+    td:nth-child(1) {
+        width: 32px;
+    }
+    td:nth-child(5) {
+        $countButtons: 2;
+
+        width: calc($countButtons * 32px + ($countButtons - 1) * 0.25rem);
+    }
+
+    .is-grouped {
+        gap: 0.25rem; // reduce gap between buttons
+    }
 }
 </style>
