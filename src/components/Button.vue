@@ -1,5 +1,5 @@
 <template>
-    <button class="button" :class="buttonClass" @click="$emit('click')">
+    <button class="button" :class="buttonClass" :title="tooltip" @click="$emit('click')">
         <span v-if="icon" class="icon is-small">
             <i :class="iconClass" />
         </span>
@@ -15,6 +15,9 @@ const props = defineProps({
         type: String
     },
     title: {
+        type: String
+    },
+    tooltip: {
         type: String
     },
     size: {
