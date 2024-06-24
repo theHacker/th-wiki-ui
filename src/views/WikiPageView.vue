@@ -11,13 +11,15 @@
                 <Loading>Loading entry…</Loading>
             </div>
 
-            <div v-if="entry" class="modal" :class="{'is-active': deleteDialogOpen}">
+            <div class="modal" :class="{'is-active': deleteDialogOpen !== null}">
                 <div class="modal-background" />
                 <div class="modal-content">
                     <article class="panel is-danger">
                         <p class="panel-heading">Really delete?</p>
                         <div class="panel-block">
-                            <p>Do you really want to delete the wiki page "{{ entry.title }}"?</p>
+                            <p v-if="deleteDialogOpen && deleteDialogOpen.entryTitle">
+                                Do you really want to delete the wiki page "{{ deleteDialogOpen.entryTitle }}"?
+                            </p>
                         </div>
                         <div class="panel-block">
                             <fieldset :disabled="deleting">
@@ -33,7 +35,7 @@
                                         icon="xmark"
                                         title="Cancel"
                                         color="light"
-                                        @click="deleteDialogOpen = false"
+                                        @click="deleteDialogOpen = null"
                                     />
                                 </div>
                             </fieldset>
@@ -96,7 +98,7 @@
                                 icon="trash"
                                 title="Delete"
                                 color="danger"
-                                @click="deleteDialogOpen = true"
+                                @click="deleteDialogOpen = {entryTitle: entry.title }"
                             />
                         </div>
                     </div>
@@ -271,7 +273,7 @@ const uploadingAttachment = ref(false);
 
 const tabState = ref(TabStates.Content);
 
-const deleteDialogOpen = ref(false);
+const deleteDialogOpen = ref(null);
 const deleting = ref(false);
 
 watch(() => route.params.entryId, fetchData, { immediate: true });
@@ -325,7 +327,7 @@ function deleteEntry() {
         })
         .catch(handleError)
         .finally(() => {
-            deleteDialogOpen.value = false;
+            deleteDialogOpen.value = null;
             deleting.value = false;
         });
 }
