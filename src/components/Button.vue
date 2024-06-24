@@ -3,7 +3,7 @@
         <span v-if="icon" class="icon is-small">
             <i :class="iconClass" />
         </span>
-        <span>{{ title }}</span>
+        <span v-if="title">{{ title }}</span>
     </button>
 </template>
 
@@ -15,8 +15,7 @@ const props = defineProps({
         type: String
     },
     title: {
-        type: String,
-        required: true
+        type: String
     },
     size: {
         validator(value, _props) {
