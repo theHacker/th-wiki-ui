@@ -191,6 +191,15 @@
                             </tr>
                         </tbody>
                     </table>
+
+                    <div class="block">
+                        <AttachmentUploadForm
+                            v-model="addAttachmentModel"
+                            :uploading="uploadingAttachment"
+                            @submit="uploadAttachment"
+                            @cancel="resetAttachmentForm"
+                        />
+                    </div>
                 </div>
 
                 <div v-if="tabState === TabStates.Settings">
@@ -243,6 +252,7 @@ import Button from "@/components/Button.vue";
 import Tab from "@/components/Tab.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import Loading from "@/components/Loading.vue";
+import AttachmentUploadForm from "@/components/AttachmentUploadForm.vue";
 import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 
 const route = useRoute();
@@ -252,6 +262,12 @@ const error = ref(null);
 const entry = ref(null);
 const entryMetadata = ref(null);
 const attachments = ref([]);
+
+const addAttachmentModel = ref({
+    file: null,
+    description: ''
+});
+const uploadingAttachment = ref(false);
 
 const tabState = ref(TabStates.Content);
 
@@ -312,6 +328,42 @@ function deleteEntry() {
             deleteDialogOpen.value = false;
             deleting.value = false;
         });
+}
+
+function uploadAttachment() {
+    const entryId = entry.value.id;
+
+    if (!entryId) return;
+
+    error.value = null;
+    uploadingAttachment.value = true;
+
+    const formData = new FormData();
+    formData.append("entryId", entryId);
+    formData.append("file", addAttachmentModel.value.file);
+    formData.append("description", addAttachmentModel.value.description);
+
+    axios
+        .post('/attachments', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(() => {
+            resetAttachmentForm();
+            loadAttachments(entryId);
+        })
+        .catch(handleError)
+        .finally(() => {
+            uploadingAttachment.value = false;
+        });
+}
+
+function resetAttachmentForm() {
+    addAttachmentModel.value = {
+        file: null,
+        description: ''
+    };
 }
 
 function handleError(e) {
