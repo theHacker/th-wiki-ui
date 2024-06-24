@@ -17,8 +17,11 @@
                     <article class="panel is-danger">
                         <p class="panel-heading">Really delete?</p>
                         <div class="panel-block">
-                            <p v-if="deleteDialogOpen && deleteDialogOpen.entryTitle">
-                                Do you really want to delete the wiki page "{{ deleteDialogOpen.entryTitle }}"?
+                            <p v-if="deleteDialogOpen && deleteDialogOpen.entry">
+                                Do you really want to delete the wiki page "{{ deleteDialogOpen.entry.title }}"?
+                            </p>
+                            <p v-if="deleteDialogOpen && deleteDialogOpen.attachment">
+                                Do you really want to delete the attachment "{{ deleteDialogOpen.attachment.filename }}"?
                             </p>
                         </div>
                         <div class="panel-block">
@@ -29,7 +32,7 @@
                                         title="Delete"
                                         color="danger"
                                         :loading="deleting"
-                                        @click="deleteEntry"
+                                        @click="(deleteDialogOpen.entry) ? deleteEntry() : (deleteDialogOpen.attachment) ? deleteAttachment(deleteDialogOpen.attachment) : false"
                                     />
                                     <Button
                                         icon="xmark"
@@ -98,7 +101,7 @@
                                 icon="trash"
                                 title="Delete"
                                 color="danger"
-                                @click="deleteDialogOpen = {entryTitle: entry.title }"
+                                @click="deleteDialogOpen = { entry }"
                             />
                         </div>
                     </div>
@@ -181,6 +184,15 @@
                                                 size="small"
                                                 color="success"
                                                 @click="openAttachment(attachment, true)"
+                                            />
+                                        </div>
+                                        <div class="control">
+                                            <Button
+                                                icon="trash"
+                                                tooltip="Delete"
+                                                size="small"
+                                                color="danger"
+                                                @click="deleteDialogOpen = { attachment }"
                                             />
                                         </div>
                                     </div>
@@ -393,6 +405,22 @@ function openAttachment(attachment, download) {
 
     window.open(url, '_blank');
 }
+
+function deleteAttachment(attachment) {
+    deleting.value = true;
+    error.value = null;
+
+    axios
+        .delete('/attachments/' + attachment.id)
+        .then(() => {
+            loadAttachments(entry.value.id);
+        })
+        .catch(handleError)
+        .finally(() => {
+            deleteDialogOpen.value = null;
+            deleting.value = false;
+        });
+}
 </script>
 
 <style lang="scss" scoped>
@@ -405,7 +433,7 @@ function openAttachment(attachment, download) {
         width: 32px;
     }
     td:nth-child(5) {
-        $countButtons: 2;
+        $countButtons: 3;
 
         width: calc($countButtons * 32px + ($countButtons - 1) * 0.25rem);
     }
