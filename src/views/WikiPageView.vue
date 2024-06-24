@@ -11,41 +11,22 @@
                 <Loading>Loading entry…</Loading>
             </div>
 
-            <div class="modal" :class="{'is-active': deleteDialogOpen !== null}">
-                <div class="modal-background" />
-                <div class="modal-content">
-                    <article class="panel is-danger">
-                        <p class="panel-heading">Really delete?</p>
-                        <div class="panel-block">
-                            <p v-if="deleteDialogOpen && deleteDialogOpen.entry">
-                                Do you really want to delete the wiki page "{{ deleteDialogOpen.entry.title }}"?
-                            </p>
-                            <p v-if="deleteDialogOpen && deleteDialogOpen.attachment">
-                                Do you really want to delete the attachment "{{ deleteDialogOpen.attachment.filename }}"?
-                            </p>
-                        </div>
-                        <div class="panel-block">
-                            <fieldset :disabled="deleting">
-                                <div class="buttons">
-                                    <Button
-                                        icon="trash"
-                                        title="Delete"
-                                        color="danger"
-                                        :loading="deleting"
-                                        @click="(deleteDialogOpen.entry) ? deleteEntry() : (deleteDialogOpen.attachment) ? deleteAttachment(deleteDialogOpen.attachment) : false"
-                                    />
-                                    <Button
-                                        icon="xmark"
-                                        title="Cancel"
-                                        color="light"
-                                        @click="deleteDialogOpen = null"
-                                    />
-                                </div>
-                            </fieldset>
-                        </div>
-                    </article>
-                </div>
-            </div>
+            <DeleteDialog
+                v-if="deleteDialogOpen && deleteDialogOpen.entry"
+                :text='"Do you really want to delete the wiki page \"" + deleteDialogOpen.entry.title + "\"?"'
+                :dialog-open="true"
+                :deleting="deleting"
+                @submit="deleteEntry"
+                @cancel="deleteDialogOpen = null"
+            />
+            <DeleteDialog
+                v-if="deleteDialogOpen && deleteDialogOpen.attachment"
+                :text='"Do you really want to delete the attachment \"" + deleteDialogOpen.attachment.filename + "\"?"'
+                :dialog-open="true"
+                :deleting="deleting"
+                @submit="deleteAttachment(deleteDialogOpen.attachment)"
+                @cancel="deleteDialogOpen = null"
+            />
 
             <div v-if="entry">
                 <h1 class="title">{{ entry.title }}</h1>
@@ -268,6 +249,7 @@ import ErrorMessage from "@/components/ErrorMessage.vue";
 import Loading from "@/components/Loading.vue";
 import AttachmentUploadForm from "@/components/AttachmentUploadForm.vue";
 import {getIconForMimeType} from "@/helper/mime-type-icons.js";
+import DeleteDialog from "@/components/DeleteDialog.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -424,10 +406,6 @@ function deleteAttachment(attachment) {
 </script>
 
 <style lang="scss" scoped>
-.modal-content, .modal-card {
-    overflow: unset; // fix Bulma cutting the box-shadow by "overflow: auto"
-}
-
 .table.attachments {
     td:nth-child(1) {
         width: 32px;
