@@ -15,6 +15,16 @@ const router = createRouter({
             component: () => import('../views/DemoView.vue')
         },
         {
+            path: '/tasks',
+            children: [
+                {
+                    path: '',
+                    name: 'tasks',
+                    component: () => import('../views/TasksView.vue')
+                }
+            ]
+        },
+        {
             path: '/wiki',
             children: [
                 {

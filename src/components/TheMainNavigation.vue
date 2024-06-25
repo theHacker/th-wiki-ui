@@ -15,7 +15,7 @@
             <div class="navbar-start">
                 <RouterLink class="navbar-item" to="/">Home</RouterLink>
                 <RouterLink class="navbar-item" to="/wiki">Wiki</RouterLink>
-                <RouterLink class="navbar-item" to="/demo">Tasks</RouterLink>
+                <RouterLink class="navbar-item" to="/tasks">Tasks</RouterLink>
                 <RouterLink class="navbar-item" to="/demo">Issues</RouterLink>
             </div>
 
