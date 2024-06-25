@@ -29,6 +29,19 @@ defineProps({
 
 <style lang="scss" scoped>
 :deep(.icon-text) {
+    // Put icon and text closer together
     --bulma-icon-text-spacing: 0;
+
+    // Don't flow long text beneath the icon, but rather keep the text indented.
+    flex-wrap: nowrap;
+
+    // Don't to multiple lines for long text, but rather one line and ellipse it.
+    max-width: 100%;
+
+    span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 </style>
