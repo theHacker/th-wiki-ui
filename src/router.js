@@ -1,5 +1,5 @@
 import {createRouter, createWebHistory} from 'vue-router';
-import HomeView from '../views/HomeView.vue';
+import HomeView from './views/HomeView.vue';
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,7 +12,7 @@ const router = createRouter({
         {
             path: '/demo',
             name: 'demo',
-            component: () => import('../views/DemoView.vue')
+            component: () => import('./views/DemoView.vue')
         },
         {
             path: '/tasks',
@@ -20,7 +20,7 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'tasks',
-                    component: () => import('../views/TasksView.vue')
+                    component: () => import('./views/TasksView.vue')
                 }
             ]
         },
@@ -30,22 +30,22 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'wiki',
-                    component: () => import('../views/WikiView.vue')
+                    component: () => import('./views/WikiView.vue')
                 },
                 {
                     path: 'new',
                     name: 'wikiPageNew',
-                    component: () => import('../views/WikiPageNewView.vue')
+                    component: () => import('./views/WikiPageNewView.vue')
                 },
                 {
                     path: ':entryId([0-9a-f-]+)',
                     name: 'wikiPage',
-                    component: () => import('../views/WikiPageView.vue')
+                    component: () => import('./views/WikiPageView.vue')
                 },
                 {
                     path: ':entryId([0-9a-f-]+)/edit',
                     name: 'wikiPageEdit',
-                    component: () => import('../views/WikiPageEditView.vue')
+                    component: () => import('./views/WikiPageEditView.vue')
                 }
             ]
         }
