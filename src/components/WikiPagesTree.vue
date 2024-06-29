@@ -78,7 +78,7 @@ const filteredWikiPages = computed(() => {
 });
 
 axios
-    .get('/entries') // TODO only wiki
+    .get('/entries?type=wiki&fields=id,parentId,title')
     .then(response => {
         loading.value = false;
         wikiPages.value = response.data;
