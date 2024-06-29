@@ -50,7 +50,7 @@ function treeToFlatArray(tree, flatList = []) {
 }
 
 axios
-    .get('/entries') // TODO only wiki
+    .get('/entries?type=wiki&fields=id,parentId,title')
     .then(response => {
         const tree = arrayToTree(response.data, e => e.id, e => e.parentId, e => e.title);
         const flatArray = treeToFlatArray(tree);
