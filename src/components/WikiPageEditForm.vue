@@ -43,7 +43,13 @@
 
             <div class="field is-grouped">
                 <div class="control">
-                    <Button icon="check" :title="submitLabel" color="link" :loading="saving" @click="$emit('submit')" />
+                    <Button
+                        :icon="ctrlDown ? 'floppy-disk' : 'check'"
+                        :title="ctrlDown ? submitCtrlLabel : submitLabel"
+                        color="link"
+                        :loading="saving"
+                        @click="$emit('submit', ctrlDown)"
+                    />
                 </div>
                 <div class="control">
                     <Button icon="xmark" title="Cancel" color="link" :light="true" @click="$emit('cancel')" />
@@ -56,13 +62,20 @@
 <script setup>
 import Button from "@/components/Button.vue";
 import WikiPagesSelect from "@/components/WikiPagesSelect.vue";
+import {ref, onMounted, onUnmounted} from "vue";
+
+const ctrlDown = ref(false);
 
 const entry = defineModel();
 
-defineProps({
+const props = defineProps({
     submitLabel: {
         type: String,
         required: true
+    },
+    submitCtrlLabel: {
+        type: String,
+        required: false
     },
     saving: {
         type: Boolean,
@@ -75,4 +88,26 @@ defineProps({
 })
 
 defineEmits(['submit', 'cancel']);
+
+if (props.submitCtrlLabel) {
+    function onKeyEvent(e) {
+        if (e.key === 'Control') {
+            if (e.type === 'keydown') {
+                ctrlDown.value = true;
+            } else if (e.type === 'keyup') {
+                ctrlDown.value = false;
+            }
+        }
+    }
+
+    onMounted(() => {
+        window.addEventListener('keydown', onKeyEvent);
+        window.addEventListener('keyup', onKeyEvent);
+    });
+
+    onUnmounted(() => {
+        window.removeEventListener('keydown', onKeyEvent);
+        window.removeEventListener('keyup', onKeyEvent);
+    });
+}
 </script>

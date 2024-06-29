@@ -13,6 +13,7 @@
                 v-if="entry"
                 v-model="entry"
                 submitLabel="Update"
+                submitCtrlLabel="Apply"
                 :saving="saving"
                 :fieldErrors="fieldErrors"
                 @submit="save"
@@ -55,7 +56,7 @@ function fetchData(id) {
         .catch(handleError);
 }
 
-function save() {
+function save(ctrlDown) {
     saving.value = true;
     fieldErrors.value = {};
     error.value = null;
@@ -66,7 +67,9 @@ function save() {
             type: 'wiki'
         })
         .then(response => {
-            router.push({ name: 'wikiPage', params: { entryId: response.data.id } });
+            if (!ctrlDown) {
+                router.push({ name: 'wikiPage', params: { entryId: response.data.id } });
+            }
         })
         .catch(e => {
             handleError(e);
