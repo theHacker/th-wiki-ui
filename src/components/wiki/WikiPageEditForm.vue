@@ -61,7 +61,7 @@
 
 <script setup>
 import Button from "@/components/Button.vue";
-import WikiPagesSelect from "@/components/WikiPagesSelect.vue";
+import WikiPagesSelect from "@/components/wiki/WikiPagesSelect.vue";
 import {ref, onMounted, onUnmounted} from "vue";
 
 const ctrlDown = ref(false);

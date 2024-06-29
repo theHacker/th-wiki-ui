@@ -20,7 +20,7 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'tasks',
-                    component: () => import('./views/TasksView.vue')
+                    component: () => import('./views/tasks/TasksView.vue')
                 }
             ]
         },
@@ -30,22 +30,22 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'wiki',
-                    component: () => import('./views/WikiView.vue')
+                    component: () => import('./views/wiki/WikiView.vue')
                 },
                 {
                     path: 'new',
                     name: 'wikiPageNew',
-                    component: () => import('./views/WikiPageNewView.vue')
+                    component: () => import('./views/wiki/WikiPageNewView.vue')
                 },
                 {
                     path: ':entryId([0-9a-f-]+)',
                     name: 'wikiPage',
-                    component: () => import('./views/WikiPageView.vue')
+                    component: () => import('./views/wiki/WikiPageView.vue')
                 },
                 {
                     path: ':entryId([0-9a-f-]+)/edit',
                     name: 'wikiPageEdit',
-                    component: () => import('./views/WikiPageEditView.vue')
+                    component: () => import('./views/wiki/WikiPageEditView.vue')
                 }
             ]
         }

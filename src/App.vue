@@ -14,5 +14,5 @@
 
 <script setup>
 import {RouterView} from 'vue-router';
-import TheMainNavigation from "@/components/TheMainNavigation.vue";
+import TheMainNavigation from "@/components/general/TheMainNavigation.vue";
 </script>

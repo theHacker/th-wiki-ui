@@ -242,12 +242,12 @@ const TabStates = {
 import axios from "@/axios.js";
 import {ref, watch} from 'vue';
 import {useRoute, useRouter} from "vue-router";
-import WikiPagesTree from "@/components/WikiPagesTree.vue";
+import WikiPagesTree from "@/components/wiki/WikiPagesTree.vue";
 import Button from "@/components/Button.vue";
 import Tab from "@/components/Tab.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import Loading from "@/components/Loading.vue";
-import AttachmentUploadForm from "@/components/AttachmentUploadForm.vue";
+import AttachmentUploadForm from "@/components/general/AttachmentUploadForm.vue";
 import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 import DeleteDialog from "@/components/DeleteDialog.vue";
 

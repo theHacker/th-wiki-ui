@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import WikiPagesTree from "@/components/WikiPagesTree.vue";
+import WikiPagesTree from "@/components/wiki/WikiPagesTree.vue";
 import Button from "@/components/Button.vue";
 import SearchInput from "@/components/SearchInput.vue";
 </script>
