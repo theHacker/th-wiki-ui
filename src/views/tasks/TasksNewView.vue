@@ -8,6 +8,7 @@
             <TaskEditForm
                 v-model="entry"
                 submitLabel="Create"
+                submitCtrlLabel="Create and continue"
                 :saving="saving"
                 :fieldErrors="fieldErrors"
                 @submit="save"
@@ -30,7 +31,7 @@ const saving = ref(false);
 const error = ref(null);
 const fieldErrors = ref({});
 
-const entry = ref({
+const emptyEntry = {
     title: '',
     parentId: null,
     content: '',
@@ -38,9 +39,11 @@ const entry = ref({
     done: false,
     dueDate: null
     // TODO new field folder
-});
+};
 
-function save() {
+const entry = ref({...emptyEntry});
+
+function save(ctrlDown) {
     saving.value = true;
     fieldErrors.value = {};
     error.value = null;
@@ -52,7 +55,11 @@ function save() {
             type: 'task'
         })
         .then(response => {
-            router.push({ name: 'task', params: { entryId: response.data.id } });
+            if (ctrlDown) {
+                entry.value = {...emptyEntry};
+            } else {
+                router.push({ name: 'task', params: { entryId: response.data.id } });
+            }
         })
         .catch(e => {
             handleError(e);

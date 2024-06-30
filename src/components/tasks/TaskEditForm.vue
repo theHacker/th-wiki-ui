@@ -103,7 +103,7 @@
             <div class="field is-grouped">
                 <div class="control">
                     <Button
-                        :icon="ctrlDown ? 'floppy-disk' : 'check'"
+                        icon="check"
                         :title="ctrlDown ? submitCtrlLabel : submitLabel"
                         color="link"
                         :loading="saving"
