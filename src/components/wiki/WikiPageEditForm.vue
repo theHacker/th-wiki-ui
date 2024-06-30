@@ -82,8 +82,8 @@ const props = defineProps({
         default: false
     },
     fieldErrors: {
-        type: Array,
-        default: []
+        type: Object,
+        default: {}
     }
 })
 
