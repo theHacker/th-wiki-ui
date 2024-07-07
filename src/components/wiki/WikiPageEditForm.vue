@@ -18,8 +18,9 @@
             <div class="field">
                 <label class="label">Parent</label>
                 <div class="control">
-                    <WikiPagesSelect
+                    <ParentSelect
                         v-model="entry.parentId"
+                        type="wiki"
                         :error="!!fieldErrors.parentId"
                     />
                 </div>
@@ -61,8 +62,8 @@
 
 <script setup>
 import Button from "@/components/Button.vue";
-import WikiPagesSelect from "@/components/wiki/WikiPagesSelect.vue";
-import {ref, onMounted, onUnmounted} from "vue";
+import ParentSelect from "@/components/general/ParentSelect.vue";
+import {onMounted, onUnmounted, ref} from "vue";
 
 const ctrlDown = ref(false);
 

@@ -20,11 +20,11 @@
                     <div class="field">
                         <label class="label">Parent</label>
                         <div class="control">
-                            <!--<WikiPagesSelect
+                            <ParentSelect
                                 v-model="entry.parentId"
+                                type="task"
                                 :error="!!fieldErrors.parentId"
-                            />-->
-                            TODO Select control
+                            />
                         </div>
                         <p v-if="fieldErrors.parentId" class="help is-danger">{{ fieldErrors.parentId }}</p>
                     </div>
@@ -120,7 +120,8 @@
 
 <script setup>
 import Button from "@/components/Button.vue";
-import {ref, onMounted, onUnmounted} from "vue";
+import ParentSelect from "@/components/general/ParentSelect.vue";
+import {onMounted, onUnmounted, ref} from "vue";
 
 const ctrlDown = ref(false);
 

@@ -3,8 +3,8 @@
         <select v-model="entryId" :disabled="loading">
             <template v-if="!loading">
                 <option :value="null">(no parent)</option>
-                <option v-for="wikiPage in wikiPages" :value="wikiPage.id">
-                    {{ optionIndent(wikiPage) }}{{ wikiPage.title }}
+                <option v-for="entry in entries" :value="entry.id">
+                    {{ optionIndent(entry) }}{{ entry.title }}
                 </option>
             </template>
         </select>
@@ -19,20 +19,24 @@ import {arrayToTree} from "@/helper/tree.js";
 const entryId = defineModel();
 
 const props = defineProps({
+    type: {
+        type: String,
+        required: true
+    },
     error: {
         type: Boolean,
         default: false
     }
 });
 
-const wikiPages = ref([]);
+const entries = ref([]);
 const loading = ref(true);
 
-function optionIndent(wikiPage) {
+function optionIndent(entry) {
     const nbsp = String.fromCharCode(0xa0);
     const indent = nbsp.repeat(5);
 
-    return indent.repeat(wikiPage.level - 1);
+    return indent.repeat(entry.level - 1);
 }
 
 function treeToFlatArray(tree, flatList = []) {
@@ -50,12 +54,12 @@ function treeToFlatArray(tree, flatList = []) {
 }
 
 axios
-    .get('/entries?type=wiki&fields=id,parentId,title')
+    .get(`/entries?type=${props.type}&fields=id,parentId,title`)
     .then(response => {
         const tree = arrayToTree(response.data, e => e.id, e => e.parentId, e => e.title);
         const flatArray = treeToFlatArray(tree);
 
         loading.value = false;
-        wikiPages.value = flatArray;
+        entries.value = flatArray;
     });
 </script>
