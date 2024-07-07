@@ -59,4 +59,26 @@ function arrayToTree(objects, idProp, parentIdProp, sortBy) {
     return root;
 }
 
-export {arrayToTree};
+/**
+ * Transforms a tree (calculated by `arrayToTree()`) to a flat list
+ * which can easily be iterated.
+ *
+ * @param {{root: Boolean|null, level: Number, children: Array<*>}} tree Tree structure
+ * @param {Array<*>} flatList input structure (used internally for recursion, start with an empty array)
+ * @returns {*[]} flat array
+ */
+function treeToFlatArray(tree, flatList = []) {
+    const { children, ...item } = tree;
+
+    if (!item.root) {
+        flatList.push(item);
+    }
+
+    for (const child of children) {
+        treeToFlatArray(child, flatList);
+    }
+
+    return flatList;
+}
+
+export {arrayToTree, treeToFlatArray};

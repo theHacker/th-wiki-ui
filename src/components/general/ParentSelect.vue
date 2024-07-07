@@ -14,7 +14,7 @@
 <script setup>
 import axios from "@/axios.js";
 import {ref} from 'vue';
-import {arrayToTree} from "@/helper/tree.js";
+import {arrayToTree, treeToFlatArray} from "@/helper/tree.js";
 
 const entryId = defineModel();
 
@@ -37,20 +37,6 @@ function optionIndent(entry) {
     const indent = nbsp.repeat(5);
 
     return indent.repeat(entry.level - 1);
-}
-
-function treeToFlatArray(tree, flatList = []) {
-    const { children, ...item } = tree;
-
-    if (!item.root) {
-        flatList.push(item);
-    }
-
-    for (const child of children) {
-        treeToFlatArray(child, flatList);
-    }
-
-    return flatList;
 }
 
 axios
