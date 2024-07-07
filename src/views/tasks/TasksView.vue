@@ -29,10 +29,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="entry in entries" :class="{'has-text-danger': entry.overdue }">
+                    <tr v-for="entry in entries" :class="{'has-text-danger': isOverdue(entry) }">
                         <td><input type="checkbox" disabled :checked="entry.done" /></td>
                         <td
-                            :style="{ paddingLeft: `${entry.indentLevel * 24}px` }"
+                            :style="{ paddingLeft: `${(entry.level - 1) * 24}px` }"
                         >
                             <div class="level">
                                 <div class="level-left">
@@ -54,14 +54,15 @@
                                 </div>
                             </div>
                         </td>
-                        <td>{{ entry.createDate }}</td>
+                        <td>{{ new Date(entry.creationTime).toLocaleDateString() }}</td>
                         <td>
-                            <span :class="{'is-italic': !entry.dueDate, 'has-text-weight-semibold': entry.overdue }">
-                                {{ entry.dueDate || 'no due date' }}
+                            <span :class="{'is-italic': !entry.dueDate, 'has-text-weight-semibold': isOverdue(entry) }">
+                                {{ entry.dueDate ? new Date(entry.dueDate).toLocaleDateString() : 'no due date' }}
                             </span>
                         </td>
                         <td>
                             <div class="field is-grouped">
+                                <!-- TODO ordering requires a new field on the entry
                                 <div class="control">
                                     <Button
                                         icon="arrow-up"
@@ -80,6 +81,7 @@
                                         :disabled="!entry.canBeMovedDown"
                                     />
                                 </div>
+                                -->
                                 <div class="control">
                                     <Button
                                         :icon="entry.done ? 'xmark' : 'check'"
@@ -125,30 +127,29 @@
 import Button from "@/components/Button.vue";
 import SearchInput from "@/components/SearchInput.vue";
 import {ref} from "vue";
+import axios from "@/axios.js";
+import {arrayToTree, treeToFlatArray} from "@/helper/tree.js";
 
 const search = ref('');
 
-// Demo data only
-const entries = Array(15)
-    .fill(undefined)
-    .map((_, index) => {
-        const i = index + 1;
+const entries = ref([]);
+const loading = ref(true);
 
-        const title = `Demo TODO ${i} something to do`;
-        const done = (i % 7 === 0);
-        const progress = done ? 100 : (i % 4 === 0) ? 25 : 0;
-        const createDate = (i % 2 === 0) ? '2024-05-04' : '2024-05-02';
-        const dueDate = (i === 3) ? '2024-01-01' : (i % 3 === 0) ? '2024-05-04' : null;
+function isOverdue(entry) {
+    if (entry.dueDate === null) return false;
+    if (entry.done) return false;
 
-        // TODO these will be calculated eventually
-        const overdue = (i === 3);
-        const indentLevel = [3, 8, 10, 13].includes(i) ? 1 : [4, 5, 14].includes(i) ? 2 : 0;
-        const canBeMovedUp = ![1, 3, 4, 8, 10, 13, 14].includes(i);
-        const canBeMovedDown = ![3, 5, 8, 10, 13, 14, 15].includes(i);
+    return (Date.parse(entry.dueDate) < Date.now());
+}
 
-        return {
-            title, done, progress, createDate, dueDate, overdue, indentLevel, canBeMovedUp, canBeMovedDown
-        };
+axios
+    .get('/entries?type=task&fields=id,parentId,title,done,progress,dueDate,creationTime')
+    .then(response => {
+        const tree = arrayToTree(response.data, e => e.id, e => e.parentId, e => e.title);
+        const flatArray = treeToFlatArray(tree);
+
+        loading.value = false;
+        entries.value = flatArray;
     });
 </script>
 
@@ -159,7 +160,7 @@ table.table {
         text-align: center;
     }
     td:nth-child(5) {
-        $countButtons: 6;
+        $countButtons: 4; // 6; (TODO ordering requires a new field on the entry)
 
         width: calc($countButtons * 32px + ($countButtons - 1) * 0.25rem);
         text-align: center;
