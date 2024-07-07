@@ -48,12 +48,13 @@ function save(ctrlDown) {
     fieldErrors.value = {};
     error.value = null;
 
-    /*
+    const request = {
+        ...entry.value,
+        type: 'task'
+    };
+
     axios
-        .post('/entries', {
-            ...entry.value,
-            type: 'task'
-        })
+        .post('/entries', request)
         .then(response => {
             if (ctrlDown) {
                 entry.value = {...emptyEntry};
@@ -67,7 +68,6 @@ function save(ctrlDown) {
         .finally(() => {
             saving.value = false;
         });
-     */
 }
 
 function cancel() {

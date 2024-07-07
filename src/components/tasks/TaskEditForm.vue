@@ -140,21 +140,11 @@ const props = defineProps({
         type: Boolean,
         default: false
     },
-    /*fieldErrors: {
+    fieldErrors: {
         type: Object,
         default: {}
-    }*/
-})
-
-// TODO prop
-const fieldErrors = {
-    title: 'Everything is just wrong here… just for testing.',
-    parentId: 'Everything is just wrong here… just for testing.',
-    done: 'Everything is just wrong here… just for testing.',
-    progress: 'Everything is just wrong here… just for testing.',
-    content: 'Everything is just wrong here… just for testing.',
-    dueDate: 'Everything is just wrong here… just for testing.'
-}
+    }
+});
 
 defineEmits(['submit', 'cancel']);
 
