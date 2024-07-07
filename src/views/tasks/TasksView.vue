@@ -40,7 +40,9 @@
                                         class="level-item"
                                         :style="entry.done ? 'text-decoration: var(--bulma-grey) 2px solid line-through' : ''"
                                     >
-                                        {{ entry.title }}
+                                        <RouterLink :to="{ name: 'task', params: { entryId: entry.id } }">
+                                            {{ entry.title }}
+                                        </RouterLink>
                                     </div>
                                 </div>
                                 <div class="level-right">
@@ -96,6 +98,7 @@
                                         tooltip="View/Edit details"
                                         size="small"
                                         color="primary"
+                                        @click="$router.push({ name: 'task', params: { entryId: entry.id } });"
                                     />
                                 </div>
                                 <div class="control">
@@ -177,6 +180,9 @@ table.table {
     // make table text inherit a row's color class (for overdue tasks)
     tr.has-text-danger {
         td:nth-child(2), td:nth-child(3), td:nth-child(4) { // not the buttons
+            color: var(--bulma-danger-rgb);
+        }
+        a {
             color: var(--bulma-danger-rgb);
         }
     }
