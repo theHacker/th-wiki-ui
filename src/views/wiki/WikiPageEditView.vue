@@ -61,11 +61,17 @@ function save(ctrlDown) {
     fieldErrors.value = {};
     error.value = null;
 
+    const request = {
+        ...entry.value,
+        type: 'wiki'
+    };
+
+    // Don't send read-only properties (TODO needs a better solution on BE side)
+    delete request.creationTime;
+    delete request.modificationTime;
+
     axios
-        .put('/entries/' + entry.value.id, {
-            ...entry.value,
-            type: 'wiki'
-        })
+        .put('/entries/' + entry.value.id, request)
         .then(response => {
             if (!ctrlDown) {
                 router.push({ name: 'wikiPage', params: { entryId: response.data.id } });

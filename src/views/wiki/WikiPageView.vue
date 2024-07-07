@@ -51,7 +51,6 @@
                                     icon="tags"
                                     title="Metadata"
                                     :active="tabState === TabStates.Metadata"
-                                    :loading="entryMetadata === null"
                                     @click="tabState = TabStates.Metadata"
                                 />
                                 <Tab
@@ -97,10 +96,7 @@
                 </div>
 
                 <div v-else-if="tabState === TabStates.Metadata">
-                    <div v-if="!entryMetadata">
-                        <Loading>Loading metadata…</Loading>
-                    </div>
-                    <div v-if="entryMetadata" class="fixed-grid has-4-cols">
+                    <div class="fixed-grid has-4-cols">
                         <div class="grid">
                             <div class="cell">
                                 <div class="icon-text">
@@ -109,7 +105,7 @@
                                     </span>
                                     <span class="has-text-link-bold">Creation Time</span>
                                 </div>
-                                <p>{{ new Date(entryMetadata.creationTime).toLocaleString() }}</p>
+                                <p>{{ new Date(entry.creationTime).toLocaleString() }}</p>
                             </div>
                             <div class="cell">
                                 <div class="icon-text">
@@ -118,7 +114,7 @@
                                     </span>
                                     <span class="has-text-link-bold">Modification Time</span>
                                 </div>
-                                <p>{{ new Date(entryMetadata.modificationTime).toLocaleString() }}</p>
+                                <p>{{ new Date(entry.modificationTime).toLocaleString() }}</p>
                             </div>
                         </div>
                     </div>
@@ -256,7 +252,6 @@ const router = useRouter();
 
 const error = ref(null);
 const entry = ref(null);
-const entryMetadata = ref(null);
 const attachments = ref([]);
 
 const addAttachmentModel = ref({
@@ -275,7 +270,6 @@ watch(() => route.params.entryId, fetchData, { immediate: true });
 function fetchData(id) {
     error.value = null;
     entry.value = null;
-    entryMetadata.value = null;
     attachments.value = [];
 
     axios
@@ -286,13 +280,6 @@ function fetchData(id) {
                 renderedMarkdown: renderMarkdown(response.data.content),
                 highlightedMarkdown: highlightMarkdown(response.data.content)
             };
-        })
-        .catch(handleError);
-
-    axios
-        .get('/entries/' + id + '/metadata')
-        .then(response => {
-            entryMetadata.value = response.data;
         })
         .catch(handleError);
 
