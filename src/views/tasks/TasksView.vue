@@ -94,11 +94,11 @@
                                 </div>
                                 <div class="control">
                                     <Button
-                                        icon="eye"
-                                        tooltip="View/Edit details"
+                                        icon="pen"
+                                        tooltip="Edit task"
                                         size="small"
                                         color="primary"
-                                        @click="$router.push({ name: 'task', params: { entryId: entry.id } });"
+                                        @click="$router.push({ name: 'taskEdit', params: { entryId: entry.id } });"
                                     />
                                 </div>
                                 <div class="control">

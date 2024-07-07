@@ -57,6 +57,7 @@
                                     v-model="entry.done"
                                     :class="{'is-danger': !!fieldErrors.done}"
                                     type="checkbox"
+                                    @change="onDoneChanged"
                                 />
                                 Task is done
                             </label>
@@ -70,11 +71,12 @@
                     <div class="field has-addons">
                         <div class="control">
                             <input
-                                v-model="entry.progress"
+                                v-model.number="entry.progress"
                                 class="input"
                                 :class="{'is-danger': !!fieldErrors.progress}"
                                 type="text"
                                 placeholder="Progress"
+                                @change="onProgressChanged"
                             />
                         </div>
                         <p class="control">
@@ -168,6 +170,24 @@ if (props.submitCtrlLabel) {
         window.removeEventListener('keydown', onKeyEvent);
         window.removeEventListener('keyup', onKeyEvent);
     });
+}
+
+function onDoneChanged() {
+    if (entry.value.done && entry.value.progress < 100) {
+        entry.value.progress = 100;
+    }
+    else if (!entry.value.done && entry.value.progress >= 100) {
+        entry.value.progress = 0;
+    }
+}
+
+function onProgressChanged() {
+    if (entry.value.progress >= 100 && !entry.value.done) {
+        entry.value.done = true;
+    }
+    else if (entry.value.progress < 100 && entry.value.done) {
+        entry.value.done = false;
+    }
 }
 </script>
 
