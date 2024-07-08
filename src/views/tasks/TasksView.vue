@@ -29,10 +29,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="entry in entries" :class="{'has-text-danger': isOverdue(entry) }">
+                    <tr v-for="entry in filteredEntries" :class="{'has-text-danger': isOverdue(entry) }">
                         <td><input type="checkbox" disabled :checked="entry.done" /></td>
                         <td
-                            :style="{ paddingLeft: `${(entry.level - 1) * 24}px` }"
+                            :style="{ paddingLeft: `${entry.level ? ((entry.level - 1) * 24) : 0}px` }"
                         >
                             <div class="level">
                                 <div class="level-left">
@@ -129,7 +129,7 @@
 <script setup>
 import Button from "@/components/Button.vue";
 import SearchInput from "@/components/SearchInput.vue";
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import axios from "@/axios.js";
 import {arrayToTree, treeToFlatArray} from "@/helper/tree.js";
 
@@ -137,6 +137,20 @@ const search = ref('');
 
 const entries = ref([]);
 const loading = ref(true);
+
+const filteredEntries = computed(() => {
+    if (search.value) {
+        const lowercase = search.value.toLowerCase();
+
+        // When filter is active, we don't use the tree.
+        // This avoids lost hits, when a child matches, but one of the parents doesn't.
+        return entries.value.filter(entry => entry.title.toLowerCase().includes(lowercase));
+    } else {
+        const tree = arrayToTree(entries.value, e => e.id, e => e.parentId, e => e.title);
+
+        return treeToFlatArray(tree);
+    }
+});
 
 function isOverdue(entry) {
     if (entry.dueDate === null) return false;
@@ -148,11 +162,8 @@ function isOverdue(entry) {
 axios
     .get('/entries?type=task&fields=id,parentId,title,done,progress,dueDate,creationTime')
     .then(response => {
-        const tree = arrayToTree(response.data, e => e.id, e => e.parentId, e => e.title);
-        const flatArray = treeToFlatArray(tree);
-
         loading.value = false;
-        entries.value = flatArray;
+        entries.value = response.data;
     });
 </script>
 
