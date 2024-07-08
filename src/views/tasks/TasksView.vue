@@ -6,6 +6,15 @@
                     <div class="level-item">
                         <SearchInput v-model="search" />
                     </div>
+                    <div class="level-item">
+                        <Button
+                            :icon="hideDone ? 'eye-slash' : 'eye'"
+                            :title="hideDone ? 'Show done' : 'Hide done'"
+                            color="success"
+                            :dark="!hideDone"
+                            @click="hideDone = !hideDone"
+                        />
+                    </div>
                 </div>
                 <div class="level-right">
                     <div class="level-item">
@@ -134,17 +143,27 @@ import axios from "@/axios.js";
 import {arrayToTree, treeToFlatArray} from "@/helper/tree.js";
 
 const search = ref('');
+const hideDone = ref(false);
 
 const entries = ref([]);
 const loading = ref(true);
 
 const filteredEntries = computed(() => {
-    if (search.value) {
-        const lowercase = search.value.toLowerCase();
+    if (search.value || hideDone.value) {
+        const searchLowercase = search.value.toLowerCase();
 
         // When filter is active, we don't use the tree.
         // This avoids lost hits, when a child matches, but one of the parents doesn't.
-        return entries.value.filter(entry => entry.title.toLowerCase().includes(lowercase));
+        return entries.value.filter(entry => {
+            if (searchLowercase && !entry.title.toLowerCase().includes(searchLowercase)) {
+                return false;
+            }
+            if (hideDone.value && entry.done) {
+                return false;
+            }
+
+            return true;
+        });
     } else {
         const tree = arrayToTree(entries.value, e => e.id, e => e.parentId, e => e.title);
 
