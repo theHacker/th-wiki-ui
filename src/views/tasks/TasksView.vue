@@ -34,6 +34,7 @@
                         <th>Title</th>
                         <th>Created</th>
                         <th>Due</th>
+                        <th>Done</th>
                         <th>Commands</th>
                     </tr>
                 </thead>
@@ -70,6 +71,9 @@
                             <span :class="{'is-italic': !entry.dueDate, 'has-text-weight-semibold': isOverdue(entry) }">
                                 {{ entry.dueDate ? new Date(entry.dueDate).toLocaleDateString() : 'no due date' }}
                             </span>
+                        </td>
+                        <td>
+                            {{ entry.doneTime ? new Date(entry.doneTime).toLocaleDateString() : 'not done yet' }}
                         </td>
                         <td>
                             <div class="field is-grouped">
@@ -179,7 +183,7 @@ function isOverdue(entry) {
 }
 
 axios
-    .get('/entries?type=task&fields=id,parentId,title,done,progress,dueDate,creationTime')
+    .get('/entries?type=task&fields=id,parentId,title,done,progress,dueDate,creationTime,doneTime')
     .then(response => {
         loading.value = false;
         entries.value = response.data;

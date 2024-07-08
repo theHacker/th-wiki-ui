@@ -69,6 +69,7 @@ function save(ctrlDown) {
     // Don't send read-only properties (TODO needs a better solution on BE side)
     delete request.creationTime;
     delete request.modificationTime;
+    delete request.doneTime;
 
     axios
         .put('/entries/' + entry.value.id, request)
