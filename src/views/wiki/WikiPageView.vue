@@ -27,6 +27,19 @@
                 @submit="deleteAttachment(deleteDialogOpen.attachment)"
                 @cancel="deleteDialogOpen = null"
             />
+            <ConfirmDialog
+                :dialogOpen="convertToTaskDialog"
+                title="Convert wiki page to task"
+                text="Do you really want to convert this wiki page to a task? As of now, this operation cannot be undone."
+                color="warning"
+                :progressing="convertingToTask"
+                submitIcon="bolt"
+                submitTitle="Convert"
+                cancelIcon="xmark"
+                cancelTitle="Cancel"
+                @submit="convertWikiPageToTask"
+                @cancel="convertToTaskDialog = false"
+            />
 
             <div v-if="entry">
                 <h1 class="title">{{ entry.title }}</h1>
@@ -59,18 +72,41 @@
                                     :active="tabState === TabStates.Attachments"
                                     @click="tabState = TabStates.Attachments"
                                 />
-                                <Tab
-                                    icon="gears"
-                                    title="Settings"
-                                    :active="tabState === TabStates.Settings"
-                                    @click="tabState = TabStates.Settings"
-                                />
                             </ul>
                         </div>
                     </div>
 
                     <div class="column is-narrow">
                         <div class="buttons">
+                            <div
+                                class="dropdown"
+                                :class="{ 'is-active': actionDropdownOpen }"
+                                @click="actionDropdownOpen = !actionDropdownOpen"
+                            >
+                                <div class="dropdown-trigger">
+                                    <button class="button">
+                                        <span class="icon is-small">
+                                            <i class="fas fa-gears" />
+                                        </span>
+                                        <span>Actions</span>
+                                        <span class="icon is-small">
+                                            <i class="fas fa-angle-down" />
+                                        </span>
+                                    </button>
+                                </div>
+                                <div class="dropdown-menu">
+                                    <div class="dropdown-content">
+                                        <a class="dropdown-item" @click="convertToTaskDialog = true">
+                                            <span class="icon is-small">
+                                                <i class="fas fa-bolt" />
+                                            </span>
+                                            <span>
+                                                Convert to task
+                                            </span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                             <Button
                                 icon="pen"
                                 title="Edit"
@@ -192,15 +228,6 @@
                         />
                     </div>
                 </div>
-
-                <div v-if="tabState === TabStates.Settings">
-                    <div class="icon-text is-background-warning-20 p-2">
-                        <span class="icon">
-                            <i class="fas fa-person-digging" />
-                        </span>
-                        <span>Not yet implemented.</span>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -229,8 +256,7 @@ const TabStates = {
     Content: Symbol('Content'),
     Markdown: Symbol('Markdown'),
     Metadata: Symbol('Metadata'),
-    Attachments: Symbol('Attachments'),
-    Settings: Symbol('Settings')
+    Attachments: Symbol('Attachments')
 };
 </script>
 
@@ -246,6 +272,7 @@ import Loading from "@/components/Loading.vue";
 import AttachmentUploadForm from "@/components/general/AttachmentUploadForm.vue";
 import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 import DeleteDialog from "@/components/DeleteDialog.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -261,9 +288,13 @@ const addAttachmentModel = ref({
 const uploadingAttachment = ref(false);
 
 const tabState = ref(TabStates.Content);
+const actionDropdownOpen = ref(false);
 
 const deleteDialogOpen = ref(null);
 const deleting = ref(false);
+
+const convertToTaskDialog = ref(false);
+const convertingToTask = ref(false);
 
 watch(() => route.params.entryId, fetchData, { immediate: true });
 
@@ -388,6 +419,30 @@ function deleteAttachment(attachment) {
         .finally(() => {
             deleteDialogOpen.value = null;
             deleting.value = false;
+        });
+}
+
+function convertWikiPageToTask() {
+    const entryId = entry.value.id;
+
+    if (!entryId) return;
+
+    error.value = null;
+    convertingToTask.value = true;
+
+    axios
+        .patch('/entries/' + entry.value.id, {
+            type: 'task'
+        })
+        .then(response => {
+            router.push({ name: 'task', params: { entryId: response.data.id } });
+        })
+        .catch(e => {
+            handleError(e);
+        })
+        .finally(() => {
+            convertToTaskDialog.value = false;
+            convertingToTask.value = false;
         });
 }
 </script>
