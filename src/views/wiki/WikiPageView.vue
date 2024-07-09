@@ -14,7 +14,7 @@
             <DeleteDialog
                 v-if="deleteDialogOpen && deleteDialogOpen.entry"
                 :text='"Do you really want to delete the wiki page \"" + deleteDialogOpen.entry.title + "\"?"'
-                :dialog-open="true"
+                :dialogOpen="true"
                 :deleting="deleting"
                 @submit="deleteEntry"
                 @cancel="deleteDialogOpen = null"
@@ -22,7 +22,7 @@
             <DeleteDialog
                 v-if="deleteDialogOpen && deleteDialogOpen.attachment"
                 :text='"Do you really want to delete the attachment \"" + deleteDialogOpen.attachment.filename + "\"?"'
-                :dialog-open="true"
+                :dialogOpen="true"
                 :deleting="deleting"
                 @submit="deleteAttachment(deleteDialogOpen.attachment)"
                 @cancel="deleteDialogOpen = null"
