@@ -1,38 +1,21 @@
 <template>
-    <div class="modal" :class="{'is-active': dialogOpen}">
-        <div class="modal-background" />
-        <div class="modal-content">
-            <article class="panel is-danger">
-                <p class="panel-heading">Really delete?</p>
-                <div class="panel-block">
-                    <p>{{ text }}</p>
-                </div>
-                <div class="panel-block">
-                    <fieldset :disabled="deleting">
-                        <div class="buttons">
-                            <Button
-                                icon="trash"
-                                title="Delete"
-                                color="danger"
-                                :loading="deleting"
-                                @click="$emit('submit')"
-                            />
-                            <Button
-                                icon="xmark"
-                                title="Cancel"
-                                color="light"
-                                @click="$emit('cancel')"
-                            />
-                        </div>
-                    </fieldset>
-                </div>
-            </article>
-        </div>
-    </div>
+    <ConfirmDialog
+        :dialogOpen="dialogOpen"
+        title="Really delete?"
+        :text="text"
+        color="danger"
+        :progressing="deleting"
+        submitIcon="trash"
+        submitTitle="Delete"
+        cancelIcon="xmark"
+        cancelTitle="Cancel"
+        @submit="$emit('submit')"
+        @cancel="$emit('cancel')"
+    />
 </template>
 
 <script setup>
-import Button from "@/components/Button.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
 
 defineProps({
     text: {
@@ -51,9 +34,3 @@ defineProps({
 
 defineEmits(['submit', 'cancel']);
 </script>
-
-<style lang="scss" scoped>
-.modal-content, .modal-card {
-    overflow: unset; // fix Bulma cutting the box-shadow by "overflow: auto"
-}
-</style>
