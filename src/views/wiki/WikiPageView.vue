@@ -78,35 +78,9 @@
 
                     <div class="column is-narrow">
                         <div class="buttons">
-                            <div
-                                class="dropdown"
-                                :class="{ 'is-active': actionDropdownOpen }"
-                                @click="actionDropdownOpen = !actionDropdownOpen"
-                            >
-                                <div class="dropdown-trigger">
-                                    <button class="button">
-                                        <span class="icon is-small">
-                                            <i class="fas fa-gears" />
-                                        </span>
-                                        <span>Actions</span>
-                                        <span class="icon is-small">
-                                            <i class="fas fa-angle-down" />
-                                        </span>
-                                    </button>
-                                </div>
-                                <div class="dropdown-menu">
-                                    <div class="dropdown-content">
-                                        <a class="dropdown-item" @click="convertToTaskDialog = true">
-                                            <span class="icon is-small">
-                                                <i class="fas fa-bolt" />
-                                            </span>
-                                            <span>
-                                                Convert to task
-                                            </span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
+                            <Dropdown icon="gears" title="Actions">
+                                <DropdownItem icon="bolt" title="Convert to task" @click="convertToTaskDialog = true" />
+                            </Dropdown>
                             <Button
                                 icon="pen"
                                 title="Edit"
@@ -273,6 +247,8 @@ import AttachmentUploadForm from "@/components/general/AttachmentUploadForm.vue"
 import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 import DeleteDialog from "@/components/DeleteDialog.vue";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import Dropdown from "@/components/Dropdown.vue";
+import DropdownItem from "@/components/DropdownItem.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -288,7 +264,6 @@ const addAttachmentModel = ref({
 const uploadingAttachment = ref(false);
 
 const tabState = ref(TabStates.Content);
-const actionDropdownOpen = ref(false);
 
 const deleteDialogOpen = ref(null);
 const deleting = ref(false);
