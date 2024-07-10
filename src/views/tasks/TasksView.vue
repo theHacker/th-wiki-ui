@@ -1,6 +1,8 @@
 <template>
     <div class="columns">
         <div class="column is-8 is-offset-2">
+            <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
+
             <div class="level">
                 <div class="level-left">
                     <div class="level-item">
@@ -103,6 +105,7 @@
                                         :tooltip="entry.done ? 'Mark undone' : 'Mark down'"
                                         size="small"
                                         :color="entry.done ? 'warning' : 'success'"
+                                        @click="toggleDone(entry)"
                                     />
                                 </div>
                                 <div class="control">
@@ -145,6 +148,9 @@ import SearchInput from "@/components/SearchInput.vue";
 import {computed, ref} from "vue";
 import axios from "@/axios.js";
 import {arrayToTree, treeToFlatArray} from "@/helper/tree.js";
+import ErrorMessage from "@/components/ErrorMessage.vue";
+
+const error = ref(null);
 
 const search = ref('');
 const hideDone = ref(false);
@@ -175,6 +181,13 @@ const filteredEntries = computed(() => {
     }
 });
 
+axios
+    .get('/entries?type=task&fields=id,parentId,title,done,progress,dueDate,creationTime,doneTime')
+    .then(response => {
+        loading.value = false;
+        entries.value = response.data;
+    });
+
 function isOverdue(entry) {
     if (entry.dueDate === null) return false;
     if (entry.done) return false;
@@ -182,12 +195,36 @@ function isOverdue(entry) {
     return (Date.parse(entry.dueDate) < Date.now());
 }
 
-axios
-    .get('/entries?type=task&fields=id,parentId,title,done,progress,dueDate,creationTime,doneTime')
-    .then(response => {
-        loading.value = false;
-        entries.value = response.data;
-    });
+function toggleDone(entry) {
+    error.value = null;
+
+    axios
+        .patch('/entries/' + entry.id, {
+            done: !entry.done
+        })
+        .then(response => {
+            entries.value = entries.value.map(e => {
+                if (e.id === entry.id) {
+                    return response.data; // replace changed entry
+                } else {
+                    return e;
+                }
+            });
+        })
+        .catch(e => {
+            handleError(e);
+        });
+}
+
+function handleError(e) {
+    if (e.response) {
+        error.value = e.response.data.message || e.response.data.error || 'Unknown error';
+    } else if (error.request) {
+        error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
+    } else {
+        error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
+    }
+}
 </script>
 
 <style lang="scss" scoped>
