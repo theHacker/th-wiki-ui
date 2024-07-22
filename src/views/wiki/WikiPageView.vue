@@ -372,7 +372,8 @@ function attachmentIconClass(attachment) {
 }
 
 function openAttachment(attachment, download) {
-    let url = '/api/attachments/' + attachment.id + '/file';
+    const apiUrl = window.env.API_URL || import.meta.env.VITE_API_URL;
+    let url = apiUrl + '/attachments/' + attachment.id + '/file';
 
     if (download) {
         url += '?download=1';

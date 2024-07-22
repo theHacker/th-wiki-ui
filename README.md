@@ -72,3 +72,16 @@ With `--fix`, which changes the code:
 ```sh
 npm run lint:fix
 ```
+
+How to Docker
+--------------
+
+```shell
+npm run build
+docker build -t th-wiki-ui .
+docker run --rm \
+  -p 5173:80 \
+  -e API_URL=http://localhost:8080/api \
+  -e BASE_URL=/ \
+  th-wiki-ui
+```
