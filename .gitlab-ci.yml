@@ -10,7 +10,7 @@ stages:
   - test
   - build
   - dockerize
- # - deploy
+  - deploy
 
 setup:
   stage: setup
@@ -61,3 +61,26 @@ dockerize:
     - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - docker build -t $CI_REGISTRY/th-wiki/th-wiki-ui .
     - docker push $CI_REGISTRY/th-wiki/th-wiki-ui
+
+deploy-test:
+  stage: deploy
+  image: alpine:3.20.2
+  script:
+    - apk add openssh
+    - mkdir -p ~/.ssh
+    - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
+    - chmod 600 "$SSH_PRIVATE_KEY"
+    - ssh -i "$SSH_PRIVATE_KEY" "$SSH_LOGIN" "cd $DOCKER_DIRECTORY_TEST && docker compose pull && docker compose up -d"
+  cache: []
+
+deploy-prod:
+  stage: deploy
+  image: alpine:3.20.2
+  script:
+    - apk add openssh
+    - mkdir -p ~/.ssh
+    - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
+    - chmod 600 "$SSH_PRIVATE_KEY"
+    - ssh -i "$SSH_PRIVATE_KEY" "$SSH_LOGIN" "cd $DOCKER_DIRECTORY_PROD && docker compose pull && docker compose up -d"
+  cache: []
+  when: manual
