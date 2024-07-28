@@ -15,7 +15,8 @@ fi
 cat <<EOF > /usr/share/nginx/html/env.js
 window.env = {
     API_URL: "${API_URL}",
-    BASE_URL: "${BASE_URL}"
+    BASE_URL: "${BASE_URL}",
+    DEVELOPMENT_STAGE: "${DEVELOPMENT_STAGE}"
 };
 EOF
 

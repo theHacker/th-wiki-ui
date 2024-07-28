@@ -3,5 +3,6 @@
 // - in Docker container window.env is used (see 50-substitute-env-variables.sh)
 window.env = {
     API_URL: "",
-    BASE_URL: ""
+    BASE_URL: "",
+    DEVELOPMENT_STAGE: ""
 };

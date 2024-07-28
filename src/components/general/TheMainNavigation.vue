@@ -19,6 +19,10 @@
                 <RouterLink class="navbar-item" to="/demo">Issues</RouterLink>
             </div>
 
+            <div v-if="developmentStage" class="is-align-content-center is-size-3 is-color-danger-50">
+                – {{ developmentStage }} –
+            </div>
+
             <div class="navbar-end">
                 <div class="navbar-item">
                     <SearchInput />
@@ -31,6 +35,13 @@
 <script setup>
 import {RouterLink} from 'vue-router';
 import SearchInput from "@/components/SearchInput.vue";
+
+let developmentStage = '';
+if (process.env.NODE_ENV === 'development') {
+    developmentStage = 'Development';
+} else if (window.env.DEVELOPMENT_STAGE || import.meta.env.VITE_DEVELOPMENT_STAGE) {
+    developmentStage = window.env.DEVELOPMENT_STAGE || import.meta.env.VITE_DEVELOPMENT_STAGE;
+}
 </script>
 
 <style lang="scss" scoped>
