@@ -1,5 +1,6 @@
 import {createRouter, createWebHistory} from 'vue-router';
 import HomeView from './views/HomeView.vue';
+import VersionView from './views/VersionView.vue';
 
 const router = createRouter({
     history: createWebHistory(window.env.BASE_URL || import.meta.env.BASE_URL),
@@ -38,6 +39,11 @@ const router = createRouter({
                     component: () => import('./views/tasks/TaskEditView.vue')
                 }
             ]
+        },
+        {
+            path: '/version',
+            name: 'version',
+            component: VersionView
         },
         {
             path: '/wiki',
