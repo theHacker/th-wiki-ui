@@ -42,6 +42,7 @@ vitest:
 
 build:
   stage: build
+  before_script: apk add git # install Git for git-describe
   script: npm run build
   cache:
     <<: *global-cache
