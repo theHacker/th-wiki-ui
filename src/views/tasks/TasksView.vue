@@ -102,7 +102,7 @@
                                 <div class="control">
                                     <Button
                                         :icon="entry.done ? 'xmark' : 'check'"
-                                        :tooltip="entry.done ? 'Mark undone' : 'Mark down'"
+                                        :tooltip="entry.done ? 'Mark undone' : 'Mark done'"
                                         size="small"
                                         :color="entry.done ? 'warning' : 'success'"
                                         @click="toggleDone(entry)"
