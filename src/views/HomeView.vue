@@ -1,15 +1,11 @@
 <template>
-    <h1 class="title">Home</h1>
+    <GridLayout>
+        <h1>Home</h1>
 
-    <p class="block">This is home. Nothing to see here.</p>
+        <p>This is home. Nothing to see here.</p>
+    </GridLayout>
 </template>
 
-<style lang="scss" scoped>
-article {
-    $color: red;
-
-    div {
-        background: rgba($color, .25);
-    }
-}
-</style>
+<script setup>
+import GridLayout from "@/components/layout/GridLayout.vue";
+</script>

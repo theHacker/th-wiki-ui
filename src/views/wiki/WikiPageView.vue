@@ -1,10 +1,10 @@
 <template>
-    <div class="columns">
-        <div class="column is-3">
+    <GridLayout>
+        <template #sidebar>
             <WikiPagesTree />
-        </div>
+        </template>
 
-        <div class="column is-9">
+        <template #default>
             <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
             <div v-if="!entry" class="mt-4">
@@ -42,12 +42,12 @@
             />
 
             <div v-if="entry">
-                <h1 class="title">{{ entry.title }}</h1>
+                <h1>{{ entry.title }}</h1>
 
-                <div class="columns">
-                    <div class="column">
+                <div class="d-flex flex-wrap flex-lg-nowrap mb-4">
+                    <div class="flex-grow-1 me-4">
                         <div class="tabs">
-                            <ul>
+                            <ul class="nav nav-tabs">
                                 <Tab
                                     icon="image"
                                     title="Content"
@@ -76,8 +76,8 @@
                         </div>
                     </div>
 
-                    <div class="column is-narrow">
-                        <div class="buttons">
+                    <div class="buttons">
+                        <div class="hstack gap-2">
                             <Dropdown icon="gears" title="Actions">
                                 <DropdownItem icon="bolt" title="Convert to task" @click="convertToTaskDialog = true" />
                             </Dropdown>
@@ -97,41 +97,35 @@
                     </div>
                 </div>
 
-                <div v-if="tabState === TabStates.Content" class="content">
+                <div v-if="tabState === TabStates.Content">
                     <div v-html="entry.renderedMarkdown" />
                 </div>
 
-                <div v-else-if="tabState === TabStates.Markdown" class="markdown">
+                <div v-else-if="tabState === TabStates.Markdown">
                     <pre><code v-html="entry.highlightedMarkdown" class="hljs language-markdown" /></pre>
                 </div>
 
                 <div v-else-if="tabState === TabStates.Metadata">
-                    <div class="fixed-grid has-4-cols">
-                        <div class="grid">
-                            <div class="cell">
-                                <div class="icon-text">
-                                    <span class="icon">
-                                        <i class="fas fa-clock" />
-                                    </span>
-                                    <span class="has-text-link-bold">Creation Time</span>
-                                </div>
-                                <p>{{ new Date(entry.creationTime).toLocaleString() }}</p>
+                    <div class="row g-2">
+                        <div class="col-12 col-md-6">
+                            <div class="icon-link">
+                                <i class="fas fa-clock" />
+                                Creation Time
                             </div>
-                            <div class="cell">
-                                <div class="icon-text">
-                                    <span class="icon">
-                                        <i class="fas fa-clock" />
-                                    </span>
-                                    <span class="has-text-link-bold">Modification Time</span>
-                                </div>
-                                <p>{{ new Date(entry.modificationTime).toLocaleString() }}</p>
+                            <div>{{ new Date(entry.creationTime).toLocaleString() }}</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="icon-link">
+                                <i class="fas fa-clock" />
+                                Modification Time
                             </div>
+                            <div>{{ new Date(entry.modificationTime).toLocaleString() }}</div>
                         </div>
                     </div>
                 </div>
 
                 <div v-if="tabState === TabStates.Attachments">
-                    <table class="attachments table is-fullwidth is-hoverable">
+                    <table class="table table-hover align-middle mb-5 attachments">
                         <thead>
                             <tr>
                                 <th>Icon</th>
@@ -141,12 +135,10 @@
                                 <th>Commands</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="table-group-divider">
                             <tr v-for="attachment in attachments" :key="attachment.id">
                                 <td>
-                                   <span class="icon">
-                                       <i :class="attachmentIconClass(attachment)" />
-                                   </span>
+                                   <i :class="attachmentIconClass(attachment)" />
                                 </td>
                                 <td>
                                     {{ attachment.filename }}
@@ -154,57 +146,52 @@
                                 <td>{{ attachment.description }}</td>
                                 <td>{{ attachment.size }}</td>
                                 <td>
-                                    <div class="field is-grouped">
-                                        <div class="control">
-                                            <Button
-                                                icon="eye"
-                                                tooltip="View"
-                                                size="small"
-                                                color="primary"
-                                                @click="openAttachment(attachment, false)"
-                                            />
-                                        </div>
-                                        <div class="control">
-                                            <Button
-                                                icon="download"
-                                                tooltip="Download"
-                                                size="small"
-                                                color="success"
-                                                @click="openAttachment(attachment, true)"
-                                            />
-                                        </div>
-                                        <div class="control">
-                                            <Button
-                                                icon="trash"
-                                                tooltip="Delete"
-                                                size="small"
-                                                color="danger"
-                                                @click="deleteDialogOpen = { attachment }"
-                                            />
-                                        </div>
+                                    <div class="hstack gap-1">
+                                        <Button
+                                            icon="eye"
+                                            tooltip="View"
+                                            size="small"
+                                            fixedWidth
+                                            color="primary"
+                                            @click="openAttachment(attachment, false)"
+                                        />
+                                        <Button
+                                            icon="download"
+                                            tooltip="Download"
+                                            size="small"
+                                            fixedWidth
+                                            color="success"
+                                            @click="openAttachment(attachment, true)"
+                                        />
+                                        <Button
+                                            icon="trash"
+                                            tooltip="Delete"
+                                            size="small"
+                                            fixedWidth
+                                            color="danger"
+                                            @click="deleteDialogOpen = { attachment }"
+                                        />
                                     </div>
                                 </td>
                             </tr>
                             <tr v-if="attachments.length === 0">
-                                <td colspan="5" class="has-text-centered">
+                                <td colspan="5" class="text-center">
                                     <i>No attachments.</i>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <div class="block">
-                        <AttachmentUploadForm
-                            v-model="addAttachmentModel"
-                            :uploading="uploadingAttachment"
-                            @submit="uploadAttachment"
-                            @cancel="resetAttachmentForm"
-                        />
-                    </div>
+                    <AttachmentUploadForm
+                        v-model="addAttachmentModel"
+                        :uploading="uploadingAttachment"
+                        @submit="uploadAttachment"
+                        @cancel="resetAttachmentForm"
+                    />
                 </div>
             </div>
-        </div>
-    </div>
+        </template>
+    </GridLayout>
 </template>
 
 <script>
@@ -249,6 +236,7 @@ import DeleteDialog from "@/components/DeleteDialog.vue";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import Dropdown from "@/components/Dropdown.vue";
 import DropdownItem from "@/components/DropdownItem.vue";
+import GridLayout from "@/components/layout/GridLayout.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -425,6 +413,7 @@ function convertWikiPageToTask() {
 
 <style lang="scss" scoped>
 .table.attachments {
+
     td:nth-child(1) {
         width: 32px;
     }
@@ -432,10 +421,6 @@ function convertWikiPageToTask() {
         $countButtons: 3;
 
         width: calc($countButtons * 32px + ($countButtons - 1) * 0.25rem);
-    }
-
-    .is-grouped {
-        gap: 0.25rem; // reduce gap between buttons
     }
 }
 </style>

@@ -1,6 +1,14 @@
 <template>
-    <div class="select" :class="{'is-danger': props.error, 'is-loading': loading}">
-        <select v-model="entryId" :disabled="loading">
+    <div class="input-group" :class="{'has-validation': !!props.errorMessage}">
+        <select
+            v-model="entryId"
+            class="form-select"
+            :class="{'is-invalid': !!props.errorMessage}"
+            :disabled="loading"
+        >
+            <template v-if="loading">
+                <option>Loading…</option>
+            </template>
             <template v-if="!loading">
                 <option :value="null">(no parent)</option>
                 <option v-for="entry in entries" :key="entry.id" :value="entry.id">
@@ -8,6 +16,10 @@
                 </option>
             </template>
         </select>
+        <label v-if="loading" class="input-group-text">
+            <i class="fa fa-spinner fa-pulse" />
+        </label>
+        <div v-if="props.errorMessage" class="invalid-feedback">{{ props.errorMessage }}</div>
     </div>
 </template>
 
@@ -23,9 +35,9 @@ const props = defineProps({
         type: String,
         required: true
     },
-    error: {
-        type: Boolean,
-        default: false
+    errorMessage: {
+        type: String,
+        required: false
     }
 });
 

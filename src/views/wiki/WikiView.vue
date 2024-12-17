@@ -1,25 +1,23 @@
 <template>
-    <div class="columns">
-        <div class="column is-3">
+    <GridLayout>
+        <template #sidebar>
             <WikiPagesTree />
-        </div>
+        </template>
 
-        <div class="column is-5 is-offset-2 has-text-centered">
-            <h2 class="subtitle is-italic">No page selected</h2>
+        <template #default>
+            <div class="col-12 col-lg-8 offset-lg-2 text-center">
+                <h2 class="fs-5 fst-italic">No page selected</h2>
 
-            <section class="section">
-                <div class="panel is-info">
-                    <p class="panel-heading">Search for content</p>
-                    <div class="panel-block">
+                <div class="card m-5">
+                    <div class="card-header text-bg-info">Search for content</div>
+                    <div class="card-body">
                         <SearchInput />
                     </div>
                 </div>
-            </section>
 
-            <section class="section">
-                <div class="panel is-success">
-                    <p class="panel-heading">Create a new wiki page</p>
-                    <div class="panel-block is-justify-content-center">
+                <div class="card m-5">
+                    <div class="card-header text-bg-success">Create a new wiki page</div>
+                    <div class="card-body">
                         <Button
                             title="Create new wiki page"
                             color="primary"
@@ -27,13 +25,14 @@
                         />
                     </div>
                 </div>
-            </section>
-        </div>
-    </div>
+            </div>
+        </template>
+    </GridLayout>
 </template>
 
 <script setup>
 import WikiPagesTree from "@/components/wiki/WikiPagesTree.vue";
 import Button from "@/components/Button.vue";
 import SearchInput from "@/components/SearchInput.vue";
+import GridLayout from "@/components/layout/GridLayout.vue";
 </script>

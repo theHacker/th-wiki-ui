@@ -1,16 +1,11 @@
 <template>
-    <li
-        :class="{ 'is-active': active }"
-        @click="$emit('click')"
-    >
-        <a>
-            <span v-if="loading" class="icon">
-                <i class="fas fa-spinner fa-pulse" />
+    <li class="nav-item" @click="$emit('click')">
+        <a href="#" class="nav-link" :class="{ active }">
+            <span class="icon-link">
+                <i v-if="loading" class="fas fa-spinner fa-pulse" />
+                <i v-if="!loading" :class="iconClass" />
+                {{ title }}
             </span>
-            <span v-if="!loading" class="icon is-small">
-                <i :class="iconClass" />
-            </span>
-            <span>{{ title }}</span>
         </a>
     </li>
 </template>

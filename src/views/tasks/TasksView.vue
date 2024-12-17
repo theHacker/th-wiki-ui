@@ -1,35 +1,28 @@
 <template>
-    <div class="columns">
-        <div class="column is-8 is-offset-2">
+    <GridLayout>
+        <div class="col-12 col-lg-8 offset-lg-2">
             <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
-            <div class="level">
-                <div class="level-left">
-                    <div class="level-item">
-                        <SearchInput v-model="search" />
-                    </div>
-                    <div class="level-item">
-                        <Button
-                            :icon="hideDone ? 'eye-slash' : 'eye'"
-                            :title="hideDone ? 'Show done' : 'Hide done'"
-                            color="success"
-                            :dark="!hideDone"
-                            @click="hideDone = !hideDone"
-                        />
-                    </div>
+            <div class="hstack gap-2 mb-4">
+                <div class="hstack gap-2">
+                    <SearchInput v-model="search" />
+                    <Button
+                        :icon="hideDone ? 'eye-slash' : 'eye'"
+                        :title="hideDone ? 'Show done' : 'Hide done'"
+                        :color="hideDone ? 'success' : 'dark'"
+                        @click="hideDone = !hideDone"
+                    />
                 </div>
-                <div class="level-right">
-                    <div class="level-item">
-                        <Button
-                            title="New task"
-                            color="primary"
-                            @click="$router.push({name: 'tasksNew'})"
-                        />
-                    </div>
-                </div>
+
+                <Button
+                    class="ms-auto"
+                    title="New task"
+                    color="primary"
+                    @click="$router.push({name: 'tasksNew'})"
+                />
             </div>
 
-            <table class="table is-fullwidth is-narrow">
+            <table class="table table-sm table-hover align-middle">
                 <thead>
                     <tr>
                         <th>Done</th>
@@ -40,37 +33,35 @@
                         <th>Commands</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr v-for="entry in filteredEntries" :key="entry.id" :class="{'has-text-danger': isOverdue(entry) }">
-                        <td><input type="checkbox" disabled :checked="entry.done" /></td>
+                <tbody class="table-group-divider">
+                    <tr v-for="entry in filteredEntries" :key="entry.id" :class="{'text-danger': isOverdue(entry) }">
+                        <td>
+                            <input type="checkbox" class="form-check-input" disabled :checked="entry.done" />
+                        </td>
                         <td
                             :style="{ paddingLeft: `${entry.level ? ((entry.level - 1) * 24) : 0}px` }"
                         >
-                            <div class="level">
-                                <div class="level-left">
-                                    <div
-                                        class="level-item"
-                                        :style="entry.done ? 'text-decoration: var(--bulma-grey) 2px solid line-through' : ''"
-                                    >
-                                        <RouterLink :to="{ name: 'task', params: { entryId: entry.id } }">
-                                            {{ entry.title }}
-                                        </RouterLink>
-                                    </div>
+                            <div class="d-flex">
+                                <div
+                                    class="flex-grow-1"
+                                    :style="entry.done ? 'text-decoration: var(--bs-gray-600) 2px solid line-through' : ''"
+                                >
+                                    <RouterLink :to="{ name: 'task', params: { entryId: entry.id } }">
+                                        {{ entry.title }}
+                                    </RouterLink>
                                 </div>
-                                <div class="level-right">
-                                    <div v-if="!entry.done && entry.progress > 0" class="level-item">
-                                        <progress
-                                            class="progress is-primary"
-                                            :value="entry.progress"
-                                            max="100"
-                                        >{{ entry.progress }}%</progress>
-                                    </div>
+                                <div v-if="!entry.done && entry.progress > 0" class="d-inline-flex align-middle">
+                                    <progress
+                                        class="ms-2"
+                                        :value="entry.progress"
+                                        max="100"
+                                    >{{ entry.progress }}%</progress>
                                 </div>
                             </div>
                         </td>
                         <td>{{ new Date(entry.creationTime).toLocaleDateString() }}</td>
                         <td>
-                            <span :class="{'is-italic': !entry.dueDate, 'has-text-weight-semibold': isOverdue(entry) }">
+                            <span :class="{'fst-italic': !entry.dueDate, 'fw-semibold': isOverdue(entry) }">
                                 {{ entry.dueDate ? new Date(entry.dueDate).toLocaleDateString() : 'no due date' }}
                             </span>
                         </td>
@@ -78,68 +69,62 @@
                             {{ entry.doneTime ? new Date(entry.doneTime).toLocaleDateString() : 'not done yet' }}
                         </td>
                         <td>
-                            <div class="field is-grouped">
+                            <div class="hstack gap-1">
                                 <!-- TODO ordering requires a new field on the entry
-                                <div class="control">
-                                    <Button
-                                        icon="arrow-up"
-                                        tooltip="Move up"
-                                        size="small"
-                                        color="info"
-                                        :disabled="!entry.canBeMovedUp"
-                                    />
-                                </div>
-                                <div class="control">
-                                    <Button
-                                        icon="arrow-down"
-                                        tooltip="Move down"
-                                        size="small"
-                                        color="info"
-                                        :disabled="!entry.canBeMovedDown"
-                                    />
-                                </div>
+                                <Button
+                                    icon="arrow-up"
+                                    tooltip="Move up"
+                                    size="small"
+                                    fixedWidth
+                                    color="info"
+                                    :disabled="!entry.canBeMovedUp"
+                                />
+                                <Button
+                                    icon="arrow-down"
+                                    tooltip="Move down"
+                                    size="small"
+                                    fixedWidth
+                                    color="info"
+                                    :disabled="!entry.canBeMovedDown"
+                                />
                                 -->
-                                <div class="control">
-                                    <Button
-                                        :icon="entry.done ? 'xmark' : 'check'"
-                                        :tooltip="entry.done ? 'Mark undone' : 'Mark done'"
-                                        size="small"
-                                        :color="entry.done ? 'warning' : 'success'"
-                                        @click="toggleDone(entry)"
-                                    />
-                                </div>
-                                <div class="control">
-                                    <Button
-                                        icon="pen"
-                                        tooltip="Edit task"
-                                        size="small"
-                                        color="primary"
-                                        @click="$router.push({ name: 'taskEdit', params: { entryId: entry.id } });"
-                                    />
-                                </div>
-                                <div class="control">
-                                    <Button
-                                        icon="list-check"
-                                        tooltip="New subtask"
-                                        size="small"
-                                        color="link"
-                                    />
-                                </div>
-                                <div class="control">
-                                    <Button
-                                        icon="trash"
-                                        tooltip="Delete"
-                                        size="small"
-                                        color="danger"
-                                    />
-                                </div>
+                                <Button
+                                    :icon="entry.done ? 'xmark' : 'check'"
+                                    :tooltip="entry.done ? 'Mark undone' : 'Mark done'"
+                                    size="small"
+                                    fixedWidth
+                                    :color="entry.done ? 'warning' : 'success'"
+                                    @click="toggleDone(entry)"
+                                />
+                                <Button
+                                    icon="pen"
+                                    tooltip="Edit task"
+                                    size="small"
+                                    fixedWidth
+                                    color="primary"
+                                    @click="$router.push({ name: 'taskEdit', params: { entryId: entry.id } });"
+                                />
+                                <Button
+                                    icon="list-check"
+                                    tooltip="New subtask"
+                                    size="small"
+                                    fixedWidth
+                                    color="light"
+                                />
+                                <Button
+                                    icon="trash"
+                                    tooltip="Delete"
+                                    size="small"
+                                    fixedWidth
+                                    color="danger"
+                                />
                             </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-    </div>
+    </GridLayout>
 </template>
 
 <script setup>
@@ -149,6 +134,7 @@ import {computed, ref} from "vue";
 import axios from "@/axios.js";
 import {arrayToTree, treeToFlatArray} from "@/helper/tree.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
+import GridLayout from "@/components/layout/GridLayout.vue";
 
 const error = ref(null);
 
@@ -229,19 +215,16 @@ function handleError(e) {
 
 <style lang="scss" scoped>
 table.table {
+
     td:nth-child(1) {
         width: 32px;
         text-align: center;
     }
-    td:nth-child(5) {
+    td:nth-child(6) {
         $countButtons: 4; // 6; (TODO ordering requires a new field on the entry)
 
         width: calc($countButtons * 32px + ($countButtons - 1) * 0.25rem);
         text-align: center;
-    }
-
-    .is-grouped {
-        gap: 0.25rem; // reduce gap between buttons
     }
 
     progress {
@@ -249,12 +232,9 @@ table.table {
     }
 
     // make table text inherit a row's color class (for overdue tasks)
-    tr.has-text-danger {
-        td:nth-child(2), td:nth-child(3), td:nth-child(4) { // not the buttons
-            color: var(--bulma-danger-rgb);
-        }
-        a {
-            color: var(--bulma-danger-rgb);
+    tr.text-danger {
+        td, a {
+            color: var(--bs-danger);
         }
     }
 }

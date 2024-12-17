@@ -1,38 +1,205 @@
-@use "bulma/sass/utilities/index" with (
-    $primary: hsl(225deg, 100%, 42%)
+@use "sass:color";
+
+// Bootstrap
+//
+// See https://getbootstrap.com/docs/5.3/customize/sass/#importing for the correct order of importing
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Bootstrap imports, functions first
+
+@import "node_modules/bootstrap/scss/functions";
+
+// Our settings onto the Bootstrap variables
+
+$primary: hsl(225deg, 100%, 42%);
+
+$font-family-monospace: Inconsolata, Hack, SF Mono, Roboto Mono, Source Code Pro, Ubuntu Mono, monospace;
+
+$font-size-base: 1rem;
+$h1-font-size: $font-size-base * 2.0; // a little smaller than the default (2.5)
+$h2-font-size: $font-size-base * 1.75;
+$h3-font-size: $font-size-base * 1.5;
+$h4-font-size: $font-size-base * 1.25;
+$h5-font-size: $font-size-base * 1.125;
+$h6-font-size: $font-size-base;
+
+$font-sizes: (
+    1: $h1-font-size,
+    2: $h2-font-size,
+    3: $h3-font-size,
+    4: $h4-font-size,
+    5: $h5-font-size,
+    6: $h6-font-size,
+    7: $font-size-base * 0.75 // Note: This is smaller than "small" (small = 0.875), used e.g. in the footer
 );
 
-@forward "bulma/sass/base/index";
+$body-bg-dark: hsl(221deg, 14%, 9%);
+$body-color-dark: hsl(221deg, 14%, 71%);
+$nav-tabs-border-color: hsl(221deg, 14%, 24%);
+$headings-color-dark: hsl(221deg, 14%, 93%);
 
-@forward "bulma/sass/elements/block";
-@forward "bulma/sass/elements/button";
-@forward "bulma/sass/elements/content";
-@forward "bulma/sass/elements/icon";
-@forward "bulma/sass/elements/image";
-@forward "bulma/sass/elements/table";
-@forward "bulma/sass/elements/title";
+$link-color-dark: hsl(233deg, 100%, 73%);
 
-@forward "bulma/sass/form";
+$navbar-nav-link-padding-x: 0.75rem;
 
-@forward "bulma/sass/components/dropdown";
-@forward "bulma/sass/components/message";
-@forward "bulma/sass/components/modal";
-@forward "bulma/sass/components/navbar";
-@forward "bulma/sass/components/panel";
-@forward "bulma/sass/components/tabs";
+$headings-margin-bottom: 1.25rem;
 
-@forward "bulma/sass/grid/columns";
-@forward "bulma/sass/grid/grid";
+$link-decoration: none;
+$link-hover-decoration: underline;
 
-@forward "bulma/sass/layout/level"; // demo only
-@forward "bulma/sass/layout/media"; // demo only
-@forward "bulma/sass/layout/section";
+$pre-color: color.change($primary, $saturation: 14%, $lightness: 71%);
+$code-bg-color: color.change($primary, $saturation: 14%, $lightness: 14%); // own variable, Bootstrap has no support for "code tag background"
 
-@forward "bulma/sass/helpers/flexbox";
-@forward "bulma/sass/helpers/color";
-@forward "bulma/sass/helpers/other";
-@forward "bulma/sass/helpers/spacing";
-@forward "bulma/sass/helpers/typography";
-@forward "bulma/sass/helpers/visibility";
+$btn-white-space: nowrap; // don't wrap buttons, ever
 
-@forward "bulma/sass/themes/index";
+// Make small buttons really small -> reduce Bootstrap's default padding
+$input-btn-padding-y-sm: 0.225rem;
+$input-btn-padding-x-sm: 0.375rem;
+
+$input-placeholder-color: var(--bs-border-color);
+$form-check-label-cursor: pointer;
+
+// Enable shadows, but we only want it on modals and dropdowns
+$enable-shadows: true;
+$box-shadow: 0 .5em 1em -.125em hsla(0deg, 0%, 100%, .1), 0 0 0 1px hsla(0deg, 0%, 100%, .02);
+$box-shadow-sm: $box-shadow;
+$box-shadow-lg: $box-shadow;
+$box-shadow-inset: 0 0 0 0 transparent;
+$btn-box-shadow: 0 0 0 0 transparent;
+
+// Bootstrap imports (see bootstrap.scss for import ordering; Bootstrap docs have minimal-ish different order)
+
+@import "node_modules/bootstrap/scss/variables";
+@import "node_modules/bootstrap/scss/variables-dark";
+
+@import "node_modules/bootstrap/scss/maps";
+@import "node_modules/bootstrap/scss/mixins";
+@import "node_modules/bootstrap/scss/utilities";
+
+@import "node_modules/bootstrap/scss/root";
+@import "node_modules/bootstrap/scss/reboot";
+@import "node_modules/bootstrap/scss/type";
+@import "node_modules/bootstrap/scss/containers";
+@import "node_modules/bootstrap/scss/grid";
+@import "node_modules/bootstrap/scss/tables";
+@import "node_modules/bootstrap/scss/forms";
+@import "node_modules/bootstrap/scss/buttons";
+@import "node_modules/bootstrap/scss/dropdown";
+@import "node_modules/bootstrap/scss/nav";
+@import "node_modules/bootstrap/scss/navbar";
+@import "node_modules/bootstrap/scss/card";
+@import "node_modules/bootstrap/scss/modal";
+
+@import "node_modules/bootstrap/scss/helpers/color-bg";
+@import "node_modules/bootstrap/scss/helpers/icon-link";
+@import "node_modules/bootstrap/scss/helpers/position";
+@import "node_modules/bootstrap/scss/helpers/stacks";
+@import "node_modules/bootstrap/scss/helpers/text-truncation";
+
+@import "node_modules/bootstrap/scss/utilities/api";
+
+// Custom adaptions
+////////////////////
+
+// Adjust navbar's background to be more subtle, but far from "bg-primary-subtle"
+nav.bg-primary {
+    background: color.change($primary, $lightness: 27%) !important;
+}
+
+// nav-links get bigger padding y.
+// Note: Bootstrap only supports setting x padding by SASS variable, y has to be done by CSS variable
+.navbar-nav {
+    --bs-nav-link-padding-y: 1rem;
+}
+
+// nav-links (only in navbar, not in nav-tabs) get a background color on hover
+.navbar .nav-item:hover {
+    background-color: $primary;
+    @include transition($nav-link-transition);
+}
+
+// nav-tabs and our custom tree want custom coloring
+.nav-tabs, .tree {
+    a {
+        color: var(--bs-body-color);
+
+        &:hover {
+            color: var(--bs-emphasis-color);
+        }
+
+        &.active {
+            i {
+                color: var(--bs-link-color);
+            }
+
+            // Tree
+            span.title {
+                color: var(--bs-link-color);
+                background-color: rgba(var(--bs-primary-rgb), .5);
+            }
+
+            // Nav-Tabs
+            span {
+                color: var(--bs-link-color);
+            }
+        }
+    }
+}
+
+// Make card headers always bold
+.card .card-header {
+    font-weight: bold;
+}
+
+// Code:
+// Add background to code
+
+pre {
+    background-color: $code-bg-color;
+    padding: 1.25rem 1.5rem;
+
+    code {
+        padding: 0;
+    }
+}
+
+code {
+    background-color: $code-bg-color;
+    @include border-radius(.5em);
+
+    padding: 0.25rem 0.5rem;
+}
+
+// Not only the checkbox's label should have pointer cursor, but the checkbox as well
+input[type=checkbox] {
+    cursor: pointer;
+}
+
+// Strong also gets headline color
+strong {
+    color: $headings-color-dark;
+}
+
+// Adapt nav-tabs to look like Bulma's tabs.
+// nav-tabs is the closest style (as the colors already match), we only need to adapt the borders
+.nav-tabs .nav-link {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+
+    &.active {
+        border-bottom-color: $link-color-dark;
+    }
+
+    &:not(.active):hover {
+        border-bottom-color: var(--bs-nav-tabs-link-active-color);
+    }
+}
+
+// Colorized modals don't account for color contrast
+// See https://github.com/twbs/bootstrap/issues/41113
+@each $color, $value in $theme-colors {
+    .text-bg-#{$color} .modal-title {
+        color: color-contrast($value) if($enable-important-utilities, !important, null);
+    }
+}

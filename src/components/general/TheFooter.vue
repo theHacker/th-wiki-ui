@@ -1,6 +1,6 @@
 <template>
-    <div class="px-2 py-3 is-size-7 has-background-dark is-flex">
-        <div class="is-flex-grow-1 has-text-centered">
+    <div class="container-fluid bg-dark d-flex fs-7 p-2">
+        <div class="flex-grow-1 text-center">
             powered by <b>tH-Wiki</b>
         </div>
         <div>

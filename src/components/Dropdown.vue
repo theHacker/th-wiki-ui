@@ -1,31 +1,22 @@
 <template>
     <div
         class="dropdown"
-        :class="{ 'is-active': dropdownOpen }"
         @click="dropdownOpen = !dropdownOpen"
     >
-        <div class="dropdown-trigger">
-            <button class="button">
-                <span v-if="icon" class="icon is-small">
-                    <i :class="`fas fa-${icon}`" />
-                </span>
+        <button type="button" class="btn btn-outline-light dropdown-toggle">
+            <span class="icon-link">
+                <i v-if="icon" :class="`fas fa-${icon}`" />
                 <span v-if="title">{{ title }}</span>
-                <span class="icon is-small">
-                    <i class="fas fa-angle-down" />
-                </span>
-            </button>
-        </div>
-        <div class="dropdown-menu">
-            <div class="dropdown-content">
-                <slot />
-            </div>
-        </div>
+            </span>
+        </button>
+        <ul class="dropdown-menu" :class="{ show: dropdownOpen }">
+            <slot />
+        </ul>
     </div>
 </template>
 
 <script setup>
 import {ref} from 'vue';
-import Button from "@/components/Button.vue";
 
 const dropdownOpen = ref(false);
 
