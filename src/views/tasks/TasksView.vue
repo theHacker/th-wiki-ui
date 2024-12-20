@@ -41,7 +41,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="entry in filteredEntries" :class="{'has-text-danger': isOverdue(entry) }">
+                    <tr v-for="entry in filteredEntries" :key="entry.id" :class="{'has-text-danger': isOverdue(entry) }">
                         <td><input type="checkbox" disabled :checked="entry.done" /></td>
                         <td
                             :style="{ paddingLeft: `${entry.level ? ((entry.level - 1) * 24) : 0}px` }"

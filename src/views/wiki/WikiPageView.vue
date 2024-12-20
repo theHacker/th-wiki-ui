@@ -142,7 +142,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="attachment in attachments">
+                            <tr v-for="attachment in attachments" :key="attachment.id">
                                 <td>
                                    <span class="icon">
                                        <i :class="attachmentIconClass(attachment)" />

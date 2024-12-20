@@ -1,12 +1,13 @@
 <template>
     <ul>
-        <li v-for="item in items">
+        <li v-for="item in items" :key="item[itemKey]">
             <slot :item="item" />
 
             <div class="ml-5">
                 <Tree
                     v-if="item.children && item.children.length > 0"
                     :items="item.children"
+                    :itemKey="itemKey"
                 >
                     <!-- Note: Chain slots through, so it works recursive (see https://github.com/vuejs/vue/issues/5965) -->
                     <template #default="{ item }">
@@ -24,6 +25,10 @@ defineProps({
         type: Array,
         required: true
     },
+    itemKey: {
+        type: String,
+        required: true
+    }
 });
 </script>
 

@@ -23,7 +23,7 @@
             <Loading />
         </div>
         <div v-if="!loading" class="panel-block">
-            <Tree :items="filteredWikiPages">
+            <Tree :items="filteredWikiPages" itemKey="id">
                 <template #default="{ item }">
                     <RouterLink
                         v-slot="{ route, isExactActive, navigate }"

@@ -3,7 +3,7 @@
         <select v-model="entryId" :disabled="loading">
             <template v-if="!loading">
                 <option :value="null">(no parent)</option>
-                <option v-for="entry in entries" :value="entry.id">
+                <option v-for="entry in entries" :key="entry.id" :value="entry.id">
                     {{ optionIndent(entry) }}{{ entry.title }}
                 </option>
             </template>
