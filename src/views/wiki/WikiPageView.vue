@@ -44,7 +44,7 @@
             <div v-if="entry">
                 <h1>{{ entry.title }}</h1>
 
-                <div class="d-flex flex-wrap flex-lg-nowrap mb-4">
+                <div class="d-flex flex-wrap flex-lg-nowrap mb-4 row-gap-3">
                     <div class="flex-grow-1 me-4">
                         <div class="tabs">
                             <ul class="nav nav-tabs">
@@ -76,24 +76,24 @@
                         </div>
                     </div>
 
-                    <div class="buttons">
-                        <div class="hstack gap-2">
-                            <Dropdown icon="gears" title="Actions">
-                                <DropdownItem icon="bolt" title="Convert to task" @click="convertToTaskDialog = true" />
-                            </Dropdown>
-                            <Button
-                                icon="pen"
-                                title="Edit"
-                                color="light"
-                                @click="$router.push({ name: 'wikiPageEdit', params: { entryId: entry.id } });"
-                            />
-                            <Button
-                                icon="trash"
-                                title="Delete"
-                                color="danger"
-                                @click="deleteDialogOpen = { entry }"
-                            />
-                        </div>
+                    <div class="hstack gap-2">
+                        <Dropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
+                            <DropdownItem icon="bolt" title="Convert to task" @click="convertToTaskDialog = true" />
+                        </Dropdown>
+                        <Button
+                            class="btn-text-lg"
+                            icon="pen"
+                            title="Edit"
+                            color="light"
+                            @click="$router.push({ name: 'wikiPageEdit', params: { entryId: entry.id } });"
+                        />
+                        <Button
+                            class="btn-text-lg"
+                            icon="trash"
+                            title="Delete"
+                            color="danger"
+                            @click="deleteDialogOpen = { entry }"
+                        />
                     </div>
                 </div>
 
@@ -125,7 +125,7 @@
                 </div>
 
                 <div v-if="tabState === TabStates.Attachments">
-                    <table class="table table-hover align-middle mb-5 attachments">
+                    <table class="table table-responsive table-hover align-middle mb-5 attachments">
                         <thead>
                             <tr>
                                 <th>Icon</th>

@@ -1,18 +1,18 @@
 <template>
     <div class="d-grid gridLayout vh-100" :class="{ hasSidebar: !!$slots.sidebar }">
-        <header class="mb-3">
+        <header class="mb-2 mb-lg-3">
             <TheMainNavigation />
         </header>
 
-        <aside v-if="$slots.sidebar" class="ps-3">
+        <aside v-if="$slots.sidebar" class="px-2 ps-lg-3 pe-md-0 mb-3 mb-lg-0">
             <slot name="sidebar" />
         </aside>
 
-        <main class="px-4">
+        <main class="px-2 px-lg-4">
             <slot />
         </main>
 
-        <footer class="mt-3">
+        <footer class="mt-2 mt-lg-3">
             <TheFooter />
         </footer>
     </div>
@@ -24,25 +24,6 @@ import TheFooter from "@/components/general/TheFooter.vue";
 </script>
 
 <style lang="scss" scoped>
-.gridLayout {
-    &.hasSidebar {
-        grid-template-areas:
-        "header header"
-        "sidebar main"
-        "footer footer";
-        grid-template-rows: auto 1fr auto;
-        grid-template-columns: minmax(250px, 1fr) 3fr;
-    }
-    &:not(.hasSidebar) {
-        grid-template-areas:
-        "header"
-        "main"
-        "footer";
-        grid-template-rows: auto 1fr auto;
-        grid-template-columns: 1fr;
-    }
-}
-
 header {
     grid-area: header;
 }

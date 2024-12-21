@@ -4,6 +4,8 @@
             <div class="hstack gap-2">
                 <SearchInput v-model="search" />
                 <Button
+                    class="btn-text-xxl"
+                    icon="plus"
                     title="New page"
                     color="primary"
                     @click="$router.push({name: 'wikiPageNew'})"

@@ -4,9 +4,10 @@
             <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
             <div class="hstack gap-2 mb-4">
-                <div class="hstack gap-2">
+                <div class="hstack gap-2 me-4 me-lg-0">
                     <SearchInput v-model="search" />
                     <Button
+                        class="btn-text-md"
                         :icon="hideDone ? 'eye-slash' : 'eye'"
                         :title="hideDone ? 'Show done' : 'Hide done'"
                         :color="hideDone ? 'success' : 'dark'"
@@ -15,14 +16,15 @@
                 </div>
 
                 <Button
-                    class="ms-auto"
+                    class="btn-text-sm ms-auto"
+                    icon="plus"
                     title="New task"
                     color="primary"
                     @click="$router.push({name: 'tasksNew'})"
                 />
             </div>
 
-            <table class="table table-sm table-hover align-middle">
+            <table class="table table-responsive table-sm table-hover align-middle">
                 <thead>
                     <tr>
                         <th>Done</th>
