@@ -44,6 +44,10 @@ const props = defineProps({
         },
         default: 'light'
     },
+    active: {
+        type: Boolean,
+        default: false
+    },
     loading: {
         type: Boolean,
         default: false
@@ -75,6 +79,10 @@ const buttonClass = computed(() => {
         // Only add icon-link if there is a title, not for icon-only buttons.
         // That centers the icon-only inside the button.
         classes['icon-link'] = true;
+    }
+
+    if (props.active) {
+        classes['active'] = true;
     }
 
     switch (props.size) {
