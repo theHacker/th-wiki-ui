@@ -69,6 +69,7 @@
                                 <Tab
                                     icon="paperclip"
                                     title="Attachments"
+                                    :badge="attachments.length > 0 ? attachments.length.toString() : null"
                                     :active="tabState === TabStates.Attachments"
                                     @click="tabState = TabStates.Attachments"
                                 />
