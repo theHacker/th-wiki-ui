@@ -1,5 +1,5 @@
 <template>
-    <h2 class="fs-5 mb-4">Upload an attachment</h2>
+    <h2 class="fs-3 mb-4">Upload an attachment</h2>
 
     <fieldset :disabled="uploading" class="row g-3">
         <div class="col-12">
