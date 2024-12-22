@@ -101,7 +101,7 @@
                 </div>
 
                 <div v-if="tabState === TabStates.Content">
-                    <div v-html="entry.renderedMarkdown" />
+                    <article v-html="entry.renderedMarkdown" />
                 </div>
 
                 <div v-else-if="tabState === TabStates.Markdown">

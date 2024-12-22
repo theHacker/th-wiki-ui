@@ -279,3 +279,19 @@ $notAnyGridBreakpoint: '';
         }
     }
 }
+
+// <article> (usually we use them for Markdown rendering) will automatically opt-in into Bootstrap's tables
+article table {
+    @extend .table, .table-responsive, .table-hover;
+
+    // Marked by default renders "align" attributes on the cells. Use them.
+    th[align=left], td[align=left] {
+        @extend .text-start;
+    }
+    th[align=center], td[align=center] {
+        @extend .text-center;
+    }
+    th[align=right], td[align=right] {
+        @extend .text-end;
+    }
+}
