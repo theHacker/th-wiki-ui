@@ -280,18 +280,41 @@ $notAnyGridBreakpoint: '';
     }
 }
 
-// <article> (usually we use them for Markdown rendering) will automatically opt-in into Bootstrap's tables
-article table {
-    @extend .table, .table-responsive, .table-hover;
+// <article> (usually we use them for Markdown rendering) will automatically opt-in into Bootstrap's formatting
+article {
+    // Bootstrap's blockquote formats like "quote from important guy".
+    // We want more a "quote from a mail reply".
+    blockquote {
+        @extend .blockquote, .border-start, .border-3, .ps-2, .fs-6;
+    }
 
-    // Marked by default renders "align" attributes on the cells. Use them.
-    th[align=left], td[align=left] {
-        @extend .text-start;
+    table {
+        @extend .table, .table-responsive, .table-hover;
+
+        // Marked by default renders "align" attributes on the cells. Use them.
+        th[align=left], td[align=left] {
+            @extend .text-start;
+        }
+        th[align=center], td[align=center] {
+            @extend .text-center;
+        }
+        th[align=right], td[align=right] {
+            @extend .text-end;
+        }
     }
-    th[align=center], td[align=center] {
-        @extend .text-center;
-    }
-    th[align=right], td[align=right] {
-        @extend .text-end;
+
+    // GFM Checkbox task lists
+    ul:has(input[type=checkbox]) {
+        padding-left: 0;
+
+        li {
+            list-style-type: none;
+
+            // Auto opt-in into Bootstrap styling
+            // TODO To get Bootstrap paddings we would need to configure Marked to generate the correct markup immediately.
+            input[type=checkbox] {
+                @extend .form-check-input;
+            }
+        }
     }
 }
