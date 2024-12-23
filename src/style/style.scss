@@ -99,6 +99,30 @@ $btn-box-shadow: 0 0 0 0 transparent;
 @import "node_modules/bootstrap/scss/helpers/stacks";
 @import "node_modules/bootstrap/scss/helpers/text-truncation";
 
+// Generate Bootstrap (and custom) utilities
+
+$utilities: map-merge(
+    $utilities,
+    (
+        "cursor": (
+            property: cursor,
+            class: cursor,
+            values: pointer
+        ),
+        "opacity": (
+            property: opacity,
+            values: (
+                0: 0,
+                10: .1,
+                25: .25,
+                50: .5,
+                75: .75,
+                100: 1
+            )
+        )
+    )
+);
+
 @import "node_modules/bootstrap/scss/utilities/api";
 
 // Custom adaptions
