@@ -17,7 +17,7 @@
             <Loading />
         </div>
         <div v-if="!loading" class="card-body overflow-x-hidden">
-            <Tree :items="filteredWikiPages" itemKey="id">
+            <Tree :items="filteredWikiPages" idProperty="id" parentIdProperty="parentId" sortedByProperty="title">
                 <template #default="{ item }">
                     <RouterLink
                         :to="{ name: 'wikiPage', params: { entryId: item.id } }"
@@ -41,7 +41,6 @@ import axios from "@/axios.js";
 import {computed, ref} from 'vue';
 import SearchInput from "@/components/SearchInput.vue";
 import Loading from "@/components/Loading.vue";
-import {arrayToTree} from "@/helper/tree.js";
 import Tree from "@/components/Tree.vue";
 import Button from "@/components/Button.vue";
 
@@ -56,9 +55,11 @@ const filteredWikiPages = computed(() => {
 
         // When filter is active, we don't use the tree.
         // This avoids lost hits, when a child matches, but one of the parents doesn't.
-        return wikiPages.value.filter(page => page.title.toLowerCase().includes(lowercase));
+        return wikiPages.value
+            .filter(page => page.title.toLowerCase().includes(lowercase))
+            .map(item => ({...item, parentId: null}));
     } else {
-        return arrayToTree(wikiPages.value, e => e.id, e => e.parentId, e => e.title).children;
+        return wikiPages.value;
     }
 });
 
