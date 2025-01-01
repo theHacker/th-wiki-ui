@@ -68,7 +68,7 @@ div {
         position: relative;
 
         // centers the button on the line's intersection
-        left: -40%;
+        left: -50%;
         top: -10%;
     }
 }
