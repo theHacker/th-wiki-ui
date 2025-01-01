@@ -33,14 +33,16 @@ vitest:
     policy: pull
 
 # Does not work, no priority to get it running ;-)
+# Issue is an IPv4/v6 problem on the GitLab runner: When quickly logging into the running docker container,
+# installing curl, and running different commands, you'll see:
+# "curl -4 http://localhost:4173" fails, "curl -6 http://localhost:4173" works.
+# I tried different approaches waiting on "[::1]" or "ip6-localhost", neither worked :-(
 #cypress:
 #  stage: test
 #  interruptible: true
-#  image: cypress/base:20.15.1
 #  script:
 #    - npm ci
-#    - npm run preview &
-#    - npx cypress run
+#    - npm run test:e2e
 #  cache: []
 #  artifacts:
 #    when: always
