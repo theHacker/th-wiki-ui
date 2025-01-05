@@ -208,7 +208,7 @@ const TabStates = {
 
 <script setup>
 import axios from "@/axios.js";
-import {nextTick, ref, watch} from 'vue';
+import {ref, watch} from 'vue';
 import {useRoute, useRouter} from "vue-router";
 import {renderMarkdown, highlightMarkdown} from "@/markdown.js";
 import WikiPagesTree from "@/components/wiki/WikiPagesTree.vue";
@@ -224,7 +224,6 @@ import Dropdown from "@/components/Dropdown.vue";
 import DropdownItem from "@/components/DropdownItem.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 import WikiNoPage from "@/components/wiki/WikiNoPage.vue";
-import mermaid from "mermaid";
 
 const route = useRoute();
 const router = useRouter();
@@ -251,19 +250,6 @@ const convertingToTask = ref(false);
 
 watch(() => route.params.entryId, fetchData, { immediate: true });
 
-watch(
-    [entry, tabState],
-    () => {
-        if (tabState.value === TabStates.Content) {
-            nextTick(() => {
-                mermaid.run({
-                    querySelector: 'pre code[class=language-mermaid]'
-                });
-            });
-        }
-    }
-);
-
 function fetchData(id) {
     error.value = null;
     entry.value = null;
@@ -276,10 +262,10 @@ function fetchData(id) {
 
     axios
         .get('/entries/' + id)
-        .then(response => {
+        .then(async response => {
             entry.value = {
                 ...response.data,
-                renderedMarkdown: renderMarkdown(response.data.content),
+                renderedMarkdown: await renderMarkdown(response.data.content),
                 highlightedMarkdown: highlightMarkdown(response.data.content)
             };
             noPage.value = false;

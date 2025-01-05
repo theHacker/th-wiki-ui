@@ -63,10 +63,10 @@ const ButtonStates = {
 </script>
 
 <script setup>
-import {computed, nextTick, ref, watch} from "vue";
+import {ref} from "vue";
+import {computedAsync} from "@vueuse/core";
 import Button from "@/components/Button.vue";
 import {renderMarkdown} from "@/markdown.js";
-import mermaid from "mermaid";
 
 const model = defineModel();
 
@@ -87,24 +87,11 @@ defineProps({
 
 const buttonState = ref(ButtonStates.Text);
 
-const preview = computed(() => {
+const preview = computedAsync(async () => {
     if (buttonState.value === ButtonStates.Preview) {
-        return renderMarkdown(model.value);
+        return await renderMarkdown(model.value);
     } else {
         return null; // don't render on every change when preview is not visible
     }
 });
-
-watch(
-    [model, buttonState],
-    () => {
-        if (buttonState.value === ButtonStates.Preview) {
-            nextTick(() => {
-                mermaid.run({
-                    querySelector: 'pre code[class=language-mermaid]'
-                });
-            });
-        }
-    }
-);
 </script>
