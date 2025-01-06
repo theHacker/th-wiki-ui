@@ -33,6 +33,12 @@
                     – {{ developmentStage }} –
                 </span>
 
+                <ul class="navbar-nav flex-row justify-content-around me-lg-4 mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <RouterLink class="nav-link" to="/admin">Administration</RouterLink>
+                    </li>
+                </ul>
+
                 <div class="d-flex">
                     <SearchInput />
                 </div>
