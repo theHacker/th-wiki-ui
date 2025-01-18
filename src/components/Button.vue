@@ -1,5 +1,5 @@
 <template>
-    <button :class="buttonClass" :title="tooltip" @click="$emit('click')">
+    <button :class="buttonClass" :title="tooltip" :disabled="disabled" @click="$emit('click')">
         <span>
             <i v-if="!loading" :class="iconClass" />
             <i v-if="loading" class="fa fa-spinner fa-pulse" />
@@ -45,6 +45,10 @@ const props = defineProps({
         default: 'light'
     },
     active: {
+        type: Boolean,
+        default: false
+    },
+    disabled: {
         type: Boolean,
         default: false
     },
