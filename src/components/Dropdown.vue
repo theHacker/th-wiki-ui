@@ -3,7 +3,7 @@
         class="dropdown"
         @click="dropdownOpen = !dropdownOpen"
     >
-        <button type="button" class="btn btn-outline-light dropdown-toggle" :class="buttonClass">
+        <button type="button" class="btn dropdown-toggle" :class="buttonClass + ' ' + ('btn-outline-' + color)">
             <span class="icon-link">
                 <i :class="`fas fa-${icon}`" />
                 <span v-if="title" class="title">{{ title }}</span>
@@ -32,6 +32,17 @@ defineProps({
     title: {
         type: String,
         required: false
+    },
+    color: {
+        validator(value, _props) {
+            // see https://getbootstrap.com/docs/5.3/components/buttons/#variants
+            return [
+                'primary', 'secondary',
+                'success', 'danger', 'warning', 'info',
+                'light', 'dark', 'link'
+            ].includes(value);
+        },
+        default: 'light'
     }
 });
 </script>
