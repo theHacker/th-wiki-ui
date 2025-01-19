@@ -10,6 +10,51 @@
             @submit="deleteIssue(deleteDialogOpen.issue.id)"
             @cancel="deleteDialogOpen = null"
         />
+        <ConfirmDialog
+            v-if="moveToAnotherProjectDialog"
+            color="success"
+            title="Move to another project"
+            :dialogOpen="true"
+            :progressing="movingToAnotherProject"
+            submitIcon="truck-arrow-right"
+            submitTitle="Move"
+            :submitDisabled="moveToProjectId === null"
+            cancelIcon="xmark"
+            cancelTitle="Cancel"
+            @submit="moveToProject(issue.id, moveToProjectId)"
+            @cancel="moveToAnotherProjectDialog = null"
+        >
+            <div>
+                Moving an issue will assign a new issue key.<br />
+                The current key <b>{{ issue.issueKey }}</b> will be lost.
+            </div>
+            <fieldset
+                :disabled="movingToAnotherProject"
+                class="row my-3 align-items-center"
+            >
+                <div class="col-auto">
+                    <label class="col-form-label">New project</label>
+                </div>
+                <div class="col-auto">
+                    <select
+                        v-model="moveToProjectId"
+                        class="form-select"
+                    >
+                        <option
+                            v-for="project in projects"
+                            :value="project.id"
+                            :disabled="project.id === issue.projectId"
+                        >
+                            {{ project.title }}
+                        </option>
+                    </select>
+                </div>
+            </fieldset>
+            <div v-if="moveToProjectId !== null">
+                Estimated new issue key will be
+                <b>{{ projects.find(it => it.id === moveToProjectId).prefix }}-{{ projects.find(it => it.id === moveToProjectId).nextIssueNumber }}</b>.
+            </div>
+        </ConfirmDialog>
 
         <div :class="{'container-xl g-0': !fullWidth}">
             <div v-if="!issue" class="mt-4">
@@ -76,6 +121,14 @@
                                     fixedWidth
                                     :disabled="issueStatus.id === issue.issueStatusId"
                                     @click="changeIssueStatus(issue.id, issueStatus.id)"
+                                />
+                            </Dropdown>
+
+                            <Dropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
+                                <DropdownItem
+                                    icon="truck-arrow-right"
+                                    title="Move to another project"
+                                    @click="moveToProjectId = null; moveToAnotherProjectDialog = true;"
                                 />
                             </Dropdown>
 
@@ -251,6 +304,7 @@ import Tab from "@/components/Tab.vue";
 import Button from "@/components/Button.vue";
 import Loading from "@/components/Loading.vue";
 import DeleteDialog from "@/components/DeleteDialog.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import {isOverdue} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
 
@@ -271,6 +325,10 @@ const tabState = ref(TabStates.Description);
 
 const deleteDialogOpen = ref(null);
 const deleting = ref(false);
+
+const moveToAnotherProjectDialog = ref(false);
+const moveToProjectId = ref(null);
+const movingToAnotherProject = ref(false);
 
 watch(() => route.params.issueId, fetchData, { immediate: true });
 
@@ -308,6 +366,24 @@ function changeIssueStatus(issueId, newIssueStatusId) {
             issue.value = await enrichIssue(response.data);
         })
         .catch(handleError);
+}
+
+function moveToProject(issueId, newProjectId) {
+    error.value = null;
+    movingToAnotherProject.value = true;
+
+    axios
+        .patch(`/issues/${issueId}`, {
+            projectId: newProjectId
+        })
+        .then(async response => {
+            issue.value = await enrichIssue(response.data);
+        })
+        .catch(handleError)
+        .finally(() => {
+            movingToAnotherProject.value = false;
+            moveToAnotherProjectDialog.value = null;
+        });
 }
 
 /**

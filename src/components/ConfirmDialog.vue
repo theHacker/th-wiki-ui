@@ -19,6 +19,7 @@
                                 :icon="submitIcon"
                                 :title="submitTitle"
                                 :color="color"
+                                :disabled="submitDisabled"
                                 :loading="progressing"
                                 @click="$emit('submit')"
                             />
@@ -26,6 +27,7 @@
                                 :icon="cancelIcon"
                                 :title="cancelTitle"
                                 color="light"
+                                :disabled="cancelDisabled"
                                 @click="$emit('cancel')"
                             />
                         </div>
@@ -75,6 +77,10 @@ defineProps({
         type: String,
         default: 'Yes'
     },
+    submitDisabled: {
+        type: Boolean,
+        default: false
+    },
     cancelIcon: {
         type: String,
         default: 'xmark'
@@ -82,6 +88,10 @@ defineProps({
     cancelTitle: {
         type: String,
         default: 'No'
+    },
+    cancelDisabled: {
+        type: Boolean,
+        default: false
     }
 });
 
