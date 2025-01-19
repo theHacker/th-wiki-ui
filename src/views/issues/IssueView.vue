@@ -84,7 +84,7 @@
                                 icon="pen"
                                 title="Edit"
                                 color="light"
-                                @click="console.log('Not yet implemented.')"
+                                @click="$router.push({ name: 'issueEdit', params: { issueId: issue.id } })"
                             />
                             <Button
                                 class="btn-text-lg"

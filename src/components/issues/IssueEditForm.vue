@@ -22,6 +22,7 @@
                 v-model="issue.projectId"
                 class="form-select"
                 :class="{'is-invalid': !!fieldErrors.projectId}"
+                :disabled="disableProject"
             >
                 <option v-for="project in projects" :value="project.id">
                     {{ project.title }}
@@ -159,6 +160,10 @@ const props = defineProps({
     issueStatuses: {
         type: Array,
         required: true
+    },
+    disableProject: {
+        type: Boolean,
+        default: false
     },
     submitLabel: {
         type: String,
