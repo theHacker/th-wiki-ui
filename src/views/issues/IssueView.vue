@@ -62,7 +62,7 @@
                                     :title="issueStatus.title"
                                     fixedWidth
                                     :disabled="issueStatus.id === issue.issueStatusId"
-                                    @click="console.log('Not yet implemented.')"
+                                    @click="changeIssueStatus(issue.id, issueStatus.id)"
                                 />
                             </Dropdown>
 
@@ -273,32 +273,56 @@ function fetchData(id) {
             issuePriorities.value = responses[3].data;
             issueStatuses.value = responses[4].data;
 
-            // For convenience, add the full objects and a done flag to the issue
-            const issueLoaded = responses[0].data;
-
-            const project = projects.value
-                .find(project => project.id === issueLoaded.projectId);
-            const issueType = issueTypes.value
-                .find(issueType => issueType.id === issueLoaded.issueTypeId);
-            const issuePriority = issuePriorities.value
-                .find(issuePriority => issuePriority.id === issueLoaded.issuePriorityId);
-            const issueStatus = issueStatuses.value
-                .find(issueStatus => issueStatus.id === issueLoaded.issueStatusId);
-
-            const done = issueStatus.isDoneStatus;
-
-            issue.value = {
-                ...issueLoaded,
-                project,
-                issueType,
-                issuePriority,
-                issueStatus,
-                done,
-                renderedMarkdown: await renderMarkdown(issueLoaded.description),
-                highlightedMarkdown: highlightMarkdown(issueLoaded.description)
-            };
+            issue.value = await enrichIssue(responses[0].data);
         })
         .catch(handleError);
+}
+
+function changeIssueStatus(issueId, newIssueStatusId) {
+    error.value = null;
+
+    axios
+        .patch(`/issues/${issueId}`, {
+            issueStatusId: newIssueStatusId
+        })
+        .then(async response => {
+            issue.value = await enrichIssue(response.data);
+        })
+        .catch(handleError);
+}
+
+/**
+ * Enriches a loaded issue with the full objects of issue type, priority, and status,
+ * a done flag, and markdown properties. The enriched issue is returned.
+ *
+ * Call this function only after `projects`, `issueTypes`, `issuePriorities`, and `issueStatuses`
+ * are set.
+ *
+ * @param {Object} issueLoaded issue loaded from an `/issue/{id}` API
+ * @returns {Object} enriched issue with additional properties set
+ */
+async function enrichIssue(issueLoaded) {
+    const project = projects.value
+        .find(project => project.id === issueLoaded.projectId);
+    const issueType = issueTypes.value
+        .find(issueType => issueType.id === issueLoaded.issueTypeId);
+    const issuePriority = issuePriorities.value
+        .find(issuePriority => issuePriority.id === issueLoaded.issuePriorityId);
+    const issueStatus = issueStatuses.value
+        .find(issueStatus => issueStatus.id === issueLoaded.issueStatusId);
+
+    const done = issueStatus.isDoneStatus;
+
+    return {
+        ...issueLoaded,
+        project,
+        issueType,
+        issuePriority,
+        issueStatus,
+        done,
+        renderedMarkdown: await renderMarkdown(issueLoaded.description),
+        highlightedMarkdown: highlightMarkdown(issueLoaded.description)
+    }
 }
 
 function handleError(e) {
