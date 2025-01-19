@@ -3,6 +3,10 @@
         <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
         <div :class="{'container-xl g-0': !fullWidth}">
+            <div v-if="!issue" class="mt-4">
+                <Loading>Loading issue…</Loading>
+            </div>
+
             <div v-if="issue" class="row">
                 <div class="col-12">
                     <h1 class="mb-0">{{ issue.title }}</h1>
@@ -236,6 +240,7 @@ import Dropdown from "@/components/Dropdown.vue";
 import DropdownItem from "@/components/DropdownItem.vue";
 import Tab from "@/components/Tab.vue";
 import Button from "@/components/Button.vue";
+import Loading from "@/components/Loading.vue";
 import {isOverdue} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
 
