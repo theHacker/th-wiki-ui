@@ -10,7 +10,7 @@
                             icon="plus"
                             title="New issue"
                             color="primary"
-                            @click="console.log('Not yet implemented.')"
+                            @click="$router.push({name: 'issueNew'})"
                         />
                     </div>
                 </div>
@@ -201,7 +201,7 @@
                         icon="plus"
                         title="New issue"
                         color="primary"
-                        @click="console.log('Not yet implemented.')"
+                        @click="$router.push({name: 'issueNew'})"
                     />
                 </div>
             </div>
