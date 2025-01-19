@@ -2,6 +2,15 @@
     <GridLayout>
         <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
+        <DeleteDialog
+            v-if="deleteDialogOpen && deleteDialogOpen.issue"
+            :text='`Do you really want to delete the issue ${deleteDialogOpen.issue.issueKey} "${deleteDialogOpen.issue.title}"?`'
+            :dialogOpen="true"
+            :deleting="deleting"
+            @submit="deleteIssue(deleteDialogOpen.issue.id)"
+            @cancel="deleteDialogOpen = null"
+        />
+
         <div :class="{'container-xl g-0': !fullWidth}">
             <div v-if="!issue" class="mt-4">
                 <Loading>Loading issue…</Loading>
@@ -82,7 +91,7 @@
                                 icon="trash"
                                 title="Delete"
                                 color="danger"
-                                @click="console.log('Not yet implemented.')"
+                                @click="deleteDialogOpen = { issue }"
                             />
                         </div>
                     </div>
@@ -232,7 +241,7 @@ const TabStates = {
 <script setup>
 import GridLayout from "@/components/layout/GridLayout.vue";
 import {ref, watch} from "vue";
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import {renderIcon} from "@/views/issues/issue-functions.js";
 import {highlightMarkdown, renderMarkdown} from "@/markdown.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
@@ -241,10 +250,12 @@ import DropdownItem from "@/components/DropdownItem.vue";
 import Tab from "@/components/Tab.vue";
 import Button from "@/components/Button.vue";
 import Loading from "@/components/Loading.vue";
+import DeleteDialog from "@/components/DeleteDialog.vue";
 import {isOverdue} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
 
 const route = useRoute();
+const router = useRouter();
 
 const projects = ref(null);
 const issueTypes = ref(null);
@@ -257,6 +268,9 @@ const issue = ref(null);
 const fullWidth = ref(false);
 
 const tabState = ref(TabStates.Description);
+
+const deleteDialogOpen = ref(null);
+const deleting = ref(false);
 
 watch(() => route.params.issueId, fetchData, { immediate: true });
 
@@ -328,6 +342,22 @@ async function enrichIssue(issueLoaded) {
         renderedMarkdown: await renderMarkdown(issueLoaded.description),
         highlightedMarkdown: highlightMarkdown(issueLoaded.description)
     }
+}
+
+function deleteIssue(issueId) {
+    deleting.value = true;
+    error.value = null;
+
+    axios
+        .delete(`/issues/${issueId}`)
+        .then(() => {
+            router.push({ name: 'issues' });
+        })
+        .catch(handleError)
+        .finally(() => {
+            deleteDialogOpen.value = null;
+            deleting.value = false;
+        });
 }
 
 function handleError(e) {
