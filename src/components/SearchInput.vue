@@ -16,7 +16,5 @@
 </template>
 
 <script setup>
-import {defineModel} from 'vue';
-
 const text = defineModel({default: ''});
 </script>
