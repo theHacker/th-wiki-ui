@@ -421,8 +421,13 @@ Promise
                 done
             });
         }
-        issues.value = issuesLoaded;
 
+        // Sort issues
+        // Usually, an issue tracker sorts "modificationTime DESC".
+        // For now, the user cannot change the ordering, so we sort like the tasks before have been ordered: by title.
+        issuesLoaded.sort((a, b) => a.title.localeCompare(b.title));
+
+        issues.value = issuesLoaded;
         loading.value = false;
     });
 
