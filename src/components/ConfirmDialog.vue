@@ -10,7 +10,7 @@
                     <h1 class="modal-title fs-5">{{ title }}</h1>
                 </div>
                 <div class="modal-body">
-                    <div>{{ text }}</div>
+                    <div><slot /></div>
                 </div>
                 <div class="modal-footer">
                     <fieldset :disabled="progressing">
@@ -60,10 +60,6 @@ defineProps({
         default: null
     },
     title: {
-        type: String,
-        required: true
-    },
-    text: {
         type: String,
         required: true
     },
