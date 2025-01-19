@@ -133,6 +133,15 @@ $utilities: map-merge(
                 100: 100%,
                 auto: auto
             )
+        ),
+        "margin-bottom": (
+            responsive: true,
+            property: margin-bottom,
+            class: mb,
+            values: map-merge($spacers, (
+                auto: auto,
+                heading: $headings-margin-bottom
+            ))
         )
     )
 );

@@ -244,9 +244,13 @@
                             {{ issue.issueKey }}
                         </td>
                         <td>
-                            <span class="title">
+                            <RouterLink
+                                :to="{ name: 'issue', params: { issueId: issue.id } }"
+                                class="title"
+                            >
                                 {{ issue.title }}
-                            </span>
+                            </RouterLink>
+
                             <span v-if="isOverdue(issue)" class="ms-2" :title="'overdue since ' + issue.dueDate">
                                 <i class="fas fa-clock" />
                             </span>
@@ -495,9 +499,13 @@ table.table {
         td, a {
             color: var(--bs-gray-700);
         }
-        span.title {
+        .title {
             text-decoration: color-mix(in srgb, var(--bs-gray-400) 40%, transparent) 1px solid line-through;
             filter: grayscale(100%); // make emojis in the text also gray
+
+            &:hover {
+                text-decoration-line: underline;
+            }
         }
     }
 }

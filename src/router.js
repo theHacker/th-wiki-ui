@@ -23,6 +23,11 @@ const router = createRouter({
                     path: '',
                     name: 'issues',
                     component: () => import('./views/issues/IssuesView.vue')
+                },
+                {
+                    path: ':issueId([0-9a-f-]+)',
+                    name: 'issue',
+                    component: () => import('./views/issues/IssueView.vue')
                 }
             ]
         },
