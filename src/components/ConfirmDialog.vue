@@ -4,7 +4,7 @@
         :class="{show: dialogOpen}"
         :style="dialogOpen ? 'display: block;' : ''"
     >
-        <div class="modal-dialog modal-dialog-centered">
+        <div :class="modalClass">
             <div class="modal-content">
                 <div class="modal-header" :class="{[`text-bg-${color}`]: true}">
                     <h1 class="modal-title fs-5">{{ title }}</h1>
@@ -43,8 +43,9 @@
 
 <script setup>
 import Button from "@/components/Button.vue";
+import {computed} from "vue";
 
-defineProps({
+const props = defineProps({
     dialogOpen: {
         type: Boolean,
         default: false
@@ -64,6 +65,13 @@ defineProps({
     title: {
         type: String,
         required: true
+    },
+    size: {
+        validator(value, _props) {
+            // see https://getbootstrap.com/docs/5.3/components/modal/#optional-sizes
+            return ['small', 'normal', 'large', 'extra-large', ''].includes(value);
+        },
+        default: 'normal'
     },
     progressing: {
         type: Boolean,
@@ -96,4 +104,29 @@ defineProps({
 });
 
 defineEmits(['submit', 'cancel']);
+
+const modalClass = computed(() => {
+    const classes = {};
+
+    classes['modal-dialog'] = true;
+    classes['modal-dialog-centered'] = true;
+
+    switch (props.size) {
+        case 'small':
+            classes['modal-sm'] = true;
+            break;
+        case 'large':
+            classes['modal-lg'] = true;
+            break;
+        case 'extra-large':
+            classes['modal-xl'] = true;
+            break;
+        case 'normal':
+        default:
+            // no additional class
+            break;
+    }
+
+    return classes;
+});
 </script>
