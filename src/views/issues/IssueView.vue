@@ -10,6 +10,16 @@
             @submit="deleteIssue(deleteDialogOpen.issue.id)"
             @cancel="deleteDialogOpen = null"
         />
+
+        <DeleteDialog
+            v-if="deleteDialogOpen && deleteDialogOpen.issueLink"
+            :text='`Do you really want to delete the issue link "${deleteDialogOpen.issueLink.caption} ${deleteDialogOpen.issueLink.issueKey}: ${deleteDialogOpen.issueLink.title}"?`'
+            :dialogOpen="true"
+            :deleting="deleting"
+            @submit="deleteIssueLink(deleteDialogOpen.issueLink.id)"
+            @cancel="deleteDialogOpen = null"
+        />
+
         <ConfirmDialog
             v-if="moveToAnotherProjectDialog"
             color="success"
@@ -56,12 +66,67 @@
             </div>
         </ConfirmDialog>
 
+        <ConfirmDialog
+            v-if="addIssueLinkDialog"
+            color="success"
+            title="Link to another issue"
+            size="large"
+            :dialogOpen="true"
+            :progressing="linkingIssue"
+            submitIcon="diagram-predecessor"
+            submitTitle="Link"
+            :submitDisabled="addIssueLinkSubmitDisabled"
+            cancelIcon="xmark"
+            cancelTitle="Cancel"
+            @submit="linkIssues(issue.id, addIssueLinkDialog.issueLinkType, addIssueLinkDialog.otherIssueId)"
+            @cancel="addIssueLinkDialog = null"
+        >
+            <fieldset
+                :disabled="false"
+                class="row g-2 align-items-center"
+            >
+                <div class="col-auto">
+                    This issue
+                </div>
+                <div class="col-auto">
+                    <select
+                        v-model="addIssueLinkDialog.issueLinkType"
+                        class="form-select"
+                    >
+                        <template v-for="issueLinkType in issueLinkTypes">
+                            <option
+                                :value="{ id: issueLinkType.id, inverse: false }"
+                            >{{ issueLinkType.wording }}</option>
+                            <option
+                                v-if="issueLinkType.wordingInverse"
+                                :value="{ id: issueLinkType.id, inverse: true }"
+                            >{{ issueLinkType.wordingInverse }}</option>
+                        </template>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <select
+                        v-model="addIssueLinkDialog.otherIssueId"
+                        class="form-select"
+                    >
+                        <template v-for="issueInAllIssues in allIssues">
+                            <option
+                                :value="issueInAllIssues.id"
+                                :disabled="issueInAllIssues.id === issue.id"
+                            >{{ issueInAllIssues.issueKey }}: {{ issueInAllIssues.title }}</option>
+                        </template>
+                    </select>
+                </div>
+                <div class="col-auto">.</div>
+            </fieldset>
+        </ConfirmDialog>
+
         <div :class="{'container-xl g-0': !fullWidth}">
-            <div v-if="!issue" class="mt-4">
+            <div v-if="!issue || !issueLinks" class="mt-4">
                 <Loading>Loading issue…</Loading>
             </div>
 
-            <div v-if="issue" class="row">
+            <div v-if="issue && issueLinks" class="row">
                 <div class="col-12">
                     <h1 class="mb-0">{{ issue.title }}</h1>
                     <div class="mb-heading hstack gap-2">
@@ -91,6 +156,13 @@
                                         title="Metadata"
                                         :active="tabState === TabStates.Metadata"
                                         @click="tabState = TabStates.Metadata"
+                                    />
+                                    <Tab
+                                        icon="diagram-predecessor"
+                                        title="Links"
+                                        :badge="issueLinks.length > 0 ? issueLinks.length.toString() : null"
+                                        :active="tabState === TabStates.Links"
+                                        @click="tabState = TabStates.Links"
                                     />
                                     <Tab
                                         icon="paperclip"
@@ -128,7 +200,14 @@
                                 <DropdownItem
                                     icon="truck-arrow-right"
                                     title="Move to another project"
+                                    fixedWidth
                                     @click="moveToProjectId = null; moveToAnotherProjectDialog = true;"
+                                />
+                                <DropdownItem
+                                    icon="diagram-predecessor"
+                                    title="Link to another issue"
+                                    fixedWidth
+                                    @click="addNewIssueLink"
                                 />
                             </Dropdown>
 
@@ -176,6 +255,56 @@
                                 <div>{{ new Date(issue.modificationTime).toLocaleString() }}</div>
                             </div>
                         </div>
+                    </div>
+
+                    <div v-else-if="tabState === TabStates.Links">
+                        <template v-for="linkGroup in linkGroups">
+                            <h2 class="fs-5">This issue {{ linkGroup.caption }}</h2>
+                            <table class="table table-responsive table-sm table-hover align-middle mb-5 linkGroup">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Key</th>
+                                        <th>Title</th>
+                                        <th>Commands</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-group-divider">
+                                    <tr v-for="link in linkGroup.links">
+                                        <td>
+                                            <i :class="`fas fa-${linkGroup.icon} text-${linkGroup.iconColor}`" />
+                                        </td>
+                                        <td>
+                                            <span class="pe-2">{{ link.issueKey }}</span>
+                                        </td>
+                                        <td>
+                                            <RouterLink :to="{ name: 'issue', params: { issueId: link.issueId } }">
+                                                 {{ link.title }}
+                                            </RouterLink>
+                                        </td>
+                                        <td>
+                                            <Button
+                                                icon="trash"
+                                                tooltip="Delete"
+                                                size="small"
+                                                fixedWidth
+                                                color="danger"
+                                                @click="openDeleteIssueLinkDialog(linkGroup.caption, link)"
+                                            />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
+                        <p v-if="issueLinks.length === 0">No links.</p>
+
+                        <Button
+                            icon="plus"
+                            title="Add link"
+                            color="success"
+                            @click="addNewIssueLink"
+                        />
                     </div>
 
                     <div v-else-if="tabState === TabStates.Attachments">
@@ -287,13 +416,22 @@ const TabStates = {
     Description: Symbol('Description'),
     Markdown: Symbol('Markdown'),
     Metadata: Symbol('Metadata'),
+    Links: Symbol('Links'),
     Attachments: Symbol('Attachments')
+};
+
+const issueLinkTypeIcons = {
+    subtask: 'sitemap',
+    blocker: 'road-barrier',
+    cause: 'bolt',
+    relates: 'right-left',
+    duplicate: 'copy'
 };
 </script>
 
 <script setup>
 import GridLayout from "@/components/layout/GridLayout.vue";
-import {ref, watch} from "vue";
+import {computed, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {renderIcon} from "@/views/issues/issue-functions.js";
 import {highlightMarkdown, renderMarkdown} from "@/markdown.js";
@@ -315,9 +453,12 @@ const projects = ref(null);
 const issueTypes = ref(null);
 const issuePriorities = ref(null);
 const issueStatuses = ref(null);
+const issueLinkTypes = ref(null);
+const allIssues = ref(null); // TODO move to a separate component (and load only on demand)
 
 const error = ref(null);
 const issue = ref(null);
+const issueLinks = ref(null);
 
 const fullWidth = ref(false);
 
@@ -330,6 +471,130 @@ const moveToAnotherProjectDialog = ref(false);
 const moveToProjectId = ref(null);
 const movingToAnotherProject = ref(false);
 
+const addIssueLinkDialog = ref(null);
+const linkingIssue = ref(false);
+
+const linkGroups = computed(() => {
+    // Can only be computed, if all needed data is present
+    if (issue.value === null || issueLinkTypes.value === null || issueLinks.value === null || allIssues.value === null) {
+        return [];
+    }
+
+    // Loop over issueLinkTypes so have their order (they come by a specific order from the API)
+    const groups = [];
+    for (let issueLinkType of issueLinkTypes.value) {
+
+        const linksMatchingThisType = issueLinks.value
+            .filter(it => it.issueLinkTypeId === issueLinkType.id);
+
+        if (linksMatchingThisType.length === 0) {
+            continue;
+        }
+
+        if (issueLinkType.wordingInverse) {
+            // directed link type
+
+            const linksMatchingForward = linksMatchingThisType.filter(it => it.issue1Id === issue.value.id);
+            if (linksMatchingForward.length > 0) {
+                const links = linksMatchingForward.map(link => {
+                    const linkedIssue = allIssues.value.find(issue => issue.id === link.issue2Id);
+
+                    return {
+                        issueLinkId: link.id,
+                        issueId: linkedIssue.id,
+                        issueKey: linkedIssue.issueKey,
+                        title: linkedIssue.title
+                    };
+                });
+
+                groups.push({
+                    caption: issueLinkType.wording,
+                    iconColor: 'danger-emphasis',
+                    icon: issueLinkTypeIcons[issueLinkType.type],
+                    links
+                });
+            }
+
+            const linksMatchingInverse = linksMatchingThisType.filter(it => it.issue2Id === issue.value.id);
+            if (linksMatchingInverse.length > 0) {
+                const links = linksMatchingInverse.map(link => {
+                    const linkedIssue = allIssues.value.find(issue => issue.id === link.issue1Id);
+
+                    return {
+                        issueLinkId: link.id,
+                        issueId: linkedIssue.id,
+                        issueKey: linkedIssue.issueKey,
+                        title: linkedIssue.title
+                    };
+                });
+
+                groups.push({
+                    caption: issueLinkType.wordingInverse,
+                    iconColor: 'warning-emphasis',
+                    icon: issueLinkTypeIcons[issueLinkType.type],
+                    links
+                });
+            }
+        } else {
+            // undirected link type
+
+            const linksMatchingAnyDirection = linksMatchingThisType
+                .filter(it => it.issue1Id === issue.value.id || it.issue2Id === issue.value.id);
+            // Invariant: (linksMatchingAnyDirection equals linksMatchingThisType) && (linksMatchingAnyDirection.length > 0)
+
+            if (linksMatchingAnyDirection.length > 0) {
+                const links = linksMatchingAnyDirection.map(link => {
+                    const linkedIssue = allIssues.value
+                        .find(it => (it.id === link.issue1Id || it.id === link.issue2Id) && it.id !== issue.value.id);
+
+                    return {
+                        issueLinkId: link.id,
+                        issueId: linkedIssue.id,
+                        issueKey: linkedIssue.issueKey,
+                        title: linkedIssue.title
+                    };
+                });
+
+                groups.push({
+                    caption: issueLinkType.wording,
+                    iconColor: 'warning-emphasis',
+                    icon: issueLinkTypeIcons[issueLinkType.type],
+                    links
+                });
+            }
+        }
+    }
+
+    return groups;
+});
+
+const addIssueLinkSubmitDisabled = computed(() => {
+    // Option selected?
+
+    if (addIssueLinkDialog.value?.issueLinkType == null) {
+        return true;
+    }
+    if (addIssueLinkDialog.value?.otherIssueId == null) {
+        return true;
+    }
+
+    // Check if selected options would lead to an already existing link
+
+    const existingLinks = issueLinks.value
+        .filter(it =>
+            it.issueLinkTypeId === addIssueLinkDialog.value.issueLinkType.id &&
+            (it.issue1Id === addIssueLinkDialog.value.otherIssueId ||
+                it.issue2Id === addIssueLinkDialog.value.otherIssueId)
+        );
+    if (existingLinks.length > 0) {
+        return true;
+    }
+
+    // All clear
+
+    return false;
+});
+
 watch(() => route.params.issueId, fetchData, { immediate: true });
 
 function fetchData(id) {
@@ -339,16 +604,22 @@ function fetchData(id) {
     Promise
         .all([
             axios.get(`/issues/${id}`),
+            axios.get(`/issue-links?issueId=${id}`),
             axios.get(`/projects`),
             axios.get(`/issue-types`),
             axios.get(`/issue-priorities`),
-            axios.get(`/issue-statuses`)
+            axios.get(`/issue-statuses`),
+            axios.get(`/issue-link-types`),
+            axios.get(`/issues?fields=id,issueKey,title`)
         ])
         .then(async responses => {
-            projects.value = responses[1].data;
-            issueTypes.value = responses[2].data;
-            issuePriorities.value = responses[3].data;
-            issueStatuses.value = responses[4].data;
+            issueLinks.value = responses[1].data;
+            projects.value = responses[2].data;
+            issueTypes.value = responses[3].data;
+            issuePriorities.value = responses[4].data;
+            issueStatuses.value = responses[5].data;
+            issueLinkTypes.value = responses[6].data;
+            allIssues.value = responses[7].data;
 
             issue.value = await enrichIssue(responses[0].data);
         })
@@ -436,6 +707,65 @@ function deleteIssue(issueId) {
         });
 }
 
+function addNewIssueLink() {
+    // Switch to tab (if called from the "Actions" menu)
+    tabState.value = TabStates.Links;
+
+    // Open dialog
+    addIssueLinkDialog.value = {
+        issueLinkType: null,
+        otherIssueId: null
+    };
+}
+
+function linkIssues(issueId, issueLinkType, otherIssueId) {
+    error.value = null;
+    linkingIssue.value = true;
+
+    axios
+        .post(`/issue-links`, {
+            issue1Id: (issueLinkType.inverse) ? otherIssueId : issueId,
+            issue2Id: (issueLinkType.inverse) ? issueId : otherIssueId,
+            issueLinkTypeId: issueLinkType.id
+        })
+        .then(response => {
+            issueLinks.value.push(response.data);
+        })
+        .catch(handleError)
+        .finally(() => {
+            addIssueLinkDialog.value = null;
+            linkingIssue.value = false;
+        });
+}
+
+function openDeleteIssueLinkDialog(caption, issueLink) {
+    deleteDialogOpen.value = {
+        issueLink: {
+            id: issueLink.issueLinkId,
+            caption,
+            issueKey: issueLink.issueKey,
+            title: issueLink.title
+        }
+    }
+}
+
+function deleteIssueLink(issueLinkId) {
+    deleting.value = true;
+    error.value = null;
+
+    axios
+        .delete(`/issue-links/${issueLinkId}`)
+        .then(() => {
+            issueLinks.value = issueLinks.value
+                .filter(it => it.id !== issueLinkId);
+        })
+        .catch(handleError)
+        .finally(() => {
+            deleteDialogOpen.value = null;
+            deleting.value = false;
+        });
+}
+
 function handleError(e) {
     if (e.response) {
         error.value = e.response.data.message || e.response.data.error || 'Unknown error';
@@ -452,5 +782,22 @@ function handleError(e) {
 // TODO investigate: Could be a global style, true for all icon+text to not break
 .icon-link {
     white-space: nowrap;
+}
+
+.table.linkGroup {
+
+    td:nth-child(1) {
+        width: 32px;
+        text-align: center;
+    }
+    td:nth-child(2) {
+        width: 10%;
+    }
+    td:nth-child(4) {
+        $countButtons: 1;
+
+        width: calc($countButtons * 32px + ($countButtons - 1) * 0.25rem);
+        text-align: center;
+    }
 }
 </style>
