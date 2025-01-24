@@ -33,6 +33,8 @@ $font-sizes: (
     7: $font-size-base * 0.75 // Note: This is smaller than "small" (small = 0.875), used e.g. in the footer
 );
 
+$enable-negative-margins: true;
+
 $body-bg-dark: hsl(221deg, 14%, 9%);
 $body-color-dark: hsl(221deg, 14%, 71%);
 $nav-tabs-border-color: hsl(221deg, 14%, 24%);
