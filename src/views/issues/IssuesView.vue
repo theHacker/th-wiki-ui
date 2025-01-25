@@ -58,6 +58,33 @@
                         </div>
 
                         <div class="col-12">
+                            <label class="form-label">Sorting</label>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-lg-12 col-xl-6">
+                            <label class="form-label">Sort function</label>
+
+                            <select v-model="sorting.sortFunctionTitle" class="form-select">
+                                <option v-for="sortFunction in sortFunctions" :value="sortFunction.title">
+                                    {{ sortFunction.title }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg-12 col-xl-6">
+                            <div class="form-check">
+                                <input
+                                    v-model="sorting.sortInverse"
+                                    id="checkboxSortInverse"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                />
+                                <label class="form-check-label" for="checkboxSortInverse">
+                                    Sort inverse
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
                             <label class="form-label">Filters</label>
 
                             <div class="hstack gap-3">
@@ -226,7 +253,7 @@
                 </thead>
                 <tbody>
                     <tr
-                        v-for="issue in issuesFiltered"
+                        v-for="issue in issuesFilteredAndSorted"
                         :key="issue.id"
                         :class="{ overdue: isOverdue(issue), done: issue.done }"
                     >
@@ -286,14 +313,14 @@
                             </div>
                         </td>
                     </tr>
-                    <tr v-if="issuesFiltered.length === 0">
+                    <tr v-if="issuesFilteredAndSorted.length === 0">
                         <td colspan="5" class="text-center">
                             <i>No issues.</i>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <div v-if="issuesFiltered.length === 0 && isFilterSet()" class="d-flex justify-content-center mt-4">
+            <div v-if="issuesFilteredAndSorted.length === 0 && isFilterSet()" class="d-flex justify-content-center mt-4">
                 <Button
                     icon="xmark"
                     title="Clear all filters"
@@ -314,6 +341,64 @@ import GridLayout from "@/components/layout/GridLayout.vue";
 import {renderIcon, isOverdue} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
 
+const sortFunctions = [
+    {
+        title: 'Modification time',
+        func: (a, b) => -a.modificationTime.localeCompare(b.modificationTime)
+    },
+    {
+        title: 'Key',
+        func: (a, b) => {
+            const projectCmp = a.project.prefix.localeCompare(b.project.prefix);
+            if (projectCmp !== 0) {
+                return projectCmp;
+            }
+
+            const aNumber = Number(a.issueKey.replace(RegExp(`^${a.project.prefix}-`), ''));
+            const bNumber = Number(b.issueKey.replace(RegExp(`^${b.project.prefix}-`), ''));
+            return -(aNumber - bNumber);
+        }
+    },
+    {
+        title: 'Priority',
+        func: (a, b) => {
+            const priorityToNumber = issuePriorityId => issuePriorities.value.findIndex(it => it.id === issuePriorityId);
+
+            const aPriority = priorityToNumber(a.issuePriorityId);
+            const bPriority = priorityToNumber(b.issuePriorityId);
+            return -(aPriority - bPriority);
+        }
+    },
+    {
+        title: 'Status',
+        func: (a, b) => {
+            const statusToNumber = issueStatusId => issueStatuses.value.findIndex(it => it.id === issueStatusId);
+
+            const aStatus = statusToNumber(a.issueStatusId);
+            const bStatus = statusToNumber(b.issueStatusId);
+            return aStatus - bStatus;
+        }
+    },
+    {
+        title: 'Type',
+        func: (a, b) => {
+            const typeToNumber = issueTypeId => issueTypes.value.findIndex(it => it.id === issueTypeId);
+
+            const aType = typeToNumber(a.issueTypeId);
+            const bType = typeToNumber(b.issueTypeId);
+            return aType - bType;
+        }
+    },
+    {
+        title: 'Title',
+        func: (a, b) => a.title.localeCompare(b.title)
+    },
+    {
+        title: 'Creation time',
+        func: (a, b) => -a.creationTime.localeCompare(b.creationTime)
+    }
+];
+
 const filter = ref({
     search: '',
     projectId: null,
@@ -321,6 +406,10 @@ const filter = ref({
     issuePriorityId: null,
     issueStatusId: null,
     showDone: false
+});
+const sorting = ref({
+    sortFunctionTitle: sortFunctions[0].title,
+    sortInverse: false
 });
 
 const issues = ref([]);
@@ -384,6 +473,18 @@ const issuesFiltered = computed(() => {
     });
 });
 
+const issuesFilteredAndSorted = computed(() => {
+    const sortFunction = sortFunctions
+        .find(it => it.title === sorting.value.sortFunctionTitle)
+        .func;
+
+    const sortFunctionToUse = (sorting.value.sortInverse)
+        ? (a, b) => -sortFunction(a, b)
+        : sortFunction;
+
+    return issuesFiltered.value.toSorted(sortFunctionToUse);
+});
+
 Promise
     .all([
         axios.get(`/issues`),
@@ -421,11 +522,6 @@ Promise
                 done
             });
         }
-
-        // Sort issues
-        // Usually, an issue tracker sorts "modificationTime DESC".
-        // For now, the user cannot change the ordering, so we sort like the tasks before have been ordered: by title.
-        issuesLoaded.sort((a, b) => a.title.localeCompare(b.title));
 
         issues.value = issuesLoaded;
         loading.value = false;
