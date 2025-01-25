@@ -320,7 +320,7 @@ const filter = ref({
     issueTypeId: null,
     issuePriorityId: null,
     issueStatusId: null,
-    showDone: true
+    showDone: false
 });
 
 const issues = ref([]);
@@ -333,7 +333,7 @@ const loading = ref(true);
 
 const showFilters = ref(true);
 
-const showKeys = ref(false);
+const showKeys = ref(true);
 const showIcons = ref(true);
 const denseTable = ref(false);
 
