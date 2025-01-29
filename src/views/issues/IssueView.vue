@@ -317,7 +317,14 @@
                         </div>
 
                         <div v-else-if="linksTabState === LinksTabStates.Graph">
-                            <div v-if="issueLinks.length > 0" v-html="dependencyGraphSvg" class="dependencyGraph mb-5" />
+                            <DependencyGraph
+                                v-if="issueLinks.length > 0"
+                                :issue="issue"
+                                :issueLinkTypes="issueLinkTypes"
+                                :issueLinks="issueLinks"
+                                :allIssues="allIssues"
+                                class="mb-5"
+                            />
                         </div>
 
                         <p v-if="issueLinks.length === 0">No links.</p>
@@ -471,9 +478,9 @@ import Button from "@/components/Button.vue";
 import Loading from "@/components/Loading.vue";
 import DeleteDialog from "@/components/DeleteDialog.vue";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import DependencyGraph from "@/components/issues/DependencyGraph.vue";
 import {isOverdue} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
-import {computedAsync} from "@vueuse/core";
 
 const route = useRoute();
 const router = useRouter();
@@ -596,64 +603,6 @@ const linkGroups = computed(() => {
     }
 
     return groups;
-});
-
-const dependencyGraphSvg = computedAsync(async () => {
-    // Can only be computed, if all needed data is present
-    if (issue.value === null || issueLinkTypes.value === null || issueLinks.value === null || allIssues.value === null) {
-        return null;
-    }
-
-    // Build mermaid source
-    //
-    // Implementation note:
-    // In Mermaid it's no error to define a node twice (only the last definition is taken). We use that for now.
-
-    let dependencyGraphMermaid = 'flowchart LR\n';
-
-    const escapeMermaid = str => str
-        .replaceAll('&', '&amp;') // HTML entities
-        .replaceAll('"', '&quot;') // " delimits the node's caption
-        .replaceAll('#', '#35;'); // # is the Mermaid escaper, see https://mermaid.js.org/syntax/flowchart.html#special-characters-that-break-syntax
-
-    dependencyGraphMermaid += '  ' + issue.value.issueKey + '["' + issue.value.issueKey + ':\n' + escapeMermaid(issue.value.title) + '"]\n';
-    dependencyGraphMermaid += '  style ' + issue.value.issueKey + ' stroke: #00ff00, fill: #0f1f0f\n';
-
-    let edgeIndex = 0;
-    for (let issueLink of issueLinks.value) {
-        const issue1 = allIssues.value.find(it => it.id === issueLink.issue1Id);
-        const issue2 = allIssues.value.find(it => it.id === issueLink.issue2Id);
-
-        dependencyGraphMermaid += '  ' + issue1.issueKey + '["<small>' + issue1.issueKey + '</small>\n' + escapeMermaid(issue1.title) + '"]\n';
-        dependencyGraphMermaid += '  ' + issue2.issueKey + '["<small>' + issue2.issueKey + '</small>\n' + escapeMermaid(issue2.title) + '"]\n';
-
-        const issueLinkType = issueLinkTypes.value.find(it => it.id === issueLink.issueLinkTypeId);
-
-        let linkStyle, linkColor;
-        if (issueLinkType.type === 'subtask') {
-            linkStyle = '-- is subtask for -->';
-            linkColor = 'limegreen';
-        } else if (issueLinkType.type === 'blocker') {
-            linkStyle = '-- blocks -->';
-            linkColor = 'crimson';
-        } else if (issueLinkType.type === 'cause') {
-            linkStyle = '-- causes -->';
-            linkColor = 'yellow';
-        } else if (issueLinkType.type === 'relates') {
-            // linkStyle = '.. relates to ..';
-            linkStyle = '<-. relates to .->'; // without arrows on both sides does not work (Mermaid bug?)
-            linkColor = 'aqua';
-        } else if (issueLinkType.type === 'duplicate') {
-            linkStyle = '-. duplicates .->';
-            linkColor = 'violet';
-        }
-
-        dependencyGraphMermaid += `  ${issue1.issueKey} ${linkStyle} ${issue2.issueKey}` + '\n';
-        dependencyGraphMermaid += `  linkStyle ${edgeIndex++} stroke: ${linkColor}, color: ${linkColor}` + '\n';
-    }
-
-    const dependencyGraphMarkdown = '```mermaid\n' + dependencyGraphMermaid + '\n```';
-    return await renderMarkdown(dependencyGraphMarkdown);
 });
 
 const addIssueLinkSubmitDisabled = computed(() => {
@@ -865,35 +814,6 @@ function handleError(e) {
     }
 }
 </script>
-
-<style lang="scss">
-// <svg> does not work scoped
-.dependencyGraph svg {
-    .nodeLabel {
-        // Make issue key a little less prominent
-        small {
-            font-size: 0.7em;
-            opacity: .5;
-        }
-
-        p {
-            text-align: left; // issue key to the left, the title is centered anyway
-            line-height: 1.1; // Mermaid does 1.5 hardcoded, we move issue key and title closer together
-        }
-    }
-
-    .labelBkg {
-        // Disable background, .edgeLabel also has a background
-        background: none !important; // needs "!important" to override Mermaid's #id selector
-
-        .edgeLabel,
-        .edgeLabel p {
-            background-color: hsla(0, 0%, 34.4117647059%, .1) !important; // needs "!important" to override Mermaid's #id selector
-            font-size: 0.9em;
-        }
-    }
-}
-</style>
 
 <style lang="scss" scoped>
 // Avoid nasty wrapping of "in progress"
