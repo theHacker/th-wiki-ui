@@ -319,7 +319,22 @@
                         </div>
 
                         <div v-else-if="linksTabState === LinksTabStates.Graph">
-                            <DependencyGraph :issueId="issue.id" class="mb-5" />
+                            <div class="d-flex gap-2">
+                                <label for="rangeDependencyGraphDepth" class="form-label text-nowrap">
+                                    Render dependency graph to depth
+                                </label>
+                                <input
+                                    v-model="dependencyGraphDepth"
+                                    id="rangeDependencyGraphDepth"
+                                    type="range"
+                                    class="form-range w-50 w-sm-25"
+                                    min="0"
+                                    max="10"
+                                />
+                                <span>{{ dependencyGraphDepth }}</span>
+                            </div>
+
+                            <DependencyGraph :issueId="issue.id" :depth="dependencyGraphDepth" class="mb-5" />
                         </div>
 
                         <Button
@@ -490,6 +505,7 @@ const issue = ref(null);
 const issueLinks = ref(null);
 
 const fullWidth = ref(false);
+const dependencyGraphDepth = ref(1);
 
 const tabState = ref(TabStates.Description);
 const linksTabState = ref(LinksTabStates.Table);
