@@ -81,7 +81,7 @@ const dependencyGraphSvg = computedAsync(async () => {
         return null;
     }
 
-    const issue = involvedIssues.value[props.issueId];
+    const thisIssue = involvedIssues.value[props.issueId];
 
     // Build mermaid source
     //
@@ -90,16 +90,25 @@ const dependencyGraphSvg = computedAsync(async () => {
 
     let dependencyGraphMermaid = 'flowchart LR\n';
 
-    dependencyGraphMermaid += '  ' + issue.issueKey + '["<small>' + issue.issueKey + '</small>\n' + escapeMermaid(issue.title) + '"]\n';
-    dependencyGraphMermaid += '  style ' + issue.issueKey + ' stroke: #00ff00, fill: #0f1f0f\n';
+    const nodes = new Set(); // remember which nodes are already in the Mermaid source
+
+    function addIssueNode(issue) {
+        if (nodes.has(issue.issueKey)) return;
+
+        dependencyGraphMermaid += '  ' + issue.issueKey + '["<small>' + issue.issueKey + '</small>\n' + escapeMermaid(issue.title) + '"]\n';
+        nodes.add(issue.issueKey);
+    }
+
+    addIssueNode(thisIssue)
+    dependencyGraphMermaid += '  style ' + thisIssue.issueKey + ' stroke: #00ff00, fill: #0f1f0f\n';
 
     let edgeIndex = 0;
     for (let issueLink of issueLinks.value) {
         const issue1 = involvedIssues.value[issueLink.issue1Id];
         const issue2 = involvedIssues.value[issueLink.issue2Id];
 
-        dependencyGraphMermaid += '  ' + issue1.issueKey + '["<small>' + issue1.issueKey + '</small>\n' + escapeMermaid(issue1.title) + '"]\n';
-        dependencyGraphMermaid += '  ' + issue2.issueKey + '["<small>' + issue2.issueKey + '</small>\n' + escapeMermaid(issue2.title) + '"]\n';
+        addIssueNode(issue1);
+        addIssueNode(issue2);
 
         const issueLinkType = issueLinkTypes.value.find(it => it.id === issueLink.issueLinkTypeId);
 
