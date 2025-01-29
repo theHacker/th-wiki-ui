@@ -21,6 +21,13 @@ const props = defineProps({
     }
 });
 
+function escapeMermaid(str) {
+    return str
+        .replaceAll('&', '&amp;') // HTML entities
+        .replaceAll('"', '&quot;') // " delimits the node's caption
+        .replaceAll('#', '#35;'); // # is the Mermaid escaper, see https://mermaid.js.org/syntax/flowchart.html#special-characters-that-break-syntax
+}
+
 const dependencyGraphSvg = computedAsync(async () => {
     // Can only be computed, if all needed data is present
     if (props.issue === null || props.issueLinkTypes === null || props.issueLinks === null || props.allIssues === null) {
@@ -33,11 +40,6 @@ const dependencyGraphSvg = computedAsync(async () => {
     // In Mermaid it's no error to define a node twice (only the last definition is taken). We use that for now.
 
     let dependencyGraphMermaid = 'flowchart LR\n';
-
-    const escapeMermaid = str => str
-        .replaceAll('&', '&amp;') // HTML entities
-        .replaceAll('"', '&quot;') // " delimits the node's caption
-        .replaceAll('#', '#35;'); // # is the Mermaid escaper, see https://mermaid.js.org/syntax/flowchart.html#special-characters-that-break-syntax
 
     dependencyGraphMermaid += '  ' + props.issue.issueKey + '["' + props.issue.issueKey + ':\n' + escapeMermaid(props.issue.title) + '"]\n';
     dependencyGraphMermaid += '  style ' + props.issue.issueKey + ' stroke: #00ff00, fill: #0f1f0f\n';
