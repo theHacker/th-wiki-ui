@@ -1,25 +1,72 @@
 <template>
-    <div v-html="dependencyGraphSvg" class="dependencyGraph" />
+    <div>
+        <Loading v-if="issueLinkTypes === null || involvedIssues === null" />
+        <div v-html="dependencyGraphSvg" class="dependencyGraph" />
+    </div>
 </template>
 
 <script setup>
+import Loading from "@/components/Loading.vue";
 import {computedAsync} from "@vueuse/core";
 import {renderMarkdown} from "@/markdown.js";
+import {onMounted, ref, watch} from "vue";
+import axios from "@/axios.js";
 
 const props = defineProps({
-    issue: {
-        type: Object
-    },
-    issueLinkTypes: {
-        type: Array
-    },
-    issueLinks: {
-        type: Array
-    },
-    allIssues: {
-        type: Array
+    issueId: {
+        type: String,
+        required: true
     }
 });
+
+const issueLinkTypes = ref(null);
+const issueLinks = ref(null);
+const involvedIssues = ref(null);
+
+watch(() => props.issueId, fetchData, { immediate: true });
+
+onMounted(() => {
+    axios
+        .get(`/issue-link-types`)
+        .then(response => {
+            issueLinkTypes.value = response.data;
+        });
+});
+
+async function fetchData() {
+    issueLinks.value = null;
+    involvedIssues.value = null;
+
+    // Load links
+    const issueLinksResponse = await axios.get(`/issue-links?issueId=${props.issueId}`);
+    issueLinks.value = issueLinksResponse.data;
+
+    // What issues to load?
+    const issueIdsToFetch = new Set();
+    issueIdsToFetch.add(props.issueId);
+
+    for (let issueLink of issueLinks.value) {
+        issueIdsToFetch.add(issueLink.issue1Id);
+        issueIdsToFetch.add(issueLink.issue2Id);
+    }
+
+    // Load issues involved
+    // TODO load in one request -> API only allows to fetch one at a time for now
+    const issueRequests = issueIdsToFetch
+        .values()
+        .map(issueId => axios.get(`/issues/${issueId}?fields=id,issueKey,title`));
+
+    Promise
+        .all(issueRequests)
+        .then(responses => {
+            const issues = {};
+            for (let response of responses) {
+                issues[response.data.id] = response.data;
+            }
+
+            involvedIssues.value = issues;
+        });
+}
 
 function escapeMermaid(str) {
     return str
@@ -30,9 +77,11 @@ function escapeMermaid(str) {
 
 const dependencyGraphSvg = computedAsync(async () => {
     // Can only be computed, if all needed data is present
-    if (props.issue === null || props.issueLinkTypes === null || props.issueLinks === null || props.allIssues === null) {
+    if (involvedIssues.value === null || issueLinkTypes.value === null) {
         return null;
     }
+
+    const issue = involvedIssues.value[props.issueId];
 
     // Build mermaid source
     //
@@ -41,18 +90,18 @@ const dependencyGraphSvg = computedAsync(async () => {
 
     let dependencyGraphMermaid = 'flowchart LR\n';
 
-    dependencyGraphMermaid += '  ' + props.issue.issueKey + '["' + props.issue.issueKey + ':\n' + escapeMermaid(props.issue.title) + '"]\n';
-    dependencyGraphMermaid += '  style ' + props.issue.issueKey + ' stroke: #00ff00, fill: #0f1f0f\n';
+    dependencyGraphMermaid += '  ' + issue.issueKey + '["<small>' + issue.issueKey + '</small>\n' + escapeMermaid(issue.title) + '"]\n';
+    dependencyGraphMermaid += '  style ' + issue.issueKey + ' stroke: #00ff00, fill: #0f1f0f\n';
 
     let edgeIndex = 0;
-    for (let issueLink of props.issueLinks) {
-        const issue1 = props.allIssues.find(it => it.id === issueLink.issue1Id);
-        const issue2 = props.allIssues.find(it => it.id === issueLink.issue2Id);
+    for (let issueLink of issueLinks.value) {
+        const issue1 = involvedIssues.value[issueLink.issue1Id];
+        const issue2 = involvedIssues.value[issueLink.issue2Id];
 
         dependencyGraphMermaid += '  ' + issue1.issueKey + '["<small>' + issue1.issueKey + '</small>\n' + escapeMermaid(issue1.title) + '"]\n';
         dependencyGraphMermaid += '  ' + issue2.issueKey + '["<small>' + issue2.issueKey + '</small>\n' + escapeMermaid(issue2.title) + '"]\n';
 
-        const issueLinkType = props.issueLinkTypes.find(it => it.id === issueLink.issueLinkTypeId);
+        const issueLinkType = issueLinkTypes.value.find(it => it.id === issueLink.issueLinkTypeId);
 
         let linkStyle, linkColor;
         if (issueLinkType.type === 'subtask') {

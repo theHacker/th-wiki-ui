@@ -314,20 +314,13 @@
                                     </tbody>
                                 </table>
                             </template>
+
+                            <p v-if="issueLinks.length === 0">No links.</p>
                         </div>
 
                         <div v-else-if="linksTabState === LinksTabStates.Graph">
-                            <DependencyGraph
-                                v-if="issueLinks.length > 0"
-                                :issue="issue"
-                                :issueLinkTypes="issueLinkTypes"
-                                :issueLinks="issueLinks"
-                                :allIssues="allIssues"
-                                class="mb-5"
-                            />
+                            <DependencyGraph :issueId="issue.id" class="mb-5" />
                         </div>
-
-                        <p v-if="issueLinks.length === 0">No links.</p>
 
                         <Button
                             icon="plus"
