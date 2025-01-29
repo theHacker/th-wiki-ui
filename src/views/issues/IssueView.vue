@@ -229,7 +229,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-9 order-1 order-lg-0">
+                <div :class="hideFieldsPanel ? 'col-12' : 'col-12 col-lg-9 order-1 order-lg-0'">
                     <div v-if="tabState === TabStates.Description">
                         <article v-html="issue.renderedMarkdown" />
                     </div>
@@ -350,7 +350,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-3 order-0 order-lg-1 mb-3 mb-lg-0">
+                <div :class="hideFieldsPanel ? 'd-none' : 'col-12 col-lg-3 order-0 order-lg-1 mb-3 mb-lg-0'">
                     <div class="card">
                         <div class="card-header text-bg-info">
                             <i class="fas fa-circle-info pe-1" />
@@ -519,6 +519,11 @@ const movingToAnotherProject = ref(false);
 
 const addIssueLinkDialog = ref(null);
 const linkingIssue = ref(false);
+
+const hideFieldsPanel = computed(() => {
+    // Hide the field panel when fullWidth mode is on, and Dependency Graph is visible, so there is more space
+    return fullWidth.value === true && tabState.value === TabStates.Links && linksTabState.value === LinksTabStates.Graph;
+});
 
 const linkGroups = computed(() => {
     // Can only be computed, if all needed data is present
