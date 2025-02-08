@@ -1,13 +1,18 @@
 <template>
     <div class="columns">
         <div class="column is-8 is-offset-2">
-            <h1 class="title">New wiki page</h1>
+            <h1 class="title">Edit wiki page</h1>
 
             <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
+            <div v-if="!entry" class="mt-4">
+                <Loading>Loading entry…</Loading>
+            </div>
+
             <WikiPageEditForm
+                v-if="entry"
                 v-model="entry"
-                submitLabel="Create"
+                submitLabel="Update"
                 :saving="saving"
                 :fieldErrors="fieldErrors"
                 @submit="save"
@@ -19,23 +24,36 @@
 
 <script setup>
 import axios from "@/axios.js";
-import {ref} from 'vue';
-import {useRouter} from "vue-router";
+import {ref, watch} from 'vue';
+import {useRoute, useRouter} from "vue-router";
 import WikiPageEditForm from "@/components/WikiPageEditForm.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
+import Loading from "@/components/Loading.vue";
 
+const route = useRoute();
 const router = useRouter();
 
 const saving = ref(false);
 const error = ref(null);
 const fieldErrors = ref({});
 
-const entry = ref({
-    title: '',
-    parentId: null,
-    content: ''
-    // TODO new field folder
-});
+const entry = ref(null);
+
+watch(() => route.params.entryId, fetchData, { immediate: true });
+
+function fetchData(id) {
+    saving.value = false;
+    fieldErrors.value = {};
+    error.value = null;
+    entry.value = null;
+
+    axios
+        .get('/entries/' + id)
+        .then(response => {
+            entry.value = response.data;
+        })
+        .catch(handleError);
+}
 
 function save() {
     saving.value = true;
@@ -43,7 +61,7 @@ function save() {
     error.value = null;
 
     axios
-        .post('/entries', {
+        .put('/entries/' + entry.value.id, {
             ...entry.value,
             type: 'wiki'
         })
