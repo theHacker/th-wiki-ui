@@ -75,16 +75,12 @@
         </div>
 
         <div class="col-12">
-            <label class="form-label">Content</label>
-            <textarea
+            <MarkdownTextarea
                 v-model="entry.content"
-                class="form-control"
-                :class="{'is-invalid': !!fieldErrors.content}"
-                rows="15"
+                label="Content"
                 placeholder="Content"
+                :errorMessage="fieldErrors.content"
             />
-            <div v-if="fieldErrors.content" class="invalid-feedback">{{ fieldErrors.content }}</div>
-            <div class="form-text">Content will be parsed as Markdown.</div>
         </div>
 
         <div class="hstack gap-2">
@@ -103,6 +99,7 @@
 <script setup>
 import Button from "@/components/Button.vue";
 import ParentSelect from "@/components/general/ParentSelect.vue";
+import MarkdownTextarea from "@/components/general/MarkdownTextarea.vue";
 import {onMounted, onUnmounted, ref} from "vue";
 
 const ctrlDown = ref(false);

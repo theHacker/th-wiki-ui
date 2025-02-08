@@ -91,24 +91,6 @@
 </template>
 
 <script>
-import {Marked} from 'marked';
-import hljs from 'highlight.js/lib/core';
-import markdown from 'highlight.js/lib/languages/markdown';
-
-import 'highlight.js/styles/night-owl.css';
-
-const marked = new Marked();
-
-hljs.registerLanguage('markdown', markdown);
-
-function renderMarkdown(markdown) {
-    return marked.parse(markdown); // TODO Warning: We don't have any protection against malicious HTML! See https://marked.js.org/#installation
-}
-
-function highlightMarkdown(markdown) {
-    return hljs.highlight(markdown, { language: 'markdown' }).value;
-}
-
 const TabStates = {
     Task: Symbol('Task')
 };
@@ -118,6 +100,7 @@ const TabStates = {
 import axios from "@/axios.js";
 import {ref, watch} from 'vue';
 import {useRoute, useRouter} from "vue-router";
+import {renderMarkdown, highlightMarkdown} from "@/markdown.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import Loading from "@/components/Loading.vue";
 import Button from "@/components/Button.vue";
