@@ -9,8 +9,12 @@
                 </div>
             </RouterLink>
 
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-lg-4 me-auto mb-2 mb-lg-0">
+            <button class="navbar-toggler" type="button" @click="showNavBar = !showNavBar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" :class="{ show: showNavBar }">
+                <ul class="navbar-nav flex-row justify-content-around ms-lg-4 me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
                         <RouterLink class="nav-link" to="/">Home</RouterLink>
                     </li>
@@ -40,6 +44,7 @@
 <script setup>
 import {RouterLink} from 'vue-router';
 import SearchInput from "@/components/SearchInput.vue";
+import {ref} from "vue";
 
 let developmentStage = '';
 if (process.env.NODE_ENV === 'development') {
@@ -47,6 +52,8 @@ if (process.env.NODE_ENV === 'development') {
 } else if (window.env.DEVELOPMENT_STAGE || import.meta.env.VITE_DEVELOPMENT_STAGE) {
     developmentStage = window.env.DEVELOPMENT_STAGE || import.meta.env.VITE_DEVELOPMENT_STAGE;
 }
+
+const showNavBar = ref(false);
 </script>
 
 <style lang="scss" scoped>

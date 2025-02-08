@@ -1,10 +1,10 @@
 <template>
     <button :class="buttonClass" :title="tooltip" @click="$emit('click')">
-        <span v-if="icon || loading">
+        <span>
             <i v-if="!loading" :class="iconClass" />
             <i v-if="loading" class="fa fa-spinner fa-pulse" />
         </span>
-        <span v-if="title">{{ title }}</span>
+        <span v-if="title" class="title">{{ title }}</span>
     </button>
 </template>
 
@@ -13,7 +13,8 @@ import {computed} from 'vue';
 
 const props = defineProps({
     icon: {
-        type: String
+        type: String,
+        required: true
     },
     title: {
         type: String

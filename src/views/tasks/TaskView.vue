@@ -33,21 +33,19 @@
                         </div>
                     </div>
 
-                    <div class="buttons">
-                        <div class="hstack gap-2">
-                            <Button
-                                icon="pen"
-                                title="Edit"
-                                color="light"
-                                @click="$router.push({ name: 'taskEdit', params: { entryId: entry.id } });"
-                            />
-                            <Button
-                                icon="trash"
-                                title="Delete"
-                                color="danger"
-                                @click="deleteDialogOpen = { entry }"
-                            />
-                        </div>
+                    <div class="hstack gap-2">
+                        <Button
+                            icon="pen"
+                            title="Edit"
+                            color="light"
+                            @click="$router.push({ name: 'taskEdit', params: { entryId: entry.id } });"
+                        />
+                        <Button
+                            icon="trash"
+                            title="Delete"
+                            color="danger"
+                            @click="deleteDialogOpen = { entry }"
+                        />
                     </div>
                 </div>
 

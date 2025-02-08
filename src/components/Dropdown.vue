@@ -3,10 +3,10 @@
         class="dropdown"
         @click="dropdownOpen = !dropdownOpen"
     >
-        <button type="button" class="btn btn-outline-light dropdown-toggle">
+        <button type="button" class="btn btn-outline-light dropdown-toggle" :class="buttonClass">
             <span class="icon-link">
-                <i v-if="icon" :class="`fas fa-${icon}`" />
-                <span v-if="title">{{ title }}</span>
+                <i :class="`fas fa-${icon}`" />
+                <span v-if="title" class="title">{{ title }}</span>
             </span>
         </button>
         <ul class="dropdown-menu" :class="{ show: dropdownOpen }">
@@ -21,9 +21,13 @@ import {ref} from 'vue';
 const dropdownOpen = ref(false);
 
 defineProps({
-    icon: {
+    buttonClass: {
         type: String,
         required: false
+    },
+    icon: {
+        type: String,
+        required: true
     },
     title: {
         type: String,

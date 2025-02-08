@@ -4,7 +4,7 @@
             <span class="icon-link">
                 <i v-if="loading" class="fas fa-spinner fa-pulse" />
                 <i v-if="!loading" :class="iconClass" />
-                {{ title }}
+                <span class="d-none d-lg-inline">{{ title }}</span>
             </span>
         </a>
     </li>
@@ -15,7 +15,8 @@ import {computed} from 'vue';
 
 const props = defineProps({
     icon: {
-        type: String
+        type: String,
+        required: true
     },
     title: {
         type: String,

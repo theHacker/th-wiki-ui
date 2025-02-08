@@ -19,6 +19,7 @@
                     <div class="card-header text-bg-success">Create a new wiki page</div>
                     <div class="card-body">
                         <Button
+                            icon="plus"
                             title="Create new wiki page"
                             color="primary"
                             @click="$router.push({name: 'wikiPageNew'})"

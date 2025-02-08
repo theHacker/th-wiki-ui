@@ -84,6 +84,7 @@ $btn-box-shadow: 0 0 0 0 transparent;
 @import "node_modules/bootstrap/scss/tables";
 @import "node_modules/bootstrap/scss/forms";
 @import "node_modules/bootstrap/scss/buttons";
+@import "node_modules/bootstrap/scss/transitions";
 @import "node_modules/bootstrap/scss/dropdown";
 @import "node_modules/bootstrap/scss/nav";
 @import "node_modules/bootstrap/scss/navbar";
@@ -201,5 +202,79 @@ strong {
 @each $color, $value in $theme-colors {
     .text-bg-#{$color} .modal-title {
         color: color-contrast($value) if($enable-important-utilities, !important, null);
+    }
+}
+
+// Button and dropdowns responsive "icon + text":
+// - .btn-text-{breakpoint} = text renders only >={breakpoint}, <{breakpoint} only the icon is shown
+// - .btn-text = text renders always [We don't use that, but rather specify no class and expect that as default]
+// - (no class) = text renders always
+//
+// Because of our un-usual default we need a ":not(any breakpoint)" selector.
+
+$notAnyGridBreakpoint: '';
+@each $breakpoint in map-keys($grid-breakpoints) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    $notAnyGridBreakpoint: "#{$notAnyGridBreakpoint}:not(.btn-text#{$infix})";
+}
+
+.btn .title {
+    display: none;
+}
+
+.btn#{$notAnyGridBreakpoint} .title {
+    display: inline;
+}
+
+@each $breakpoint in map-keys($grid-breakpoints) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    @include media-breakpoint-up($breakpoint) {
+        .btn.btn-text#{$infix} .title {
+            display: inline;
+        }
+    }
+}
+
+// <GridLayout>
+// Since we are making use of Bootstrap mixins, we can't put this into Vue SFC.
+
+.gridLayout {
+    &.hasSidebar {
+        grid-template-areas:
+            "header"
+            "sidebar"
+            "main"
+            "footer";
+        grid-template-rows: auto 1fr 2fr auto;
+        grid-template-columns: 1fr;
+    }
+    &:not(.hasSidebar) {
+        grid-template-areas:
+            "header"
+            "main"
+            "footer";
+        grid-template-rows: auto 1fr auto;
+        grid-template-columns: 1fr;
+    }
+
+    @include media-breakpoint-up('md') {
+        &.hasSidebar {
+            grid-template-areas:
+                "header header"
+                "sidebar main"
+                "footer footer";
+            grid-template-rows: auto 1fr auto;
+            grid-template-columns: minmax(250px, 1fr) 3fr;
+        }
+        &:not(.hasSidebar) {
+            grid-template-areas:
+                "header"
+                "main"
+                "footer";
+            grid-template-rows: auto 1fr auto;
+            grid-template-columns: 1fr;
+        }
     }
 }
