@@ -32,7 +32,6 @@
             <ConfirmDialog
                 :dialogOpen="convertToTaskDialog"
                 title="Convert wiki page to task"
-                text="Do you really want to convert this wiki page to a task? As of now, this operation cannot be undone."
                 color="warning"
                 :progressing="convertingToTask"
                 submitIcon="bolt"
@@ -41,7 +40,10 @@
                 cancelTitle="Cancel"
                 @submit="convertWikiPageToTask"
                 @cancel="convertToTaskDialog = false"
-            />
+            >
+                Do you really want to convert this wiki page to a task?
+                As of now, this operation cannot be undone.
+            </ConfirmDialog>
 
             <div v-if="entry && !noPage">
                 <h1>{{ entry.title }}</h1>

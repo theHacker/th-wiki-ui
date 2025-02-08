@@ -4,13 +4,13 @@
         :class="{show: dialogOpen}"
         :style="dialogOpen ? 'display: block;' : ''"
     >
-        <div class="modal-dialog modal-dialog-centered">
+        <div :class="modalClass">
             <div class="modal-content">
                 <div class="modal-header" :class="{[`text-bg-${color}`]: true}">
                     <h1 class="modal-title fs-5">{{ title }}</h1>
                 </div>
                 <div class="modal-body">
-                    <div>{{ text }}</div>
+                    <div><slot /></div>
                 </div>
                 <div class="modal-footer">
                     <fieldset :disabled="progressing">
@@ -19,6 +19,7 @@
                                 :icon="submitIcon"
                                 :title="submitTitle"
                                 :color="color"
+                                :disabled="submitDisabled"
                                 :loading="progressing"
                                 @click="$emit('submit')"
                             />
@@ -26,6 +27,7 @@
                                 :icon="cancelIcon"
                                 :title="cancelTitle"
                                 color="light"
+                                :disabled="cancelDisabled"
                                 @click="$emit('cancel')"
                             />
                         </div>
@@ -41,8 +43,9 @@
 
 <script setup>
 import Button from "@/components/Button.vue";
+import {computed} from "vue";
 
-defineProps({
+const props = defineProps({
     dialogOpen: {
         type: Boolean,
         default: false
@@ -63,9 +66,12 @@ defineProps({
         type: String,
         required: true
     },
-    text: {
-        type: String,
-        required: true
+    size: {
+        validator(value, _props) {
+            // see https://getbootstrap.com/docs/5.3/components/modal/#optional-sizes
+            return ['small', 'normal', 'large', 'extra-large', ''].includes(value);
+        },
+        default: 'normal'
     },
     progressing: {
         type: Boolean,
@@ -79,6 +85,10 @@ defineProps({
         type: String,
         default: 'Yes'
     },
+    submitDisabled: {
+        type: Boolean,
+        default: false
+    },
     cancelIcon: {
         type: String,
         default: 'xmark'
@@ -86,8 +96,37 @@ defineProps({
     cancelTitle: {
         type: String,
         default: 'No'
+    },
+    cancelDisabled: {
+        type: Boolean,
+        default: false
     }
 });
 
 defineEmits(['submit', 'cancel']);
+
+const modalClass = computed(() => {
+    const classes = {};
+
+    classes['modal-dialog'] = true;
+    classes['modal-dialog-centered'] = true;
+
+    switch (props.size) {
+        case 'small':
+            classes['modal-sm'] = true;
+            break;
+        case 'large':
+            classes['modal-lg'] = true;
+            break;
+        case 'extra-large':
+            classes['modal-xl'] = true;
+            break;
+        case 'normal':
+        default:
+            // no additional class
+            break;
+    }
+
+    return classes;
+});
 </script>

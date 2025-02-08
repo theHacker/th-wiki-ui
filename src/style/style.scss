@@ -33,6 +33,8 @@ $font-sizes: (
     7: $font-size-base * 0.75 // Note: This is smaller than "small" (small = 0.875), used e.g. in the footer
 );
 
+$enable-negative-margins: true;
+
 $body-bg-dark: hsl(221deg, 14%, 9%);
 $body-color-dark: hsl(221deg, 14%, 71%);
 $nav-tabs-border-color: hsl(221deg, 14%, 24%);
@@ -91,6 +93,8 @@ $btn-box-shadow: 0 0 0 0 transparent;
 @import "node_modules/bootstrap/scss/navbar";
 @import "node_modules/bootstrap/scss/card";
 @import "node_modules/bootstrap/scss/badge";
+@import "node_modules/bootstrap/scss/progress";
+@import "node_modules/bootstrap/scss/list-group";
 @import "node_modules/bootstrap/scss/modal";
 
 @import "node_modules/bootstrap/scss/helpers/color-bg";
@@ -119,6 +123,27 @@ $utilities: map-merge(
                 75: .75,
                 100: 1
             )
+        ),
+        "width": (
+            responsive: true,
+            property: width,
+            class: w,
+            values: (
+                25: 25%,
+                50: 50%,
+                75: 75%,
+                100: 100%,
+                auto: auto
+            )
+        ),
+        "margin-bottom": (
+            responsive: true,
+            property: margin-bottom,
+            class: mb,
+            values: map-merge($spacers, (
+                auto: auto,
+                heading: $headings-margin-bottom
+            ))
         )
     )
 );

@@ -12,9 +12,34 @@ const router = createRouter({
             component: HomeView
         },
         {
-            path: '/demo',
-            name: 'demo',
-            component: () => import('./views/DemoView.vue')
+            path: '/admin',
+            name: 'admin',
+            component: () => import('./views/admin/AdminView.vue')
+        },
+        {
+            path: '/issues',
+            children: [
+                {
+                    path: '',
+                    name: 'issues',
+                    component: () => import('./views/issues/IssuesView.vue')
+                },
+                {
+                    path: 'new',
+                    name: 'issueNew',
+                    component: () => import('./views/issues/IssueNewView.vue')
+                },
+                {
+                    path: ':issueId([0-9a-f-]+)',
+                    name: 'issue',
+                    component: () => import('./views/issues/IssueView.vue')
+                },
+                {
+                    path: ':issueId([0-9a-f-]+)/edit',
+                    name: 'issueEdit',
+                    component: () => import('./views/issues/IssueEditView.vue')
+                }
+            ]
         },
         {
             path: '/tasks',

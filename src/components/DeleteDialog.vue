@@ -2,7 +2,6 @@
     <ConfirmDialog
         :dialogOpen="dialogOpen"
         title="Really delete?"
-        :text="text"
         color="danger"
         :progressing="deleting"
         submitIcon="trash"
@@ -11,7 +10,9 @@
         cancelTitle="Cancel"
         @submit="$emit('submit')"
         @cancel="$emit('cancel')"
-    />
+    >
+        {{ text }}
+    </ConfirmDialog>
 </template>
 
 <script setup>

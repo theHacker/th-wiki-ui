@@ -25,13 +25,19 @@
                         <RouterLink class="nav-link" to="/tasks">Tasks</RouterLink>
                     </li>
                     <li class="nav-item">
-                        <RouterLink class="nav-link" to="/demo">Issues</RouterLink>
+                        <RouterLink class="nav-link" to="/issues">Issues</RouterLink>
                     </li>
                 </ul>
 
                 <span v-if="developmentStage" class="d-none d-lg-block navbar-text me-auto fs-3 text-danger">
                     – {{ developmentStage }} –
                 </span>
+
+                <ul class="navbar-nav flex-row justify-content-around me-lg-4 mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <RouterLink class="nav-link" to="/admin">Administration</RouterLink>
+                    </li>
+                </ul>
 
                 <div class="d-flex">
                     <SearchInput />
