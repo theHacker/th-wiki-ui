@@ -134,7 +134,7 @@ import Button from "@/components/Button.vue";
 import SearchInput from "@/components/SearchInput.vue";
 import {computed, ref} from "vue";
 import axios from "@/axios.js";
-import {arrayToTree, treeToFlatArray} from "@/helper/tree.js";
+import {treeifyArray} from "@/helper/tree.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 
@@ -147,26 +147,29 @@ const entries = ref([]);
 const loading = ref(true);
 
 const filteredEntries = computed(() => {
+    let result;
     if (search.value || hideDone.value) {
         const searchLowercase = search.value.toLowerCase();
 
         // When filter is active, we don't use the tree.
         // This avoids lost hits, when a child matches, but one of the parents doesn't.
-        return entries.value.filter(entry => {
-            if (searchLowercase && !entry.title.toLowerCase().includes(searchLowercase)) {
-                return false;
-            }
-            if (hideDone.value && entry.done) {
-                return false;
-            }
+        result = entries.value
+            .filter(entry => {
+                if (searchLowercase && !entry.title.toLowerCase().includes(searchLowercase)) {
+                    return false;
+                }
+                if (hideDone.value && entry.done) {
+                    return false;
+                }
 
-            return true;
-        });
+                return true;
+            })
+            .map(item => ({...item, parentId: null}));
     } else {
-        const tree = arrayToTree(entries.value, e => e.id, e => e.parentId, e => e.title);
-
-        return treeToFlatArray(tree);
+        result = entries.value;
     }
+
+    return treeifyArray(result, e => e.id, e => e.parentId, e => e.title);
 });
 
 axios

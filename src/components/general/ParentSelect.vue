@@ -26,7 +26,7 @@
 <script setup>
 import axios from "@/axios.js";
 import {ref} from 'vue';
-import {arrayToTree, treeToFlatArray} from "@/helper/tree.js";
+import {treeifyArray} from "@/helper/tree.js";
 
 const entryId = defineModel();
 
@@ -54,10 +54,9 @@ function optionIndent(entry) {
 axios
     .get(`/entries?type=${props.type}&fields=id,parentId,title`)
     .then(response => {
-        const tree = arrayToTree(response.data, e => e.id, e => e.parentId, e => e.title);
-        const flatArray = treeToFlatArray(tree);
+        const treeArray = treeifyArray(response.data, e => e.id, e => e.parentId, e => e.title);
 
         loading.value = false;
-        entries.value = flatArray;
+        entries.value = treeArray;
     });
 </script>

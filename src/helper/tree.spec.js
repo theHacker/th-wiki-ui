@@ -1,19 +1,15 @@
 import {describe, it, expect} from 'vitest';
-import {arrayToTree} from './tree.js';
+import {treeifyArray} from './tree.js';
 
-describe('arrayToTree()', () => {
+describe('treeifyArray()', () => {
 
     describe('flat hierarchies', () => {
 
-        it('returns an empty root with level 0 in case of empty input', () => {
+        it('returns an empty list in case of empty input', () => {
             const noop = (_object) => "";
-            const result = arrayToTree([], noop, noop, noop);
+            const result = treeifyArray([], noop, noop, noop);
 
-            expect(result).toStrictEqual({
-                root: true,
-                level: 0,
-                children: []
-            });
+            expect(result).toStrictEqual([]);
         });
 
         it('returns all objects sorted linearly, when there is no parentId set anywhere', () => {
@@ -24,51 +20,51 @@ describe('arrayToTree()', () => {
                 { id: 4, title: "Zzz", parentId: null },
                 { id: 5, title: "Aaa", parentId: null }
             ]
-            const result = arrayToTree(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
+            const result = treeifyArray(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
 
-            expect(result).toStrictEqual({
-                root: true,
-                level: 0,
-                children: [
-                    { id: 5, title: "Aaa", parentId: null, level: 1, children: [] },
-                    { id: 3, title: "Bar", parentId: null, level: 1, children: [] },
-                    { id: 2, title: "Foo", parentId: null, level: 1, children: [] },
-                    { id: 1, title: "Hello", parentId: null, level: 1, children: [] },
-                    { id: 4, title: "Zzz", parentId: null, level: 1, children: [] }
-                ]
-            });
+            expect(result).toStrictEqual([
+                { id: 5, title: "Aaa", parentId: null, level: 1, lines: '┌' },
+                { id: 3, title: "Bar", parentId: null, level: 1, lines: '├' },
+                { id: 2, title: "Foo", parentId: null, level: 1, lines: '├' },
+                { id: 1, title: "Hello", parentId: null, level: 1, lines: '├' },
+                { id: 4, title: "Zzz", parentId: null, level: 1, lines: '└' }
+            ]);
         });
 
-        it('returns all properties the objects have, plus the level and children', () => {
+        it('returns all properties the objects have, plus level and lines', () => {
             const objects = [
                 { id: 1, title: "Foo", parentId: null, foo: true, bar: 42 },
                 { id: 2, title: "Bar", parentId: null, foo: false, bazzzz: "4711", tags: ['red', 'green'] }
             ]
-            const result = arrayToTree(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
+            const result = treeifyArray(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
 
-            expect(result).toStrictEqual({
-                root: true,
-                level: 0,
-                children: [
-                    {
-                        id: 2, title: "Bar", parentId: null, foo: false, bazzzz: "4711", tags: ['red', 'green'],
-                        level: 1,
-                        children: []
-                    },
-                    {
-                        id: 1, title: "Foo", parentId: null, foo: true, bar: 42,
-                        level: 1,
-                        children: []
-                    }
-                ]
-            });
+            expect(result).toStrictEqual([
+                {
+                    id: 2, title: "Bar", parentId: null, foo: false, bazzzz: "4711", tags: ['red', 'green'],
+                    level: 1, lines: '┌'
+                },
+                {
+                    id: 1, title: "Foo", parentId: null, foo: true, bar: 42,
+                    level: 1, lines: '└'
+                }
+            ]);
         });
 
+        it('a tree with only one element has no lines', () => {
+            const objects = [
+                { id: 1, title: "Single", parentId: null }
+            ]
+            const result = treeifyArray(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
+
+            expect(result).toStrictEqual([
+                { id: 1, title: "Single", parentId: null, level: 1, lines: ' ' }
+            ]);
+        });
     });
 
     describe('deep hierarchies', () => {
 
-        it('creates the tree structure correctly, one level only', () => {
+        it('sorted all items correctly into the tree structure correctly, one level only', () => {
             const objects = [
                 { id: 1, title: "Hello", parentId: 5 },
                 { id: 2, title: "Foo", parentId: 4 },
@@ -76,33 +72,22 @@ describe('arrayToTree()', () => {
                 { id: 4, title: "Zzz", parentId: null },
                 { id: 5, title: "Aaa", parentId: null }
             ]
-            const result = arrayToTree(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
+            const result = treeifyArray(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
 
-            expect(result).toStrictEqual({
-                root: true,
-                level: 0,
-                children: [
-                    {
-                        id: 5,
-                        title: "Aaa",
-                        parentId: null,
-                        level: 1,
-                        children: [
-                            { id: 3, title: "Bar", parentId: 5, level: 2, children: [] },
-                            { id: 1, title: "Hello", parentId: 5, level: 2, children: [] }
-                        ]
-                    },
-                    {
-                        id: 4,
-                        title: "Zzz",
-                        parentId: null,
-                        level: 1,
-                        children: [
-                            { id: 2, title: "Foo", parentId: 4, level: 2, children: [] }
-                        ]
-                    }
-                ]
-            });
+            /*
+             * ┌ Aaa
+             * │ ├ Bar
+             * │ └ Hello
+             * └ Zzz
+             *   └ Foo
+             */
+            expect(result).toStrictEqual([
+                { id: 5, title: "Aaa", parentId: null, level: 1, lines: '┌' },
+                { id: 3, title: "Bar", parentId: 5, level: 2, lines: '│├' },
+                { id: 1, title: "Hello", parentId: 5, level: 2, lines: '│└' },
+                { id: 4, title: "Zzz", parentId: null, level: 1, lines: '└' },
+                { id: 2, title: "Foo", parentId: 4, level: 2, lines: ' └' }
+            ]);
         });
 
         it('creates the tree structure correctly, multiple levels', () => {
@@ -122,74 +107,46 @@ describe('arrayToTree()', () => {
                 { id: 4221, title: "D232", parentId: 422 },
                 { id: 10, title: "A1", parentId: 1 },
                 { id: 100, title: "A11", parentId: 10 },
-                { id: 101, title: "A12", parentId: 10 },
+                { id: 101, title: "A12", parentId: 10 }
             ]
-            const result = arrayToTree(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
+            const result = treeifyArray(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
 
-            expect(result).toStrictEqual({
-                root: true,
-                level: 0,
-                children: [
-                    {
-                        id: 1,
-                        title: "A",
-                        parentId: null,
-                        level: 1,
-                        children: [
-                            {
-                                id: 10,
-                                title: "A1",
-                                parentId: 1,
-                                level: 2,
-                                children: [
-                                    { id: 100, title: "A11", parentId: 10, level: 3, children: [] },
-                                    { id: 101, title: "A12", parentId: 10, level: 3, children: [] }
-                                ]
-                            }
-                        ]
-                    },
-                    { id: 2, title: "B", parentId: null, level: 1, children: [] },
-                    {
-                        id: 3,
-                        title: "C",
-                        parentId: null,
-                        level: 1,
-                        children: [
-                            { id: 30, title: "C1", parentId: 3, level: 2, children: [] }
-                        ]
-                    },
-                    {
-                        id: 4,
-                        title: "D",
-                        parentId: null,
-                        level: 1,
-                        children: [
-                            { id: 41, title: "D1", parentId: 4, level: 2, children: [] },
-                            {
-                                id: 42,
-                                title: "D2",
-                                parentId: 4,
-                                level: 2,
-                                children: [
-                                    { id: 420, title: "D21", parentId: 42, level: 3, children: [] },
-                                    { id: 421, title: "D22", parentId: 42, level: 3, children: [] },
-                                    {
-                                        id: 422,
-                                        title: "D23",
-                                        parentId: 42,
-                                        level: 3,
-                                        children: [
-                                            { id: 4220, title: "D231", parentId: 422, level: 4, children: [] },
-                                            { id: 4221, title: "D232", parentId: 422, level: 4, children: [] }
-                                        ]
-                                    },
-                                ]
-                            },
-                            { id: 40, title: "D3", parentId: 4, level: 2, children: [] }
-                        ]
-                    }
-                ]
-            });
+            /*
+             * ┌ A
+             * │ └ A1
+             * │   ├ A11
+             * │   └ A12
+             * ├ B
+             * ├ C
+             * │ └ C1
+             * └ D
+             *   ├ D1
+             *   ├ D2
+             *   │ ├ D21
+             *   │ ├ D22
+             *   │ └ D23
+             *   │   ├ D231
+             *   │   └ D232
+             *   └ D3
+             */
+            expect(result).toStrictEqual([
+                { id: 1, title: "A", parentId: null, level: 1, lines: '┌' },
+                { id: 10, title: "A1", parentId: 1, level: 2, lines: '│└' },
+                { id: 100, title: "A11", parentId: 10, level: 3, lines: '│ ├' },
+                { id: 101, title: "A12", parentId: 10, level: 3, lines: '│ └' },
+                { id: 2, title: "B", parentId: null, level: 1, lines: '├' },
+                { id: 3, title: "C", parentId: null, level: 1, lines: '├' },
+                { id: 30, title: "C1", parentId: 3, level: 2, lines: '│└' },
+                { id: 4, title: "D", parentId: null, level: 1, lines: '└' },
+                { id: 41, title: "D1", parentId: 4, level: 2, lines: ' ├' },
+                { id: 42, title: "D2", parentId: 4, level: 2, lines: ' ├' },
+                { id: 420, title: "D21", parentId: 42, level: 3, lines: ' │├' },
+                { id: 421, title: "D22", parentId: 42, level: 3, lines: ' │├' },
+                { id: 422, title: "D23", parentId: 42, level: 3, lines: ' │└' },
+                { id: 4220, title: "D231", parentId: 422, level: 4, lines: ' │ ├' },
+                { id: 4221, title: "D232", parentId: 422, level: 4, lines: ' │ └' },
+                { id: 40, title: "D3", parentId: 4, level: 2, lines: ' └' }
+            ]);
         });
     });
 
@@ -200,7 +157,7 @@ describe('arrayToTree()', () => {
             const objects = [
                 { id: 1, title: "Boooom", parentId: 1 }
             ]
-            const testBody = () => arrayToTree(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
+            const testBody = () => treeifyArray(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
 
             expect(testBody).toThrow("Cycle detected: ID 1 --> ID 1");
         });
@@ -210,7 +167,7 @@ describe('arrayToTree()', () => {
                 { id: 1, title: "Chicken", parentId: 2 },
                 { id: 2, title: "Egg", parentId: 1 }
             ]
-            const testBody = () => arrayToTree(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
+            const testBody = () => treeifyArray(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
 
             expect(testBody).toThrow("Cycle detected: ID 2 --> ID 1 --> ID 2");
         });
@@ -230,7 +187,7 @@ describe('arrayToTree()', () => {
                 { id: 82, title: "Cycle 3", parentId: 81 },
                 { id: 83, title: "Cycle 4", parentId: 82 }
             ]
-            const testBody = () => arrayToTree(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
+            const testBody = () => treeifyArray(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
 
             expect(testBody).toThrow("Cycle detected: ID 4 --> ID 83 --> ID 82 --> ID 81 --> ID 80 --> ID 8 --> ID 4");
         });
@@ -243,7 +200,7 @@ describe('arrayToTree()', () => {
             const objects = [
                 { id: 1, title: "Boooom", parentId: 2 }
             ]
-            const testBody = () => arrayToTree(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
+            const testBody = () => treeifyArray(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
 
             expect(testBody).toThrow("Orphan detected: ID 1 --> ID 2 (not existing)");
         });
@@ -254,7 +211,7 @@ describe('arrayToTree()', () => {
                 { id: 2, title: "Level 2", parentId: 3 },
                 { id: 3, title: "Level 3", parentId: 4 }
             ]
-            const testBody = () => arrayToTree(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
+            const testBody = () => treeifyArray(objects, obj => obj.id, obj => obj.parentId, obj => obj.title);
 
             expect(testBody).toThrow("Orphan detected: ID 1 --> ID 2 --> ID 3 --> ID 4 (not existing)");
         });
