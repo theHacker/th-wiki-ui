@@ -1,14 +1,52 @@
 <template>
     <div class="panel">
         <div class="panel-block">
-            <SearchInput v-model="search" />
+            <div class="level">
+                <div class="level-left">
+                    <div class="level-item">
+                        <SearchInput v-model="search" />
+                    </div>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <Button
+                            title="New page"
+                            color="primary"
+                            @click="$router.push({name: 'wikiPageNew'})"
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div v-if="loading" class="panel-block">
             <Loading />
         </div>
         <div v-if="!loading" class="panel-block">
-            <Tree :items="filteredWikiPages" />
+            <Tree :items="filteredWikiPages">
+                <template #default="{ item }">
+                    <RouterLink
+                        v-slot="{ route, isExactActive, navigate }"
+                        :to="{ name: 'wikiPage', params: { entryId: item.id } }"
+                        custom
+                    >
+                        <div
+                            :class="{ nav: true, active: isExactActive, 'is-clickable': true, 'is-unselectable': true }"
+                            @click="navigate"
+                        >
+                            <span class="icon-text">
+                                <span class="icon">
+                                    <i v-if="item.folder" class="fas fa-folder" />
+                                    <i v-if="!item.folder" class="fas fa-file" />
+                                </span>
+                                <span>
+                                    <a :href="route.href">{{ item.title }}</a>
+                                </span>
+                            </span>
+                        </div>
+                    </RouterLink>
+                </template>
+            </Tree>
         </div>
     </div>
 </template>
@@ -20,6 +58,7 @@ import SearchInput from "@/components/SearchInput.vue";
 import Loading from "@/components/Loading.vue";
 import {arrayToTree} from "@/helper/tree.js";
 import Tree from "@/components/Tree.vue";
+import Button from "@/components/Button.vue";
 
 const search = ref('');
 
@@ -47,16 +86,31 @@ axios
 </script>
 
 <style lang="scss" scoped>
-table {
-    th:nth-child(1),
-    td:nth-child(1) {
-        width: 32px;
-        padding-right: 0;
+ul {
+    width: 100%;
+}
+
+.nav {
+    --bulma-duration: 0; // No color animations please.
+
+    a, .icon {
+        color: var(--bulma-text);
     }
 
-    th:nth-child(2),
-    td:nth-child(2) {
-        padding-left: 0;
+    &:hover {
+        a, .icon {
+            color: var(--bulma-text-strong);
+        }
+    }
+
+    &.active {
+        a, .icon {
+            color: var(--bulma-link);
+        }
+        a {
+            background-color: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-20-l), .5);
+            padding: 2px 2px 2px 0;
+        }
     }
 }
 </style>

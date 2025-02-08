@@ -1,23 +1,18 @@
 <template>
     <ul>
         <li v-for="item in items">
-            <div>
-                <span class="icon-text">
-                    <span class="icon">
-                        <i class="fas fa-file" />
-                    </span>
-                    <span>
-                        <RouterLink :to="{ name: 'wikiPage', params: { entryId: item.id } }">
-                            {{ item.title }}
-                        </RouterLink>
-                    </span>
-                </span>
-            </div>
+            <slot :item="item" />
+
             <div class="ml-5">
                 <Tree
                     v-if="item.children && item.children.length > 0"
                     :items="item.children"
-                />
+                >
+                    <!-- Note: Chain slots through, so it works recursive (see https://github.com/vuejs/vue/issues/5965) -->
+                    <template #default="{ item }">
+                        <slot :item="item" />
+                    </template>
+                </Tree>
             </div>
         </li>
     </ul>
@@ -33,7 +28,7 @@ defineProps({
 </script>
 
 <style lang="scss" scoped>
-.icon-text {
+:deep(.icon-text) {
     --bulma-icon-text-spacing: 0;
 }
 </style>
