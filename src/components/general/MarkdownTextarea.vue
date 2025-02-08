@@ -63,7 +63,8 @@ const ButtonStates = {
 </script>
 
 <script setup>
-import {computed, ref} from "vue";
+import {ref} from "vue";
+import {computedAsync} from "@vueuse/core";
 import Button from "@/components/Button.vue";
 import {renderMarkdown} from "@/markdown.js";
 
@@ -86,9 +87,9 @@ defineProps({
 
 const buttonState = ref(ButtonStates.Text);
 
-const preview = computed(() => {
+const preview = computedAsync(async () => {
     if (buttonState.value === ButtonStates.Preview) {
-        return renderMarkdown(model.value);
+        return await renderMarkdown(model.value);
     } else {
         return null; // don't render on every change when preview is not visible
     }

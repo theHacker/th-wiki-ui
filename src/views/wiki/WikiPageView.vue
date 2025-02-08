@@ -262,10 +262,10 @@ function fetchData(id) {
 
     axios
         .get('/entries/' + id)
-        .then(response => {
+        .then(async response => {
             entry.value = {
                 ...response.data,
-                renderedMarkdown: renderMarkdown(response.data.content),
+                renderedMarkdown: await renderMarkdown(response.data.content),
                 highlightedMarkdown: highlightMarkdown(response.data.content)
             };
             noPage.value = false;
