@@ -1,7 +1,7 @@
 <template>
-    <div class="columns">
-        <div class="column is-8 is-offset-2">
-            <h1 class="title">New wiki page</h1>
+    <GridLayout>
+        <div class="col-12 col-lg-8 offset-lg-2">
+            <h1>New wiki page</h1>
 
             <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
@@ -14,7 +14,7 @@
                 @cancel="cancel"
             />
         </div>
-    </div>
+    </GridLayout>
 </template>
 
 <script setup>
@@ -23,6 +23,7 @@ import {ref} from 'vue';
 import {useRouter} from "vue-router";
 import WikiPageEditForm from "@/components/wiki/WikiPageEditForm.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
+import GridLayout from "@/components/layout/GridLayout.vue";
 
 const router = useRouter();
 

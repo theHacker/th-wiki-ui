@@ -1,13 +1,11 @@
 <template>
-    <article class="message is-warning pb-4">
-        <div class="message-header">
-            <p>
-                <i class="fas fa-circle-info pr-1" />
-                Error
-            </p>
+    <div class="card text-bg-warning mb-4">
+        <div class="card-header">
+            <i class="fas fa-circle-info pe-1" />
+            Error
         </div>
-        <div class="message-body">
+        <div class="card-body">
             <slot />
         </div>
-    </article>
+    </div>
 </template>

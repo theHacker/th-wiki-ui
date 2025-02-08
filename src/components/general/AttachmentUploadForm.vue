@@ -1,57 +1,37 @@
 <template>
-    <h2 class="is-size-5 mb-4">Upload an attachment</h2>
+    <h2 class="fs-5 mb-4">Upload an attachment</h2>
 
-    <fieldset :disabled="uploading">
-        <div class="field">
-            <div class="file has-name is-fullwidth">
-                <label class="file-label">
-                    <input class="file-input" type="file" name="file" @change="onFileChange" />
-                    <span class="file-cta">
-                        <span class="file-icon">
-                            <i class="fas fa-upload" />
-                        </span>
-                        <span class="file-label">Select a file to upload…</span>
-                    </span>
-                    <span class="file-name">
-                        <i v-if="model.file === null">(no file selected)</i>
-                        <span v-else>{{ model.file.name }}</span>
-                    </span>
-                </label>
-            </div>
+    <fieldset :disabled="uploading" class="row g-3">
+        <div class="col-12">
+            <label class="form-label">File to upload</label>
+            <input class="form-control" type="file" name="file" @change="onFileChange" />
         </div>
 
-        <div class="field">
-            <label class="label">Description</label>
-            <div class="control">
-                <textarea
-                    v-model="model.description"
-                    class="textarea"
-                    rows="4"
-                    placeholder="Optional description or comment"
-                />
-            </div>
+        <div class="col-12">
+            <label class="form-label">Description</label>
+            <textarea
+                v-model="model.description"
+                class="form-control"
+                rows="4"
+                placeholder="Optional description or comment"
+            />
         </div>
 
-        <div class="field is-grouped">
-            <div class="control">
-                <Button
-                    icon="check"
-                    title="Upload"
-                    color="link"
-                    :disabled="model.file === null"
-                    :loading="uploading"
-                    @click="$emit('submit')"
-                />
-            </div>
-            <div class="control">
-                <Button
-                    icon="xmark"
-                    title="Cancel"
-                    color="link"
-                    :light="true"
-                    @click="$emit('cancel')"
-                />
-            </div>
+        <div class="hstack gap-2">
+            <Button
+                icon="check"
+                title="Upload"
+                color="primary"
+                :disabled="model.file === null"
+                :loading="uploading"
+                @click="$emit('submit')"
+            />
+            <Button
+                icon="xmark"
+                title="Cancel"
+                color="light"
+                @click="$emit('cancel')"
+            />
         </div>
     </fieldset>
 </template>

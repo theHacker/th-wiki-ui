@@ -1,30 +1,35 @@
 <template>
-    <nav class="navbar is-primary is-background-primary-25 p-1">
-        <div class="navbar-brand">
-            <RouterLink to="/" class="navbar-item">
-                <figure class="image is-48x48">
-                    <img src="/favicon.png" alt="theHacker's Logo" />
-                </figure>
+    <nav class="navbar navbar-expand-md bg-primary">
+        <div class="container-fluid">
+            <RouterLink to="/" class="navbar-brand d-inline-flex align-items-center">
+                <img src="/favicon.png" alt="theHacker's Logo" class="d-inline-block me-2" />
+                <div>
+                    <div>tH-Wiki</div>
+                    <div v-if="developmentStage" class="d-lg-none fs-6 text-danger">{{ developmentStage }}</div>
+                </div>
             </RouterLink>
-            <RouterLink to="/" class="navbar-item subtitle mr-4 logo-link">
-                tH-Wiki
-            </RouterLink>
-        </div>
 
-        <div class="navbar-menu">
-            <div class="navbar-start">
-                <RouterLink class="navbar-item" to="/">Home</RouterLink>
-                <RouterLink class="navbar-item" to="/wiki">Wiki</RouterLink>
-                <RouterLink class="navbar-item" to="/tasks">Tasks</RouterLink>
-                <RouterLink class="navbar-item" to="/demo">Issues</RouterLink>
-            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-lg-4 me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <RouterLink class="nav-link" to="/">Home</RouterLink>
+                    </li>
+                    <li class="nav-item">
+                        <RouterLink class="nav-link" to="/wiki">Wiki</RouterLink>
+                    </li>
+                    <li class="nav-item">
+                        <RouterLink class="nav-link" to="/tasks">Tasks</RouterLink>
+                    </li>
+                    <li class="nav-item">
+                        <RouterLink class="nav-link" to="/demo">Issues</RouterLink>
+                    </li>
+                </ul>
 
-            <div v-if="developmentStage" class="is-align-content-center is-size-3 is-color-danger-50">
-                – {{ developmentStage }} –
-            </div>
+                <span v-if="developmentStage" class="d-none d-lg-block navbar-text me-auto fs-3 text-danger">
+                    – {{ developmentStage }} –
+                </span>
 
-            <div class="navbar-end">
-                <div class="navbar-item">
+                <div class="d-flex">
                     <SearchInput />
                 </div>
             </div>
@@ -46,24 +51,16 @@ if (process.env.NODE_ENV === 'development') {
 
 <style lang="scss" scoped>
 nav {
-    .navbar-item figure img {
-        max-height: unset; // fix Bulma skewing the image
+    img {
+        width: 48px;
+        height: 48px;
     }
 
-    // Bulma does the same for "active" and "focus" as for "hover".
-    // We don't want that.
-    .navbar-item:active:not(:hover),
-    .navbar-item:focus:not(:hover),
-    .navbar-item:focus-within:not(:hover) {
-        background: unset;
+    .nav-link.active {
+        font-weight: bold;
+        text-decoration: underline;
+        text-decoration-thickness: 3px;
+        text-underline-offset: 5px;
     }
-}
-
-nav a.router-link-active:not(.logo-link) {
-    font-weight: bold;
-    text-decoration: underline;
-    text-decoration-thickness: 3px;
-    text-underline-offset: 5px;
-    color: var(--color-text);
 }
 </style>

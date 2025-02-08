@@ -4,6 +4,7 @@ import VersionView from './views/VersionView.vue';
 
 const router = createRouter({
     history: createWebHistory(window.env.BASE_URL || import.meta.env.BASE_URL),
+    linkActiveClass: 'active',
     routes: [
         {
             path: '/',

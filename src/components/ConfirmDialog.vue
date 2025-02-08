@@ -1,15 +1,20 @@
 <template>
-    <div class="modal" :class="{'is-active': dialogOpen}">
-        <div class="modal-background" />
-        <div class="modal-content">
-            <article class="panel" :class="{[`is-${color}`]: true}">
-                <p class="panel-heading">{{ title }}</p>
-                <div class="panel-block">
-                    <p>{{ text }}</p>
+    <div
+        class="modal"
+        :class="{show: dialogOpen}"
+        :style="dialogOpen ? 'display: block;' : ''"
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" :class="{[`text-bg-${color}`]: true}">
+                    <h1 class="modal-title fs-5">{{ title }}</h1>
                 </div>
-                <div class="panel-block">
+                <div class="modal-body">
+                    <div>{{ text }}</div>
+                </div>
+                <div class="modal-footer">
                     <fieldset :disabled="progressing">
-                        <div class="buttons">
+                        <div class="hstack gap-2">
                             <Button
                                 :icon="submitIcon"
                                 :title="submitTitle"
@@ -26,9 +31,12 @@
                         </div>
                     </fieldset>
                 </div>
-            </article>
+            </div>
         </div>
     </div>
+    <Teleport to="body">
+        <div v-if="dialogOpen" class="modal-backdrop fade" :class="{show: dialogOpen}" />
+    </Teleport>
 </template>
 
 <script setup>
@@ -42,14 +50,14 @@ defineProps({
     color: {
         type: String,
         validator(value, _props) {
-            // see https://bulma.io/documentation/elements/button/#colors
+            // see https://getbootstrap.com/docs/5.3/components/buttons/#variants
             return [
-                'white', 'light', 'dark', 'black', 'text', 'ghost',
-                'primary', 'link',
-                'info', 'success', 'warning', 'danger'
+                'primary', 'secondary',
+                'success', 'danger', 'warning', 'info',
+                'light', 'dark', 'link'
             ].includes(value);
         },
-        default: 'warning'
+        default: null
     },
     title: {
         type: String,
@@ -83,9 +91,3 @@ defineProps({
 
 defineEmits(['submit', 'cancel']);
 </script>
-
-<style lang="scss" scoped>
-.modal-content, .modal-card {
-    overflow: unset; // fix Bulma cutting the box-shadow by "overflow: auto"
-}
-</style>

@@ -1,7 +1,8 @@
 <template>
-    <button class="button" :class="buttonClass" :title="tooltip" @click="$emit('click')">
-        <span v-if="icon" class="icon is-small">
-            <i :class="iconClass" />
+    <button :class="buttonClass" :title="tooltip" @click="$emit('click')">
+        <span v-if="icon || loading">
+            <i v-if="!loading" :class="iconClass" />
+            <i v-if="loading" class="fa fa-spinner fa-pulse" />
         </span>
         <span v-if="title">{{ title }}</span>
     </button>
@@ -22,29 +23,25 @@ const props = defineProps({
     },
     size: {
         validator(value, _props) {
-            // see https://bulma.io/documentation/elements/button/#sizes
-            return ['small', 'normal', 'medium', 'large'].includes(value);
+            // see https://getbootstrap.com/docs/5.3/components/buttons/#sizes
+            return ['small', 'normal', 'large'].includes(value);
         },
         default: 'normal'
     },
+    fixedWidth: { // Note: gets ignored for spinner (loading === true)
+        type: Boolean,
+        default: false
+    },
     color: {
         validator(value, _props) {
-            // see https://bulma.io/documentation/elements/button/#colors
+            // see https://getbootstrap.com/docs/5.3/components/buttons/#variants
             return [
-                'white', 'light', 'dark', 'black', 'text', 'ghost',
-                'primary', 'link',
-                'info', 'success', 'warning', 'danger'
+                'primary', 'secondary',
+                'success', 'danger', 'warning', 'info',
+                'light', 'dark', 'link'
             ].includes(value);
         },
         default: 'light'
-    },
-    light: {
-        type: Boolean,
-        default: false
-    },
-    dark: {
-        type: Boolean,
-        default: false
     },
     loading: {
         type: Boolean,
@@ -54,20 +51,42 @@ const props = defineProps({
 
 defineEmits(['click']);
 
-const iconClass = computed(() => `fas fa-${props.icon}`);
+const iconClass = computed(() => {
+    const classes = {};
+
+    classes['fas'] = true;
+    classes[`fa-${props.icon}`] = true;
+
+    if (props.fixedWidth) {
+        classes['fa-fw'] = true;
+    }
+
+    return classes;
+});
+
 const buttonClass = computed(() => {
     const classes = {};
 
-    classes[`is-${props.color}`] = true;
-    classes[`is-${props.size}`] = true;
-    if (props.light) {
-        classes['is-light'] = true;
+    classes['btn'] = true;
+    classes[`btn-${props.color}`] = true;
+
+    if (props.title) {
+        // Only add icon-link if there is a title, not for icon-only buttons.
+        // That centers the icon-only inside the button.
+        classes['icon-link'] = true;
     }
-    if (props.dark) {
-        classes['is-dark'] = true;
-    }
-    if (props.loading) {
-        classes['is-loading'] = true;
+
+    switch (props.size) {
+        case 'small':
+            classes['btn-sm'] = true;
+            break;
+        case 'large':
+            classes['btn-lg'] = true;
+            break;
+        case 'normal':
+        default:
+            // no additional class
+            break;
     }
 
     return classes;

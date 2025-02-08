@@ -1,6 +1,6 @@
 <template>
-    <div class="columns">
-        <div class="column is-8 is-offset-2">
+    <GridLayout>
+        <div class="col-12 col-lg-8 offset-lg-2">
             <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
             <div v-if="!entry" class="mt-4">
@@ -16,13 +16,13 @@
                 @cancel="deleteDialogOpen = null"
             />
 
-            <h1 class="title">{{ entry.title }}</h1>
-
             <div v-if="entry">
-                <div class="columns">
-                    <div class="column">
+                <h1>{{ entry.title }}</h1>
+
+                <div class="d-flex flex-wrap flex-lg-nowrap mb-4">
+                    <div class="flex-grow-1 me-4">
                         <div class="tabs">
-                            <ul>
+                            <ul class="nav nav-tabs">
                                 <Tab
                                     icon="list-check"
                                     title="Task"
@@ -33,8 +33,8 @@
                         </div>
                     </div>
 
-                    <div class="column is-narrow">
-                        <div class="buttons">
+                    <div class="buttons">
+                        <div class="hstack gap-2">
                             <Button
                                 icon="pen"
                                 title="Edit"
@@ -52,44 +52,44 @@
                 </div>
 
                 <div v-if="tabState === TabStates.Task">
-                    <div class="columns">
-                        <div class="column is-6">
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-lg-6">
                             <div>
-                                <input class="checkbox mr-2" type="checkbox" :checked="entry.done" disabled />
+                                <div class="form-check-inline me-2">
+                                    <input class="form-check-input" type="checkbox" :checked="entry.done" disabled />
+                                </div>
                                 <span v-if="entry.progress === 0">Task is not yet started.</span>
                                 <span v-else-if="entry.progress < 100">Task is in progress.</span>
                                 <span v-else-if="entry.progress === 100">Task is done.</span>
                             </div>
 
-                            <div>
+                            <div class="d-flex align-middle">
                                 <progress
-                                    class="progress is-primary mr-1"
+                                    class="me-2"
                                     :value="entry.progress"
                                     max="100"
                                 >{{ entry.progress }}%</progress> {{ entry.progress }}%
                             </div>
                         </div>
 
-                        <div class="column is-6">
+                        <div class="col-12 col-lg-6">
                             <div v-if="entry.dueDate === null">Task has no due date.</div>
                             <div v-else>Task is due {{ new Date(entry.dueDate).toLocaleDateString() }}.</div>
 
                             <div
                                 v-if="isOverdue(entry)"
-                                class="has-text-danger has-text-weight-semibold"
+                                class="text-danger fw-semibold"
                             >Task is overdue.</div>
                         </div>
                     </div>
 
-                    <h2 v-if="entry.content !== ''" class="subtitle">Content</h2>
+                    <h2 v-if="entry.content !== ''">Content</h2>
 
-                    <div class="content">
-                        <div v-html="entry.renderedMarkdown" />
-                    </div>
+                    <div v-html="entry.renderedMarkdown" />
                 </div>
             </div>
         </div>
-    </div>
+    </GridLayout>
 </template>
 
 <script>
@@ -125,6 +125,7 @@ import Loading from "@/components/Loading.vue";
 import Button from "@/components/Button.vue";
 import Tab from "@/components/Tab.vue";
 import DeleteDialog from "@/components/DeleteDialog.vue";
+import GridLayout from "@/components/layout/GridLayout.vue";
 
 const route = useRoute();
 const router = useRouter();
