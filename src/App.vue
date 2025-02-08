@@ -7,12 +7,13 @@
         <RouterView />
     </main>
 
-    <footer class="py-3 is-size-7 has-text-centered has-background-dark">
-        powered by <b>tH-Wiki</b>
+    <footer>
+        <TheFooter />
     </footer>
 </template>
 
 <script setup>
 import {RouterView} from 'vue-router';
 import TheMainNavigation from "@/components/general/TheMainNavigation.vue";
+import TheFooter from "@/components/general/TheFooter.vue";
 </script>

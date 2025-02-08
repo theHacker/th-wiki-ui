@@ -1,0 +1,87 @@
+default:
+  image: node:22.5.1-alpine
+  cache: &global-cache
+    key: "$CI_COMMIT_REF_NAME"
+    paths:
+      - node_modules
+
+stages:
+  - setup
+  - test
+  - build
+  - dockerize
+  - deploy
+
+setup:
+  stage: setup
+  script: npm ci
+  cache:
+    <<: *global-cache
+    policy: push
+
+vitest:
+  stage: test
+  script: npm run test:unit
+  cache:
+    <<: *global-cache
+    policy: pull
+
+# Does not work, no priority to get it running ;-)
+#cypress:
+#  stage: test
+#  image: cypress/base:20.15.1
+#  script:
+#    - npm ci
+#    - npm run preview &
+#    - npx cypress run
+#  cache: []
+#  artifacts:
+#    when: always
+#    paths:
+#      - cypress/screenshots/*
+
+build:
+  stage: build
+  before_script: apk add git # install Git for git-describe
+  script: npm run build
+  cache:
+    <<: *global-cache
+    policy: pull
+  artifacts:
+    paths:
+      - dist/
+
+dockerize:
+  stage: dockerize
+  dependencies:
+    - build
+  tags:
+    - docker-daemon
+  cache: []
+  script:
+    - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - docker build -t $CI_REGISTRY/th-wiki/th-wiki-ui .
+    - docker push $CI_REGISTRY/th-wiki/th-wiki-ui
+
+deploy-test:
+  stage: deploy
+  image: alpine:3.20.2
+  script:
+    - apk add openssh
+    - mkdir -p ~/.ssh
+    - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
+    - chmod 600 "$SSH_PRIVATE_KEY"
+    - ssh -i "$SSH_PRIVATE_KEY" "$SSH_LOGIN" "cd $DOCKER_DIRECTORY_TEST && docker compose pull && docker compose up -d"
+  cache: []
+
+deploy-prod:
+  stage: deploy
+  image: alpine:3.20.2
+  script:
+    - apk add openssh
+    - mkdir -p ~/.ssh
+    - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
+    - chmod 600 "$SSH_PRIVATE_KEY"
+    - ssh -i "$SSH_PRIVATE_KEY" "$SSH_LOGIN" "cd $DOCKER_DIRECTORY_PROD && docker compose pull && docker compose up -d"
+  cache: []
+  when: manual

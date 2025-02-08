@@ -2,10 +2,8 @@ import {fileURLToPath} from 'node:url';
 import {mergeConfig, defineConfig, configDefaults} from 'vitest/config';
 import viteConfig from './vite.config';
 
-// Use defineConfig() to cope with callback viteConfig.
-// See https://github.com/vitest-dev/vitest/issues/4687#issuecomment-1843181549
-export default defineConfig(config => mergeConfig(
-    viteConfig(config),
+export default mergeConfig(
+    viteConfig,
     defineConfig({
         test: {
             environment: 'jsdom',
@@ -13,4 +11,4 @@ export default defineConfig(config => mergeConfig(
             root: fileURLToPath(new URL('./', import.meta.url))
         }
     })
-));
+);
