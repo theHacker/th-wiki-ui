@@ -3,26 +3,14 @@
         <div class="column is-8 is-offset-2">
             <h1 class="title">New wiki page</h1>
 
-            <div v-if="error" class="pb-3">
-                <article class="message is-warning">
-                    <div class="message-header">
-                        <p>
-                            <i class="fas fa-circle-info pr-1" />
-                            Error
-                        </p>
-                    </div>
-                    <div class="message-body">
-                        {{ error }}
-                    </div>
-                </article>
-            </div>
+            <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
             <fieldset :disabled="saving">
                 <div class="field">
                     <label class="label">Title</label>
                     <div class="control">
                         <input
-                            v-model="wikiPage.title"
+                            v-model="entry.title"
                             class="input"
                             :class="{'is-danger': !!fieldErrors.title}"
                             type="text"
@@ -36,14 +24,14 @@
                     <label class="label">Content</label>
                     <div class="control">
                         <textarea
-                            v-model="wikiPage.markdown"
+                            v-model="entry.content"
                             class="textarea"
-                            :class="{'is-danger': !!fieldErrors.markdown}"
+                            :class="{'is-danger': !!fieldErrors.content}"
                             rows="15"
-                            placeholder="Markdown"
+                            placeholder="Content"
                         />
                     </div>
-                    <p v-if="fieldErrors.markdown" class="help is-danger">{{ fieldErrors.markdown }}</p>
+                    <p v-if="fieldErrors.content" class="help is-danger">{{ fieldErrors.content }}</p>
                     <p class="help">Content will be parsed as Markdown.</p>
                 </div>
 
@@ -65,6 +53,7 @@ import axios from "@/axios.js";
 import {ref} from 'vue';
 import {useRouter} from "vue-router";
 import Button from "@/components/Button.vue";
+import ErrorMessage from "@/components/ErrorMessage.vue";
 
 const router = useRouter();
 
@@ -72,9 +61,10 @@ const saving = ref(false);
 const error = ref(null);
 const fieldErrors = ref({});
 
-const wikiPage = ref({
+const entry = ref({
     title: '',
-    markdown: ''
+    content: ''
+    // TODO new fields parentId and folder
 });
 
 function save() {
@@ -83,9 +73,12 @@ function save() {
     error.value = null;
 
     axios
-        .post('/wiki-pages', wikiPage.value)
+        .post('/entries', {
+            ...entry.value,
+            type: 'wiki'
+        })
         .then(response => {
-            router.push({ name: 'wikiPage', params: { wikiPageId: response.data.id } });
+            router.push({ name: 'wikiPage', params: { entryId: response.data.id } });
         })
         .catch(e => {
             handleError(e);

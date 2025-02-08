@@ -28,7 +28,7 @@ const router = createRouter({
                     component: () => import('../views/WikiPageNewView.vue')
                 },
                 {
-                    path: ':wikiPageId([0-9a-f-]+)',
+                    path: ':entryId([0-9a-f-]+)',
                     name: 'wikiPage',
                     component: () => import('../views/WikiPageView.vue')
                 }

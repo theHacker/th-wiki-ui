@@ -5,12 +5,7 @@
         </div>
 
         <div v-if="loading" class="panel-block">
-            <div class="icon-text">
-                <span class="icon">
-                    <i class="fas fa-spinner fa-pulse fa-2x" />
-                </span>
-                <span class="pl-2">Loading…</span>
-            </div>
+            <Loading />
         </div>
         <div v-if="!loading" class="panel-block">
             <table class="table is-fullwidth is-hoverable">
@@ -25,7 +20,7 @@
                         <td><i class="fas fa-file" /></td>
                         <td>
                             <RouterLink
-                                :to="{ name: 'wikiPage', params: { wikiPageId: wikiPage.id } }"
+                                :to="{ name: 'wikiPage', params: { entryId: wikiPage.id } }"
                             >
                                 {{ wikiPage.title }}
                             </RouterLink>
@@ -41,6 +36,7 @@
 import axios from "@/axios.js";
 import {computed, ref} from 'vue';
 import SearchInput from "@/components/SearchInput.vue";
+import Loading from "@/components/Loading.vue";
 
 const search = ref('');
 
@@ -58,7 +54,7 @@ const filteredWikiPages = computed(() => {
 });
 
 axios
-    .get('/wiki-pages')
+    .get('/entries') // TODO only wiki
     .then(response => {
         loading.value = false;
         wikiPages.value = response.data;
