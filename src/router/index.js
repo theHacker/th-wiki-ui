@@ -12,10 +12,27 @@ const router = createRouter({
         {
             path: '/demo',
             name: 'demo',
-            // route level code-splitting
-            // this generates a separate chunk (About.[hash].js) for this route
-            // which is lazy-loaded when the route is visited.
             component: () => import('../views/DemoView.vue')
+        },
+        {
+            path: '/wiki',
+            children: [
+                {
+                    path: '',
+                    name: 'wiki',
+                    component: () => import('../views/WikiView.vue')
+                },
+                {
+                    path: 'new',
+                    name: 'wikiPageNew',
+                    component: () => import('../views/WikiPageNewView.vue')
+                },
+                {
+                    path: ':wikiPageId([0-9a-f-]+)',
+                    name: 'wikiPage',
+                    component: () => import('../views/WikiPageView.vue')
+                }
+            ]
         }
     ]
 });
