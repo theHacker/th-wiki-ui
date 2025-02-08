@@ -5,6 +5,9 @@
                 <i v-if="loading" class="fas fa-spinner fa-pulse" />
                 <i v-if="!loading" :class="iconClass" />
                 <span class="d-none d-lg-inline">{{ title }}</span>
+                <span v-if="badge" class="badge rounded-pill bg-primary">
+                    {{ badge }}
+                </span>
             </span>
         </a>
     </li>
@@ -21,6 +24,10 @@ const props = defineProps({
     title: {
         type: String,
         required: true
+    },
+    badge: {
+        type: String,
+        required: false
     },
     active: {
         type: Boolean,

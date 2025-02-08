@@ -52,7 +52,7 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'wiki',
-                    component: () => import('./views/wiki/WikiView.vue')
+                    component: () => import('./views/wiki/WikiPageView.vue')
                 },
                 {
                     path: 'new',

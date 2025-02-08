@@ -7,7 +7,9 @@
         <template #default>
             <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
-            <div v-if="!entry" class="mt-4">
+            <WikiNoPage v-if="noPage" />
+
+            <div v-if="!entry && !noPage" class="mt-4">
                 <Loading>Loading entry…</Loading>
             </div>
 
@@ -41,7 +43,7 @@
                 @cancel="convertToTaskDialog = false"
             />
 
-            <div v-if="entry">
+            <div v-if="entry && !noPage">
                 <h1>{{ entry.title }}</h1>
 
                 <div class="d-flex flex-wrap flex-lg-nowrap mb-4 row-gap-3">
@@ -69,6 +71,7 @@
                                 <Tab
                                     icon="paperclip"
                                     title="Attachments"
+                                    :badge="attachments.length > 0 ? attachments.length.toString() : null"
                                     :active="tabState === TabStates.Attachments"
                                     @click="tabState = TabStates.Attachments"
                                 />
@@ -98,7 +101,7 @@
                 </div>
 
                 <div v-if="tabState === TabStates.Content">
-                    <div v-html="entry.renderedMarkdown" />
+                    <article v-html="entry.renderedMarkdown" />
                 </div>
 
                 <div v-else-if="tabState === TabStates.Markdown">
@@ -237,9 +240,12 @@ import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import Dropdown from "@/components/Dropdown.vue";
 import DropdownItem from "@/components/DropdownItem.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
+import WikiNoPage from "@/components/wiki/WikiNoPage.vue";
 
 const route = useRoute();
 const router = useRouter();
+
+const noPage = ref(true);
 
 const error = ref(null);
 const entry = ref(null);
@@ -266,6 +272,11 @@ function fetchData(id) {
     entry.value = null;
     attachments.value = [];
 
+    if (id == null) {
+        noPage.value = true;
+        return;
+    }
+
     axios
         .get('/entries/' + id)
         .then(response => {
@@ -274,6 +285,7 @@ function fetchData(id) {
                 renderedMarkdown: renderMarkdown(response.data.content),
                 highlightedMarkdown: highlightMarkdown(response.data.content)
             };
+            noPage.value = false;
         })
         .catch(handleError);
 

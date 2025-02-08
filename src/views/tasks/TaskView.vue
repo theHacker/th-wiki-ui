@@ -83,7 +83,7 @@
 
                     <h2 v-if="entry.content !== ''">Content</h2>
 
-                    <div v-html="entry.renderedMarkdown" />
+                    <article v-html="entry.renderedMarkdown" />
                 </div>
             </div>
         </div>
