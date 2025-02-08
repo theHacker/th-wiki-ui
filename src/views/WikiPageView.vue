@@ -11,13 +11,18 @@
                 <Loading>Loading entry…</Loading>
             </div>
 
-            <div v-if="entry" class="modal" :class="{'is-active': deleteDialogOpen}">
+            <div class="modal" :class="{'is-active': deleteDialogOpen !== null}">
                 <div class="modal-background" />
                 <div class="modal-content">
                     <article class="panel is-danger">
                         <p class="panel-heading">Really delete?</p>
                         <div class="panel-block">
-                            <p>Do you really want to delete the wiki page "{{ entry.title }}"?</p>
+                            <p v-if="deleteDialogOpen && deleteDialogOpen.entry">
+                                Do you really want to delete the wiki page "{{ deleteDialogOpen.entry.title }}"?
+                            </p>
+                            <p v-if="deleteDialogOpen && deleteDialogOpen.attachment">
+                                Do you really want to delete the attachment "{{ deleteDialogOpen.attachment.filename }}"?
+                            </p>
                         </div>
                         <div class="panel-block">
                             <fieldset :disabled="deleting">
@@ -27,13 +32,13 @@
                                         title="Delete"
                                         color="danger"
                                         :loading="deleting"
-                                        @click="deleteEntry"
+                                        @click="(deleteDialogOpen.entry) ? deleteEntry() : (deleteDialogOpen.attachment) ? deleteAttachment(deleteDialogOpen.attachment) : false"
                                     />
                                     <Button
                                         icon="xmark"
                                         title="Cancel"
                                         color="light"
-                                        @click="deleteDialogOpen = false"
+                                        @click="deleteDialogOpen = null"
                                     />
                                 </div>
                             </fieldset>
@@ -96,7 +101,7 @@
                                 icon="trash"
                                 title="Delete"
                                 color="danger"
-                                @click="deleteDialogOpen = true"
+                                @click="deleteDialogOpen = { entry }"
                             />
                         </div>
                     </div>
@@ -139,11 +144,75 @@
                 </div>
 
                 <div v-if="tabState === TabStates.Attachments">
-                    <div class="icon-text is-background-warning-20 p-2">
-                        <span class="icon">
-                            <i class="fas fa-person-digging" />
-                        </span>
-                        <span>Not yet implemented.</span>
+                    <table class="attachments table is-fullwidth is-hoverable">
+                        <thead>
+                            <tr>
+                                <th>Icon</th>
+                                <th>Filename</th>
+                                <th>Description</th>
+                                <th>Size</th>
+                                <th>Commands</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="attachment in attachments">
+                                <td>
+                                   <span class="icon">
+                                       <i :class="attachmentIconClass(attachment)" />
+                                   </span>
+                                </td>
+                                <td>
+                                    {{ attachment.filename }}
+                                </td>
+                                <td>{{ attachment.description }}</td>
+                                <td>{{ attachment.size }}</td>
+                                <td>
+                                    <div class="field is-grouped">
+                                        <div class="control">
+                                            <Button
+                                                icon="eye"
+                                                tooltip="View"
+                                                size="small"
+                                                color="primary"
+                                                @click="openAttachment(attachment, false)"
+                                            />
+                                        </div>
+                                        <div class="control">
+                                            <Button
+                                                icon="download"
+                                                tooltip="Download"
+                                                size="small"
+                                                color="success"
+                                                @click="openAttachment(attachment, true)"
+                                            />
+                                        </div>
+                                        <div class="control">
+                                            <Button
+                                                icon="trash"
+                                                tooltip="Delete"
+                                                size="small"
+                                                color="danger"
+                                                @click="deleteDialogOpen = { attachment }"
+                                            />
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr v-if="attachments.length === 0">
+                                <td colspan="5" class="has-text-centered">
+                                    <i>No attachments.</i>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="block">
+                        <AttachmentUploadForm
+                            v-model="addAttachmentModel"
+                            :uploading="uploadingAttachment"
+                            @submit="uploadAttachment"
+                            @cancel="resetAttachmentForm"
+                        />
                     </div>
                 </div>
 
@@ -197,6 +266,8 @@ import Button from "@/components/Button.vue";
 import Tab from "@/components/Tab.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import Loading from "@/components/Loading.vue";
+import AttachmentUploadForm from "@/components/AttachmentUploadForm.vue";
+import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -204,10 +275,17 @@ const router = useRouter();
 const error = ref(null);
 const entry = ref(null);
 const entryMetadata = ref(null);
+const attachments = ref([]);
+
+const addAttachmentModel = ref({
+    file: null,
+    description: ''
+});
+const uploadingAttachment = ref(false);
 
 const tabState = ref(TabStates.Content);
 
-const deleteDialogOpen = ref(false);
+const deleteDialogOpen = ref(null);
 const deleting = ref(false);
 
 watch(() => route.params.entryId, fetchData, { immediate: true });
@@ -216,16 +294,7 @@ function fetchData(id) {
     error.value = null;
     entry.value = null;
     entryMetadata.value = null;
-
-    const handleError = (e) => {
-        if (e.response) {
-            error.value = e.response.data.message;
-        } else if (error.request) {
-            error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
-        } else {
-            error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
-        }
-    };
+    attachments.value = [];
 
     axios
         .get('/entries/' + id)
@@ -244,6 +313,19 @@ function fetchData(id) {
             entryMetadata.value = response.data;
         })
         .catch(handleError);
+
+    loadAttachments(id);
+}
+
+function loadAttachments(entryId) {
+    attachments.value = [];
+
+    axios
+        .get('/attachments?entryId=' + entryId)
+        .then(response => {
+            attachments.value = response.data;
+        })
+        .catch(handleError);
 }
 
 function deleteEntry() {
@@ -255,17 +337,87 @@ function deleteEntry() {
         .then(() => {
             router.push({ name: 'wiki' });
         })
-        .catch(e => {
-            if (e.response) {
-                error.value = e.response.data.message;
-            } else if (error.request) {
-                error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
-            } else {
-                error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
+        .catch(handleError)
+        .finally(() => {
+            deleteDialogOpen.value = null;
+            deleting.value = false;
+        });
+}
+
+function uploadAttachment() {
+    const entryId = entry.value.id;
+
+    if (!entryId) return;
+
+    error.value = null;
+    uploadingAttachment.value = true;
+
+    const formData = new FormData();
+    formData.append("entryId", entryId);
+    formData.append("file", addAttachmentModel.value.file);
+    formData.append("description", addAttachmentModel.value.description);
+
+    axios
+        .post('/attachments', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
             }
         })
+        .then(() => {
+            resetAttachmentForm();
+            loadAttachments(entryId);
+        })
+        .catch(handleError)
         .finally(() => {
-            deleteDialogOpen.value = false;
+            uploadingAttachment.value = false;
+        });
+}
+
+function resetAttachmentForm() {
+    addAttachmentModel.value = {
+        file: null,
+        description: ''
+    };
+}
+
+function handleError(e) {
+    if (e.response) {
+        error.value = e.response.data.message;
+    } else if (error.request) {
+        error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
+    } else {
+        error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
+    }
+}
+
+function attachmentIconClass(attachment) {
+    const icon = getIconForMimeType(attachment.mimeType);
+
+    return `fas fa-${icon}`;
+}
+
+function openAttachment(attachment, download) {
+    let url = '/api/attachments/' + attachment.id + '/file';
+
+    if (download) {
+        url += '?download=1';
+    }
+
+    window.open(url, '_blank');
+}
+
+function deleteAttachment(attachment) {
+    deleting.value = true;
+    error.value = null;
+
+    axios
+        .delete('/attachments/' + attachment.id)
+        .then(() => {
+            loadAttachments(entry.value.id);
+        })
+        .catch(handleError)
+        .finally(() => {
+            deleteDialogOpen.value = null;
             deleting.value = false;
         });
 }
@@ -274,5 +426,20 @@ function deleteEntry() {
 <style lang="scss" scoped>
 .modal-content, .modal-card {
     overflow: unset; // fix Bulma cutting the box-shadow by "overflow: auto"
+}
+
+.table.attachments {
+    td:nth-child(1) {
+        width: 32px;
+    }
+    td:nth-child(5) {
+        $countButtons: 3;
+
+        width: calc($countButtons * 32px + ($countButtons - 1) * 0.25rem);
+    }
+
+    .is-grouped {
+        gap: 0.25rem; // reduce gap between buttons
+    }
 }
 </style>

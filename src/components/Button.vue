@@ -1,9 +1,9 @@
 <template>
-    <button class="button" :class="buttonClass" @click="$emit('click')">
+    <button class="button" :class="buttonClass" :title="tooltip" @click="$emit('click')">
         <span v-if="icon" class="icon is-small">
             <i :class="iconClass" />
         </span>
-        <span>{{ title }}</span>
+        <span v-if="title">{{ title }}</span>
     </button>
 </template>
 
@@ -15,8 +15,10 @@ const props = defineProps({
         type: String
     },
     title: {
-        type: String,
-        required: true
+        type: String
+    },
+    tooltip: {
+        type: String
     },
     size: {
         validator(value, _props) {
