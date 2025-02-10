@@ -63,6 +63,8 @@ build:
 
 dockerize:
   stage: dockerize
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^feature\/.+$/
   dependencies:
     - build
   tags:
@@ -75,6 +77,8 @@ dockerize:
 
 deploy-test:
   stage: deploy
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^feature\/.+$/
   image: alpine:3.20.2
   script:
     - apk add openssh
@@ -86,6 +90,8 @@ deploy-test:
 
 deploy-prod:
   stage: deploy
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^feature\/.+$/
   image: alpine:3.20.2
   script:
     - apk add openssh
