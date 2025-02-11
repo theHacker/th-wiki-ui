@@ -235,7 +235,10 @@
                     </div>
 
                     <div v-else-if="tabState === TabStates.Markdown">
-                        <pre><code v-html="issue.highlightedMarkdown" class="hljs language-markdown" /></pre>
+                        <div class="highlightedCode">
+                            <span class="language">Markdown</span>
+                            <pre><code v-html="issue.highlightedMarkdown" class="language-markdown" /></pre>
+                        </div>
                     </div>
 
                     <div v-else-if="tabState === TabStates.Metadata">
