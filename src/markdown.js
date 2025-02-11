@@ -4,7 +4,6 @@ import markdown from 'highlight.js/lib/languages/markdown';
 import mermaid from "mermaid";
 
 const marked = new Marked();
-const defaultRenderer = new marked.Renderer;
 
 // used to generate different IDs so Mermaid CSS does not clash
 // when there is multiple charts (rendered at the same time)
@@ -36,7 +35,7 @@ const mermaidExtension = {
                 return token.mermaidSvg;
             }
 
-            return defaultRenderer.code(token);
+            return false;
         }
     }
 };
