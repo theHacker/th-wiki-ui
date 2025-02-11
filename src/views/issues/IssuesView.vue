@@ -289,8 +289,12 @@
                                 {{ issue.title }}
                             </RouterLink>
 
-                            <span v-if="isOverdue(issue)" class="ms-2" :title="'overdue since ' + issue.dueDate">
-                                <i class="fas fa-clock" />
+                            <span
+                                v-if="issue.dueDate"
+                                class="ms-2"
+                                :title="isOverdue(issue) ? `overdue since ${issue.dueDate}` : `due ${issue.dueDate}`"
+                            >
+                                <i class="fas fa-clock" :class="getDueColor(issue)" />
                             </span>
                         </td>
                         <td>
@@ -349,7 +353,7 @@ import SearchInput from "@/components/SearchInput.vue";
 import Loading from "@/components/Loading.vue";
 import {computed, ref} from "vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
-import {renderIcon, isOverdue} from "@/views/issues/issue-functions.js";
+import {renderIcon, isOverdue, getDueColor} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
 
 const sortFunctions = [

@@ -55,4 +55,30 @@ function isOverdue(issue) {
     return (Date.parse(issue.dueDate) < Date.now());
 }
 
-export {renderIcon, isOverdue};
+/**
+ * Returns a color (Bootstrap text color class) to colorize
+ * "how long until the issue is due?".
+ *
+ * @param {{dueDate: ?String, done: Boolean}} issue
+ * @returns {string|null} a CSS class or null to not colorize at all
+ */
+function getDueColor(issue) {
+    if (issue.dueDate === null) return null;
+    if (issue.done) return null;
+
+    const daysUntilDue = (Date.parse(issue.dueDate) - Date.now()) / (1000 * 24 * 3600);
+
+    if (daysUntilDue < 3) {
+        return 'text-danger';
+    } else if (daysUntilDue < 7) {
+        return 'text-danger-emphasis';
+    } else if (daysUntilDue < 30) {
+        return 'text-warning-emphasis';
+    } else if (daysUntilDue < 90) {
+        return 'text-success-emphasis';
+    } else {
+        return null;
+    }
+}
+
+export {renderIcon, isOverdue, getDueColor};
