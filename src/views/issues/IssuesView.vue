@@ -99,6 +99,17 @@
                                         Show done issues
                                     </label>
                                 </div>
+                                <div class="form-check">
+                                    <input
+                                        v-model="filter.showOnlyDue"
+                                        id="checkboxShowOnlyDue"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                    />
+                                    <label class="form-check-label" for="checkboxShowOnlyDue">
+                                        Show only due issues
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -405,7 +416,8 @@ const filter = ref({
     issueTypeId: null,
     issuePriorityId: null,
     issueStatusId: null,
-    showDone: false
+    showDone: false,
+    showOnlyDue: false
 });
 const sorting = ref({
     sortFunctionTitle: sortFunctions[0].title,
@@ -465,6 +477,11 @@ const issuesFiltered = computed(() => {
 
         if (!filter.value.showDone) {
             if (issue.done) {
+                return false;
+            }
+        }
+        if (filter.value.showOnlyDue) {
+            if (!issue.dueDate) {
                 return false;
             }
         }
@@ -534,7 +551,8 @@ function clearFilter() {
         issueTypeId: null,
         issuePriorityId: null,
         issueStatusId: null,
-        showDone: true
+        showDone: true,
+        showOnlyDue: false
     };
 }
 
@@ -545,7 +563,8 @@ function isFilterSet() {
         filter.value.issueTypeId !== null ||
         filter.value.issuePriorityId !== null ||
         filter.value.issueStatusId !== null ||
-        !filter.value.showDone
+        !filter.value.showDone ||
+        filter.value.showOnlyDue
     );
 }
 </script>
