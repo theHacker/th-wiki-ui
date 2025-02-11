@@ -8,7 +8,7 @@
 <script setup>
 import Loading from "@/components/Loading.vue";
 import {computedAsync} from "@vueuse/core";
-import {renderMarkdown} from "@/markdown.js";
+import {renderMarkdown} from "@/markdown";
 import {onMounted, ref, watch} from "vue";
 import axios from "@/axios.js";
 

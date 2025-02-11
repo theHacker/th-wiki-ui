@@ -222,6 +222,23 @@ code {
     padding: 0.25rem 0.5rem;
 }
 
+// Code language label
+div.highlightedCode {
+    position: relative;
+
+    > span.language {
+        position: absolute;
+        right: 0;
+
+        $cornerSize: 8px;
+
+        background: rgba($info, 0.1);
+        padding: 0 0.125rem 0.125rem $cornerSize;
+        font-size: 0.85em;
+        clip-path: polygon(0% 0%, 100% 0%, 100% 100%, $cornerSize 100%, 0% calc(100% - $cornerSize));
+    }
+}
+
 // Not only the checkbox's label should have pointer cursor, but the checkbox as well
 input[type=checkbox] {
     cursor: pointer;

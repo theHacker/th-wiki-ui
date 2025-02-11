@@ -235,7 +235,10 @@
                     </div>
 
                     <div v-else-if="tabState === TabStates.Markdown">
-                        <pre><code v-html="issue.highlightedMarkdown" class="hljs language-markdown" /></pre>
+                        <div class="highlightedCode">
+                            <span class="language">Markdown</span>
+                            <pre><code v-html="issue.highlightedMarkdown" class="language-markdown" /></pre>
+                        </div>
                     </div>
 
                     <div v-else-if="tabState === TabStates.Metadata">
@@ -324,7 +327,7 @@
                                     Render dependency graph to depth
                                 </label>
                                 <input
-                                    v-model="dependencyGraphDepth"
+                                    v-model.number="dependencyGraphDepth"
                                     id="rangeDependencyGraphDepth"
                                     type="range"
                                     class="form-range w-50 w-sm-25"
@@ -477,7 +480,7 @@ import GridLayout from "@/components/layout/GridLayout.vue";
 import {computed, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {renderIcon} from "@/views/issues/issue-functions.js";
-import {highlightMarkdown, renderMarkdown} from "@/markdown.js";
+import {highlightMarkdown, renderMarkdown} from "@/markdown";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import Dropdown from "@/components/Dropdown.vue";
 import DropdownItem from "@/components/DropdownItem.vue";

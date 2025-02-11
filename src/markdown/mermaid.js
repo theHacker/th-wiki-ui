@@ -1,10 +1,4 @@
-import {Marked} from 'marked';
-import hljs from 'highlight.js/lib/core';
-import markdown from 'highlight.js/lib/languages/markdown';
 import mermaid from "mermaid";
-
-const marked = new Marked();
-const defaultRenderer = new marked.Renderer;
 
 // used to generate different IDs so Mermaid CSS does not clash
 // when there is multiple charts (rendered at the same time)
@@ -36,20 +30,9 @@ const mermaidExtension = {
                 return token.mermaidSvg;
             }
 
-            return defaultRenderer.code(token);
+            return false;
         }
     }
 };
-marked.use(mermaidExtension);
 
-hljs.registerLanguage('markdown', markdown);
-
-async function renderMarkdown(markdown) {
-    return marked.parse(markdown); // TODO Warning: We don't have any protection against malicious HTML! See https://marked.js.org/#installation
-}
-
-function highlightMarkdown(markdown) {
-    return hljs.highlight(markdown, { language: 'markdown' }).value;
-}
-
-export {renderMarkdown, highlightMarkdown};
+export default mermaidExtension;
