@@ -99,6 +99,17 @@
                                         Show done issues
                                     </label>
                                 </div>
+                                <div class="form-check">
+                                    <input
+                                        v-model="filter.showOnlyDue"
+                                        id="checkboxShowOnlyDue"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                    />
+                                    <label class="form-check-label" for="checkboxShowOnlyDue">
+                                        Show only due issues
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -278,8 +289,12 @@
                                 {{ issue.title }}
                             </RouterLink>
 
-                            <span v-if="isOverdue(issue)" class="ms-2" :title="'overdue since ' + issue.dueDate">
-                                <i class="fas fa-clock" />
+                            <span
+                                v-if="issue.dueDate"
+                                class="ms-2"
+                                :title="isOverdue(issue) ? `overdue since ${issue.dueDate}` : `due ${issue.dueDate}`"
+                            >
+                                <i class="fas fa-clock" :class="getDueColor(issue)" />
                             </span>
                         </td>
                         <td>
@@ -338,7 +353,7 @@ import SearchInput from "@/components/SearchInput.vue";
 import Loading from "@/components/Loading.vue";
 import {computed, ref} from "vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
-import {renderIcon, isOverdue} from "@/views/issues/issue-functions.js";
+import {renderIcon, isOverdue, getDueColor} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
 
 const sortFunctions = [
@@ -405,7 +420,8 @@ const filter = ref({
     issueTypeId: null,
     issuePriorityId: null,
     issueStatusId: null,
-    showDone: false
+    showDone: false,
+    showOnlyDue: false
 });
 const sorting = ref({
     sortFunctionTitle: sortFunctions[0].title,
@@ -465,6 +481,11 @@ const issuesFiltered = computed(() => {
 
         if (!filter.value.showDone) {
             if (issue.done) {
+                return false;
+            }
+        }
+        if (filter.value.showOnlyDue) {
+            if (!issue.dueDate) {
                 return false;
             }
         }
@@ -534,7 +555,8 @@ function clearFilter() {
         issueTypeId: null,
         issuePriorityId: null,
         issueStatusId: null,
-        showDone: true
+        showDone: true,
+        showOnlyDue: false
     };
 }
 
@@ -545,7 +567,8 @@ function isFilterSet() {
         filter.value.issueTypeId !== null ||
         filter.value.issuePriorityId !== null ||
         filter.value.issueStatusId !== null ||
-        !filter.value.showDone
+        !filter.value.showDone ||
+        filter.value.showOnlyDue
     );
 }
 </script>
