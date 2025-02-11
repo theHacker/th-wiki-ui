@@ -2,9 +2,11 @@ import {Marked} from 'marked';
 import hljs from 'highlight.js/lib/core';
 import markdown from 'highlight.js/lib/languages/markdown';
 import mermaidExtension from "./mermaid";
+import hljsExtension from "./hljs";
 
 const marked = new Marked();
 marked.use(mermaidExtension);
+marked.use(hljsExtension);
 
 hljs.registerLanguage('markdown', markdown);
 
