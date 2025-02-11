@@ -66,7 +66,7 @@ const ButtonStates = {
 import {ref} from "vue";
 import {computedAsync} from "@vueuse/core";
 import Button from "@/components/Button.vue";
-import {renderMarkdown} from "@/markdown.js";
+import {renderMarkdown} from "@/markdown";
 
 const model = defineModel();
 

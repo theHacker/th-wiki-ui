@@ -212,7 +212,7 @@ const TabStates = {
 import axios from "@/axios.js";
 import {ref, watch} from 'vue';
 import {useRoute, useRouter} from "vue-router";
-import {renderMarkdown, highlightMarkdown} from "@/markdown.js";
+import {renderMarkdown, highlightMarkdown} from "@/markdown";
 import WikiPagesTree from "@/components/wiki/WikiPagesTree.vue";
 import Button from "@/components/Button.vue";
 import Tab from "@/components/Tab.vue";

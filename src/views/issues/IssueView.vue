@@ -477,7 +477,7 @@ import GridLayout from "@/components/layout/GridLayout.vue";
 import {computed, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {renderIcon} from "@/views/issues/issue-functions.js";
-import {highlightMarkdown, renderMarkdown} from "@/markdown.js";
+import {highlightMarkdown, renderMarkdown} from "@/markdown";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import Dropdown from "@/components/Dropdown.vue";
 import DropdownItem from "@/components/DropdownItem.vue";
