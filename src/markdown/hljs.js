@@ -103,7 +103,11 @@ const hljsExtension = {
             if (token.highlightedCode) {
                 // Note: Usually, the root container (the <code> tag) should have class="hljs" to apply hljs's
                 //       themes. As we already have good styling, we omit that deliberately.
-                return `<pre><code class="language-${token.langString}">${token.highlightedCode}</code></pre>`;
+                return '' +
+                    '<div class="highlightedCode">\n' +
+                    `   <span class="language">${token.langDisplay}</span>\n` +
+                    `   <pre><code class="language-${token.langString}">${token.highlightedCode}</code></pre>\n` +
+                    '</div>';
             }
 
             return false;
