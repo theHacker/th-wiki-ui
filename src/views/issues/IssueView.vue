@@ -327,7 +327,7 @@
                                     Render dependency graph to depth
                                 </label>
                                 <input
-                                    v-model="dependencyGraphDepth"
+                                    v-model.number="dependencyGraphDepth"
                                     id="rangeDependencyGraphDepth"
                                     type="range"
                                     class="form-range w-50 w-sm-25"
