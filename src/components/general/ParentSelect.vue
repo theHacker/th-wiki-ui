@@ -31,10 +31,6 @@ import {treeifyArray} from "@/helper/tree.js";
 const entryId = defineModel();
 
 const props = defineProps({
-    type: {
-        type: String,
-        required: true
-    },
     errorMessage: {
         type: String,
         required: false
@@ -52,9 +48,19 @@ function optionIndent(entry) {
 }
 
 axios
-    .get(`/entries?type=${props.type}&fields=id,parentId,title`)
+    .graphql(`
+        query WikiPagesForParentSelect {
+            wikiPages {
+                id
+                title
+                parent {
+                    id
+                }
+            }
+        }
+    `)
     .then(response => {
-        const treeArray = treeifyArray(response.data, e => e.id, e => e.parentId, e => e.title);
+        const treeArray = treeifyArray(response.data.data.wikiPages, e => e.id, e => e.parent?.id || null, e => e.title);
 
         loading.value = false;
         entries.value = treeArray;

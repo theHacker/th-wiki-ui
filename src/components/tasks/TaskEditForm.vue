@@ -18,11 +18,14 @@
 
         <div class="col-12 col-lg-6">
             <label class="form-label">Parent</label>
-            <ParentSelect
-                v-model="entry.parentId"
-                type="task"
-                :errorMessage="fieldErrors.parentId"
-            />
+
+            <div class="input-group">
+                <select
+                    v-model="entry.parentId"
+                    class="form-select"
+                />
+                <!-- no options, deprecated ;-) -->
+            </div>
         </div>
 
         <div class="col-12 col-lg-6">

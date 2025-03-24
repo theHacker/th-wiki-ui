@@ -17,7 +17,12 @@
             <Loading />
         </div>
         <div v-if="!loading" class="card-body overflow-x-hidden">
-            <Tree :items="filteredWikiPages" idProperty="id" parentIdProperty="parentId" sortedByProperty="title">
+            <Tree
+                :items="filteredWikiPages"
+                :idFunction="wp => wp.id"
+                :parentIdFunction="wp => wp.parent?.id || null"
+                :sortedByFunction="wp => wp.title"
+            >
                 <template #default="{ item }">
                     <RouterLink
                         :to="{ name: 'wikiPage', params: { entryId: item.id } }"
@@ -76,7 +81,7 @@ const filteredWikiPages = computed(() => {
         idsMatching.forEach(id => {
             let parentId = id;
             while (true) {
-                parentId = wikiPagesById.get(parentId)?.parentId;
+                parentId = wikiPagesById.get(parentId)?.parent?.id || null;
                 if (parentId === null) {
                     break;
                 }
@@ -96,9 +101,19 @@ const filteredWikiPages = computed(() => {
 });
 
 axios
-    .get('/entries?type=wiki&fields=id,parentId,title')
+    .graphql(`
+        query WikiPagesForTree {
+            wikiPages {
+                id
+                title
+                parent {
+                    id
+                }
+            }
+        }
+    `)
     .then(response => {
         loading.value = false;
-        wikiPages.value = response.data;
+        wikiPages.value = response.data.data.wikiPages;
     });
 </script>
