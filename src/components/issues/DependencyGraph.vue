@@ -45,8 +45,8 @@ onMounted(() => {
                 }
             }
         `)
-        .then(response => {
-            issueLinkTypes.value = response.data.data.issueLinkTypes;
+        .then(data => {
+            issueLinkTypes.value = data.issueLinkTypes;
         });
 });
 
@@ -89,7 +89,7 @@ async function fetchData() {
                 `,
                 { issueIds: issueIdsToLoad }
             )
-            .then(response => response.data.data.issues.flatMap(issue => issue.issueLinks));
+            .then(data => data.issues.flatMap(issue => issue.issueLinks));
 
         issueIdsToLoad = [];
         for (let issueLink of issueLinksOnThisLevel) {
@@ -134,9 +134,9 @@ async function fetchData() {
             `,
             { issueIds: [...issueIdsToFetch] }
         )
-        .then(response => {
+        .then(data => {
             const issues = {};
-            for (let issue of response.data.data.issues) {
+            for (let issue of data.issues) {
                 issue.issueKey = `${issue.project.prefix}-${issue.issueNumber}`;
                 issues[issue.id] = issue;
             }

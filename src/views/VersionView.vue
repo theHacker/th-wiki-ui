@@ -73,7 +73,7 @@ axios
             }
         }
     `)
-    .then(response => {
-        version.value.api = response.data.data.version;
+    .then(data => {
+        version.value.api = data.version;
     });
 </script>

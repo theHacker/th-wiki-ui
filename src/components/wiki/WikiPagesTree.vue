@@ -112,8 +112,8 @@ axios
             }
         }
     `)
-    .then(response => {
+    .then(data => {
         loading.value = false;
-        wikiPages.value = response.data.data.wikiPages;
+        wikiPages.value = data.wikiPages;
     });
 </script>

@@ -59,8 +59,8 @@ axios
             }
         }
     `)
-    .then(response => {
-        const treeArray = treeifyArray(response.data.data.wikiPages, e => e.id, e => e.parent?.id || null, e => e.title);
+    .then(data => {
+        const treeArray = treeifyArray(data.wikiPages, e => e.id, e => e.parent?.id || null, e => e.title);
 
         loading.value = false;
         entries.value = treeArray;
