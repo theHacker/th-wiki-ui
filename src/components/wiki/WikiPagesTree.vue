@@ -25,7 +25,7 @@
             >
                 <template #default="{ item }">
                     <RouterLink
-                        :to="{ name: 'wikiPage', params: { entryId: item.id } }"
+                        :to="{ name: 'wikiPage', params: { wikiPageId: item.id } }"
                         class="d-block"
                         exactActiveClass="active"
                     >

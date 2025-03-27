@@ -7,7 +7,7 @@
         <div class="col-12">
             <label class="form-label">Title</label>
             <input
-                v-model="entry.title"
+                v-model="wikiPage.title"
                 class="form-control"
                 :class="{'is-invalid': !!fieldErrors.title}"
                 type="text"
@@ -19,7 +19,7 @@
         <div class="col-12 col-lg-auto">
             <label class="form-label">Parent</label>
             <ParentSelect
-                v-model="entry.parentId"
+                v-model="wikiPage.parentId"
                 type="wiki"
                 :errorMessage="fieldErrors.parentId"
             />
@@ -27,7 +27,7 @@
 
         <div class="col-12">
             <MarkdownTextarea
-                v-model="entry.content"
+                v-model="wikiPage.content"
                 label="Content"
                 placeholder="Content"
                 :errorMessage="fieldErrors.content"
@@ -55,7 +55,7 @@ import {onMounted, onUnmounted, ref} from "vue";
 
 const ctrlDown = ref(false);
 
-const entry = defineModel();
+const wikiPage = defineModel();
 
 const props = defineProps({
     submitLabel: {

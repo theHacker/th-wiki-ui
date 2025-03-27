@@ -2,10 +2,19 @@
     <div class="card text-bg-warning mb-4">
         <div class="card-header">
             <i class="fas fa-circle-info pe-1" />
-            Error
+            {{ title }}
         </div>
         <div class="card-body">
             <slot />
         </div>
     </div>
 </template>
+
+<script setup>
+const props = defineProps({
+    title: {
+        type: String,
+        default: "Error"
+    }
+});
+</script>
