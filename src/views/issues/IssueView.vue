@@ -1,6 +1,10 @@
 <template>
     <GridLayout>
-        <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
+        <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
+            <ul>
+                <li v-for="error in errors">{{ error }}</li>
+            </ul>
+        </ErrorMessage>
 
         <DeleteDialog
             v-if="deleteDialogOpen && deleteDialogOpen.issue"
@@ -53,7 +57,7 @@
                         <option
                             v-for="project in projects"
                             :value="project.id"
-                            :disabled="project.id === issue.projectId"
+                            :disabled="project.id === issue.project.id"
                         >
                             {{ project.title }}
                         </option>
@@ -122,11 +126,11 @@
         </ConfirmDialog>
 
         <div :class="{'container-xl g-0': !fullWidth}">
-            <div v-if="!issue || !issueLinks" class="mt-4">
+            <div v-if="!issue" class="mt-4">
                 <Loading>Loading issue…</Loading>
             </div>
 
-            <div v-if="issue && issueLinks" class="row">
+            <div v-if="issue" class="row">
                 <div class="col-12">
                     <h1 class="mb-0">{{ issue.title }}</h1>
                     <div class="mb-heading hstack gap-2">
@@ -160,7 +164,7 @@
                                     <Tab
                                         icon="diagram-predecessor"
                                         title="Links"
-                                        :badge="issueLinks.length > 0 ? issueLinks.length.toString() : null"
+                                        :badge="issue.issueLinks.length > 0 ? issue.issueLinks.length.toString() : null"
                                         :active="tabState === TabStates.Links"
                                         @click="tabState = TabStates.Links"
                                     />
@@ -191,7 +195,7 @@
                                     :iconColor="issueStatus.iconColor"
                                     :title="issueStatus.title"
                                     fixedWidth
-                                    :disabled="issueStatus.id === issue.issueStatusId"
+                                    :disabled="issueStatus.id === issue.issueStatus.id"
                                     @click="changeIssueStatus(issue.id, issueStatus.id)"
                                 />
                             </Dropdown>
@@ -318,7 +322,7 @@
                                 </table>
                             </template>
 
-                            <p v-if="issueLinks.length === 0">No links.</p>
+                            <p v-if="issue.issueLinks.length === 0">No links.</p>
                         </div>
 
                         <div v-else-if="linksTabState === LinksTabStates.Graph">
@@ -379,7 +383,10 @@
                                     <div><b>Type</b></div>
 
                                     <div class="icon-link">
-                                        <component :is="renderIcon(issueTypes, it => issue.issueTypeId === it.id )" />
+                                        <i
+                                            :class="`fas fa-${issue.issueType.icon} text-${issue.issueType.iconColor}`"
+                                            :title="issue.issueType.title"
+                                        />
                                         {{ issue.issueType.title }}
                                     </div>
                                 </div>
@@ -388,7 +395,10 @@
                                     <div><b>Status</b></div>
 
                                     <div class="icon-link">
-                                        <component :is="renderIcon(issueStatuses, it => issue.issueStatusId === it.id )" />
+                                        <i
+                                            :class="`fas fa-${issue.issueStatus.icon} text-${issue.issueStatus.iconColor}`"
+                                            :title="issue.issueStatus.title"
+                                        />
                                         <span :title="issue.issueStatus.description">
                                             {{ issue.issueStatus.title }}
                                         </span>
@@ -399,7 +409,10 @@
                                     <div><b>Priority</b></div>
 
                                     <div class="icon-link">
-                                        <component :is="renderIcon(issuePriorities, it => issue.issuePriorityId === it.id )" />
+                                        <i
+                                            :class="`fas fa-${issue.issuePriority.icon} text-${issue.issuePriority.iconColor}`"
+                                            :title="issue.issuePriority.title"
+                                        />
                                         {{ issue.issuePriority.title }}
                                     </div>
                                 </div>
@@ -423,7 +436,7 @@
                                     <div v-if="issue.dueDate" :class="isOverdue(issue) ? 'text-danger fw-bold' : null">
                                         {{ new Date(issue.dueDate).toLocaleDateString() }}
 
-                                        <span v-if="!issue.done" :title="isOverdue(issue) ? 'overdue' : null">
+                                        <span v-if="!issue.issueStatus.doneStatus" :title="isOverdue(issue) ? 'overdue' : null">
                                             <i class="fas fa-clock" :class="getDueColor(issue)" />
                                         </span>
                                     </div>
@@ -479,7 +492,7 @@ const issueLinkTypeIcons = {
 import GridLayout from "@/components/layout/GridLayout.vue";
 import {computed, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
-import {getDueColor, renderIcon} from "@/views/issues/issue-functions.js";
+import {getDueColor} from "@/views/issues/issue-functions.js";
 import {highlightMarkdown, renderMarkdown} from "@/markdown";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import Dropdown from "@/components/Dropdown.vue";
@@ -492,20 +505,18 @@ import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import DependencyGraph from "@/components/issues/DependencyGraph.vue";
 import {isOverdue} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
+import {handleError} from "@/helper/graphql-error-handling.js";
 
 const route = useRoute();
 const router = useRouter();
 
 const projects = ref(null);
-const issueTypes = ref(null);
-const issuePriorities = ref(null);
 const issueStatuses = ref(null);
 const issueLinkTypes = ref(null);
 const allIssues = ref(null); // TODO move to a separate component (and load only on demand)
 
-const error = ref(null);
+const errors = ref([]);
 const issue = ref(null);
-const issueLinks = ref(null);
 
 const fullWidth = ref(false);
 const dependencyGraphDepth = ref(1);
@@ -530,7 +541,7 @@ const hideFieldsPanel = computed(() => {
 
 const linkGroups = computed(() => {
     // Can only be computed, if all needed data is present
-    if (issue.value === null || issueLinkTypes.value === null || issueLinks.value === null || allIssues.value === null) {
+    if (issue.value === null || issueLinkTypes.value === null) {
         return [];
     }
 
@@ -538,8 +549,8 @@ const linkGroups = computed(() => {
     const groups = [];
     for (let issueLinkType of issueLinkTypes.value) {
 
-        const linksMatchingThisType = issueLinks.value
-            .filter(it => it.issueLinkTypeId === issueLinkType.id);
+        const linksMatchingThisType = issue.value.issueLinks
+            .filter(it => it.issueLinkType.id === issueLinkType.id);
 
         if (linksMatchingThisType.length === 0) {
             continue;
@@ -548,10 +559,10 @@ const linkGroups = computed(() => {
         if (issueLinkType.wordingInverse) {
             // directed link type
 
-            const linksMatchingForward = linksMatchingThisType.filter(it => it.issue1Id === issue.value.id);
+            const linksMatchingForward = linksMatchingThisType.filter(it => it.issue1.id === issue.value.id);
             if (linksMatchingForward.length > 0) {
                 const links = linksMatchingForward.map(link => {
-                    const linkedIssue = allIssues.value.find(issue => issue.id === link.issue2Id);
+                    const linkedIssue = link.issue2;
 
                     return {
                         issueLinkId: link.id,
@@ -569,10 +580,10 @@ const linkGroups = computed(() => {
                 });
             }
 
-            const linksMatchingInverse = linksMatchingThisType.filter(it => it.issue2Id === issue.value.id);
+            const linksMatchingInverse = linksMatchingThisType.filter(it => it.issue2.id === issue.value.id);
             if (linksMatchingInverse.length > 0) {
                 const links = linksMatchingInverse.map(link => {
-                    const linkedIssue = allIssues.value.find(issue => issue.id === link.issue1Id);
+                    const linkedIssue = link.issue1;
 
                     return {
                         issueLinkId: link.id,
@@ -593,13 +604,12 @@ const linkGroups = computed(() => {
             // undirected link type
 
             const linksMatchingAnyDirection = linksMatchingThisType
-                .filter(it => it.issue1Id === issue.value.id || it.issue2Id === issue.value.id);
+                .filter(it => it.issue1.id === issue.value.id || it.issue2.id === issue.value.id);
             // Invariant: (linksMatchingAnyDirection equals linksMatchingThisType) && (linksMatchingAnyDirection.length > 0)
 
             if (linksMatchingAnyDirection.length > 0) {
                 const links = linksMatchingAnyDirection.map(link => {
-                    const linkedIssue = allIssues.value
-                        .find(it => (it.id === link.issue1Id || it.id === link.issue2Id) && it.id !== issue.value.id);
+                    const linkedIssue = link.issue1.id === issue.value.id ? link.issue2 : link.issue1;
 
                     return {
                         issueLinkId: link.id,
@@ -634,11 +644,11 @@ const addIssueLinkSubmitDisabled = computed(() => {
 
     // Check if selected options would lead to an already existing link
 
-    const existingLinks = issueLinks.value
+    const existingLinks = issue.value.issueLinks
         .filter(it =>
-            it.issueLinkTypeId === addIssueLinkDialog.value.issueLinkType.id &&
-            (it.issue1Id === addIssueLinkDialog.value.otherIssueId ||
-                it.issue2Id === addIssueLinkDialog.value.otherIssueId)
+            it.issueLinkType.id === addIssueLinkDialog.value.issueLinkType.id &&
+            (it.issue1.id === addIssueLinkDialog.value.otherIssueId ||
+                it.issue2.id === addIssueLinkDialog.value.otherIssueId)
         );
     if (existingLinks.length > 0) {
         return true;
@@ -652,109 +662,228 @@ const addIssueLinkSubmitDisabled = computed(() => {
 watch(() => route.params.issueId, fetchData, { immediate: true });
 
 function fetchData(id) {
-    error.value = null;
+    errors.value = [];
     issue.value = null;
 
-    Promise
-        .all([
-            axios.get(`/issues/${id}`),
-            axios.get(`/issue-links?issueId=${id}`),
-            axios.get(`/projects`),
-            axios.get(`/issue-types`),
-            axios.get(`/issue-priorities`),
-            axios.get(`/issue-statuses`),
-            axios.get(`/issue-link-types`),
-            axios.get(`/issues?fields=id,issueKey,title`)
-        ])
-        .then(async responses => {
-            issueLinks.value = responses[1].data;
-            projects.value = responses[2].data;
-            issueTypes.value = responses[3].data;
-            issuePriorities.value = responses[4].data;
-            issueStatuses.value = responses[5].data;
-            issueLinkTypes.value = responses[6].data;
-            allIssues.value = responses[7].data;
-
-            issue.value = await enrichIssue(responses[0].data);
-        })
-        .catch(handleError);
-}
-
-function changeIssueStatus(issueId, newIssueStatusId) {
-    error.value = null;
-
     axios
-        .patch(`/issues/${issueId}`, {
-            issueStatusId: newIssueStatusId
-        })
-        .then(async response => {
-            issue.value = await enrichIssue(response.data);
-        })
-        .catch(handleError);
-}
+        .graphql(
+            `
+                query Issue($issueId: ID!) {
+                    issue(id: $issueId) {
+                        id
+                        issueNumber # TODO issueKey
+                        project {
+                            id
+                            prefix
+                            title
+                            description
+                        }
+                        issueType {
+                            title
+                            icon
+                            iconColor
+                        }
+                        issuePriority {
+                            title
+                            icon
+                            iconColor
+                        }
+                        issueStatus {
+                            id
+                            title
+                            description
+                            icon
+                            iconColor
+                            doneStatus
+                        }
+                        title
+                        description
+                        progress
+                        dueDate
+                        creationTime
+                        modificationTime
+                        doneTime
+                        issueLinks {
+                            id
+                            issue1 {
+                                id
+                                issueNumber # TODO issueKey
+                                project {
+                                    prefix
+                                }
+                                title
+                            }
+                            issue2 {
+                                id
+                                issueNumber # TODO issueKey
+                                project {
+                                    prefix
+                                }
+                                title
+                            }
+                            issueLinkType {
+                                id
+                            }
+                        }
+                    }
+                    projects {
+                        id
+                        prefix
+                        title
+                        nextIssueNumber
+                    }
+                    issueStatuses {
+                        id
+                        title
+                        icon
+                        iconColor
+                    }
+                    issueLinkTypes {
+                        id
+                        type
+                        wording
+                        wordingInverse
+                    }
+                    issues {
+                        id
+                        issueNumber
+                        project {
+                            prefix
+                        }
+                        title
+                    }
+                }
+            `,
+            { issueId: id }
+        )
+        .then(async data => {
+            if (data.issue === null) {
+                errors.value = ["Issue does not exist."];
+            } else {
+                issue.value = {
+                    ...data.issue,
+                    renderedMarkdown: await renderMarkdown(data.issue.description),
+                    highlightedMarkdown: highlightMarkdown(data.issue.description)
+                };
+                projects.value = data.projects;
+                issueStatuses.value = data.issueStatuses;
+                issueLinkTypes.value = data.issueLinkTypes;
+                allIssues.value = data.issues;
 
-function moveToProject(issueId, newProjectId) {
-    error.value = null;
-    movingToAnotherProject.value = true;
+                // Synthesize issueKeys (GraphQL API does not offer them (yet))
 
-    axios
-        .patch(`/issues/${issueId}`, {
-            projectId: newProjectId
+                issue.value.issueKey = `${issue.value.project.prefix}-${issue.value.issueNumber}`;
+                issue.value.issueLinks.forEach(it => {
+                    it.issue1.issueKey = `${it.issue1.project.prefix}-${it.issue1.issueNumber}`;
+                    it.issue2.issueKey = `${it.issue2.project.prefix}-${it.issue2.issueNumber}`;
+                })
+                allIssues.value.forEach(it => {
+                    it.issueKey = `${it.project.prefix}-${it.issueNumber}`;
+                });
+            }
         })
-        .then(async response => {
-            issue.value = await enrichIssue(response.data);
-        })
-        .catch(handleError)
-        .finally(() => {
-            movingToAnotherProject.value = false;
-            moveToAnotherProjectDialog.value = null;
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
         });
 }
 
-/**
- * Enriches a loaded issue with the full objects of issue type, priority, and status,
- * a done flag, and markdown properties. The enriched issue is returned.
- *
- * Call this function only after `projects`, `issueTypes`, `issuePriorities`, and `issueStatuses`
- * are set.
- *
- * @param {Object} issueLoaded issue loaded from an `/issue/{id}` API
- * @returns {Object} enriched issue with additional properties set
- */
-async function enrichIssue(issueLoaded) {
-    const project = projects.value
-        .find(project => project.id === issueLoaded.projectId);
-    const issueType = issueTypes.value
-        .find(issueType => issueType.id === issueLoaded.issueTypeId);
-    const issuePriority = issuePriorities.value
-        .find(issuePriority => issuePriority.id === issueLoaded.issuePriorityId);
-    const issueStatus = issueStatuses.value
-        .find(issueStatus => issueStatus.id === issueLoaded.issueStatusId);
+function changeIssueStatus(issueId, newIssueStatusId) {
+    errors.value = [];
 
-    const done = issueStatus.isDoneStatus;
+    const input = {
+        id: issueId,
+        issueStatusId: newIssueStatusId
+    };
 
-    return {
-        ...issueLoaded,
-        project,
-        issueType,
-        issuePriority,
-        issueStatus,
-        done,
-        renderedMarkdown: await renderMarkdown(issueLoaded.description),
-        highlightedMarkdown: highlightMarkdown(issueLoaded.description)
-    }
+    axios
+        .graphql(
+            `
+                mutation TransitionIssue($input: TransitionIssueInput!) {
+                    transitionIssue(input: $input) {
+                        issue {
+                            issueStatus {
+                                id
+                                title
+                                description
+                                icon
+                                iconColor
+                                doneStatus
+                            }
+                            modificationTime
+                            doneTime
+                        }
+                    }
+                }
+            `,
+            { input }
+        )
+        .then(data => {
+            issue.value = {
+                ...issue.value,
+                ...data.transitionIssue.issue
+            };
+        })
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
+        });
+}
+
+function moveToProject(issueId, newProjectId) {
+    errors.value = [];
+    movingToAnotherProject.value = true;
+
+    const input = {
+        id: issueId,
+        projectId: newProjectId
+    };
+
+    axios
+        .graphql(
+            `
+                mutation MoveIssue($input: MoveIssueInput!) {
+                    moveIssue(input: $input) {
+                        issue {
+                            id
+                        }
+                    }
+                }
+            `,
+            { input }
+        )
+        .then(data => {
+            // Close dialog, as we unload the issue
+            movingToAnotherProject.value = false;
+            moveToAnotherProjectDialog.value = null;
+
+            // Reload everything, because issue.issueLinks and even allIssues is now stale because of changed issue keys
+            fetchData(data.moveIssue.issue.id);
+        })
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
+        });
 }
 
 function deleteIssue(issueId) {
     deleting.value = true;
-    error.value = null;
+    errors.value = [];
 
     axios
-        .delete(`/issues/${issueId}`)
-        .then(() => {
+        .graphql(
+            `
+                mutation DeleteIssue($issueId: ID!) {
+                    deleteIssue(id: $issueId) {
+                        id
+                    }
+                }
+            `,
+            { issueId }
+        )
+        .then(_data => {
             router.push({ name: 'issues' });
         })
-        .catch(handleError)
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
+        })
         .finally(() => {
             deleteDialogOpen.value = null;
             deleting.value = false;
@@ -774,19 +903,59 @@ function addNewIssueLink() {
 }
 
 function linkIssues(issueId, issueLinkType, otherIssueId) {
-    error.value = null;
+    errors.value = [];
     linkingIssue.value = true;
 
+    const input = {
+        issue1Id: (issueLinkType.inverse) ? otherIssueId : issueId,
+        issue2Id: (issueLinkType.inverse) ? issueId : otherIssueId,
+        issueLinkTypeId: issueLinkType.id
+    };
+
     axios
-        .post(`/issue-links`, {
-            issue1Id: (issueLinkType.inverse) ? otherIssueId : issueId,
-            issue2Id: (issueLinkType.inverse) ? issueId : otherIssueId,
-            issueLinkTypeId: issueLinkType.id
+        .graphql(
+            `
+                mutation CreateLinkIssue($input: CreateIssueLinkInput!) {
+                    createIssueLink(input: $input) {
+                        issueLink {
+                            id
+                            issue1 {
+                                id
+                                issueNumber # TODO issueKey
+                                project {
+                                    prefix
+                                }
+                                title
+                            }
+                            issue2 {
+                                id
+                                issueNumber # TODO issueKey
+                                project {
+                                    prefix
+                                }
+                                title
+                            }
+                            issueLinkType {
+                                id
+                            }
+                        }
+                    }
+                }
+            `,
+            { input }
+        )
+        .then(data => {
+            const issueLink = data.createIssueLink.issueLink;
+
+            // Synthesize issueKey (GraphQL API does not offer them (yet))
+            issueLink.issue1.issueKey = `${issueLink.issue1.project.prefix}-${issueLink.issue1.issueNumber}`;
+            issueLink.issue2.issueKey = `${issueLink.issue2.project.prefix}-${issueLink.issue2.issueNumber}`;
+
+            issue.value.issueLinks.push(issueLink);
         })
-        .then(response => {
-            issueLinks.value.push(response.data);
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
         })
-        .catch(handleError)
         .finally(() => {
             addIssueLinkDialog.value = null;
             linkingIssue.value = false;
@@ -806,29 +975,30 @@ function openDeleteIssueLinkDialog(caption, issueLink) {
 
 function deleteIssueLink(issueLinkId) {
     deleting.value = true;
-    error.value = null;
+    errors.value = [];
 
     axios
-        .delete(`/issue-links/${issueLinkId}`)
-        .then(() => {
-            issueLinks.value = issueLinks.value
-                .filter(it => it.id !== issueLinkId);
+        .graphql(
+            `
+                mutation DeleteLinkIssue($issueLinkId: ID!) {
+                    deleteIssueLink(id: $issueLinkId) {
+                        id
+                    }
+                }
+            `,
+            { issueLinkId }
+        )
+        .then(data => {
+            issue.value.issueLinks = issue.value.issueLinks
+                .filter(it => it.id !== data.deleteIssueLink.id);
         })
-        .catch(handleError)
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
+        })
         .finally(() => {
             deleteDialogOpen.value = null;
             deleting.value = false;
         });
-}
-
-function handleError(e) {
-    if (e.response) {
-        error.value = e.response.data.message || e.response.data.error || 'Unknown error';
-    } else if (error.request) {
-        error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
-    } else {
-        error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
-    }
 }
 </script>
 

@@ -3,7 +3,11 @@
         <div class="col-12 col-lg-8 offset-lg-2">
             <h1>Edit issue</h1>
 
-            <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
+            <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
+                <ul>
+                    <li v-for="error in errors">{{ error }}</li>
+                </ul>
+            </ErrorMessage>
 
             <div v-if="loading" class="mt-4">
                 <Loading>Loading issue…</Loading>
@@ -36,12 +40,13 @@ import {computed, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import axios from "@/axios.js";
 import Loading from "@/components/Loading.vue";
+import {handleError} from "@/helper/graphql-error-handling.js";
 
 const route = useRoute();
 const router = useRouter();
 
 const saving = ref(false);
-const error = ref(null);
+const errors = ref([]);
 const fieldErrors = ref({});
 
 const projects = ref(null);
@@ -68,59 +73,134 @@ watch(() => route.params.issueId, fetchData, { immediate: true });
 function fetchData(id) {
     saving.value = false;
     fieldErrors.value = {};
-    error.value = null;
+    errors.value = [];
     issue.value = null;
 
     axios
-        .get(`/issues/${id}`)
-        .then(response => {
-            issue.value = response.data;
+        .graphql(
+            `
+                query Issue($issueId: ID!) {
+                    issue(id: $issueId) {
+                        id
+                        project {
+                            id
+                        }
+                        issueType {
+                            id
+                        }
+                        issuePriority {
+                            id
+                        }
+                        issueStatus {
+                            id
+                        }
+                        title
+                        description
+                        progress
+                        dueDate
+                    }
+                }
+            `,
+            { issueId: id }
+        )
+        .then(data => {
+            issue.value = {
+                id: data.issue.id,
+                projectId: data.issue.project.id,
+                issueTypeId: data.issue.issueType.id,
+                issuePriorityId: data.issue.issuePriority.id,
+                issueStatusId: data.issue.issueStatus.id,
+                title: data.issue.title,
+                description: data.issue.description,
+                progress: data.issue.progress,
+                dueDate: data.issue.dueDate
+            };
         })
-        .catch(handleError);
+        .catch(e => {
+            const handledErrors = handleError(e);
+
+            errors.value = handledErrors.genericErrors;
+            fieldErrors.value = handledErrors.fieldErrors;
+        });
 }
 
 function loadDropdowns() {
-    Promise
-        .all([
-            axios.get(`/projects`),
-            axios.get(`/issue-types`),
-            axios.get(`/issue-priorities`),
-            axios.get(`/issue-statuses`)
-        ])
-        .then(responses => {
-            projects.value = responses[0].data;
-            issueTypes.value = responses[1].data;
-            issuePriorities.value = responses[2].data;
-            issueStatuses.value = responses[3].data;
+    axios
+        .graphql(
+            `
+                query IssueDropdowns {
+                    projects {
+                        id
+                        title
+                    }
+                    issueTypes {
+                        id
+                        title
+                    }
+                    issuePriorities {
+                        id
+                        title
+                    }
+                    issueStatuses {
+                        id
+                        title
+                    }
+                }
+            `
+        )
+        .then(data => {
+            projects.value = data.projects;
+            issueTypes.value = data.issueTypes;
+            issuePriorities.value = data.issuePriorities;
+            issueStatuses.value = data.issueStatuses;
         })
         .catch(e => {
-            handleError(e);
+            const handledErrors = handleError(e);
+
+            errors.value = handledErrors.genericErrors;
+            fieldErrors.value = handledErrors.fieldErrors;
         });
 }
 
 function save(ctrlDown) {
     saving.value = true;
     fieldErrors.value = {};
-    error.value = null;
+    errors.value = [];
 
-    const request = {...issue.value};
-
-    // Don't send read-only properties (TODO needs a better solution on BE side)
-    delete request.id;
-    delete request.issueKey;
-    delete request.creationTime;
-    delete request.modificationTime;
-    delete request.doneTime;
+    const input = {
+        id: issue.value.id,
+        issueTypeId: issue.value.issueTypeId,
+        issuePriorityId: issue.value.issuePriorityId,
+        issueStatusId: issue.value.issueStatusId,
+        title: issue.value.title,
+        description: issue.value.description,
+        progress: issue.value.progress,
+        dueDate: issue.value.dueDate
+    };
 
     axios
-        .put(`/issues/${issue.value.id}`, request)
-        .then(_response => {
+        .graphql(
+            `
+                mutation UpdateIssue($input: UpdateIssueInput!) {
+                    updateIssue(input: $input) {
+                        issue {
+                            id
+                        }
+                    }
+                }
+            `,
+            { input }
+        )
+        .then(data => {
             if (!ctrlDown) {
-                router.push({ name: 'issue', params: { issueId: issue.value.id } });
+                router.push({ name: 'issue', params: { issueId: data.updateIssue.issue.id } });
             }
         })
         .catch(e => {
-            handleError(e);
+            const handledErrors = handleError(e);
+
+            errors.value = handledErrors.genericErrors;
+            fieldErrors.value = handledErrors.fieldErrors;
         })
         .finally(() => {
             saving.value = false;
@@ -129,20 +209,5 @@ function save(ctrlDown) {
 
 function cancel() {
     router.back();
-}
-
-function handleError(e) {
-    if (e.response && e.response.data && e.response.data.message) {
-        const data = e.response.data;
-        if (data.field) {
-            fieldErrors.value[data.field] = data.message;
-        } else {
-            error.value = data.message;
-        }
-    } else if (error.request) {
-        error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
-    } else {
-        error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
-    }
 }
 </script>
