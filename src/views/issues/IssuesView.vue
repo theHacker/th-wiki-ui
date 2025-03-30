@@ -119,12 +119,12 @@
                             <div v-if="projects === null">
                                 <Loading />
                             </div>
-                            <select v-if="projects !== null" v-model="filter.projectId" class="form-select">
-                                <option :value="null">– All projects –</option>
-                                <option v-for="project in projects" :value="project.id">
-                                    {{ project.title }}
-                                </option>
-                            </select>
+                            <ProjectSelect
+                                v-if="projects !== null"
+                                v-model="filter.projectId"
+                                :projects="projects"
+                                nullOption="– All projects –"
+                            />
                         </div>
                         <div class="col-12 col-sm-6 col-lg-12 col-xl-6">
                             <label class="form-label">Type</label>
@@ -371,6 +371,7 @@ import GridLayout from "@/components/layout/GridLayout.vue";
 import {isOverdue, getDueColor} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
+import ProjectSelect from "@/components/general/ProjectSelect.vue";
 
 const sortFunctions = [
     {

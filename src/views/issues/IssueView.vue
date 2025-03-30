@@ -50,18 +50,11 @@
                     <label class="col-form-label">New project</label>
                 </div>
                 <div class="col-auto">
-                    <select
+                    <ProjectSelect
                         v-model="moveToProjectId"
-                        class="form-select"
-                    >
-                        <option
-                            v-for="project in projects"
-                            :value="project.id"
-                            :disabled="project.id === issue.project.id"
-                        >
-                            {{ project.title }}
-                        </option>
-                    </select>
+                        :projects="projects"
+                        :disabledOption="project => project.id === issue.project.id"
+                    />
                 </div>
             </fieldset>
             <div v-if="moveToProjectId !== null">
@@ -506,6 +499,7 @@ import DependencyGraph from "@/components/issues/DependencyGraph.vue";
 import {isOverdue} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
+import ProjectSelect from "@/components/general/ProjectSelect.vue";
 
 const route = useRoute();
 const router = useRouter();
