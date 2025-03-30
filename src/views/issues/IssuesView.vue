@@ -392,9 +392,7 @@ const sortFunctions = [
                 return projectCmp;
             }
 
-            const aNumber = Number(a.issueKey.replace(RegExp(`^${a.project.prefix}-`), ''));
-            const bNumber = Number(b.issueKey.replace(RegExp(`^${b.project.prefix}-`), ''));
-            return -(aNumber - bNumber);
+            return -(a.issueNumber - b.issueNumber);
         }
     },
     {
