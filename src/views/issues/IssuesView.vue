@@ -369,6 +369,22 @@ const sortFunctions = [
         func: (a, b) => -a.modificationTime.localeCompare(b.modificationTime)
     },
     {
+        title: 'Due date',
+        func: (a, b) => {
+            if (a.dueDate && !b.dueDate) {
+                return -1;
+            }
+            else if (!a.dueDate && b.dueDate) {
+                return +1;
+            }
+            else if (!a.dueDate && !b.dueDate) {
+                return 0;
+            }
+
+            return a.dueDate.localeCompare(b.dueDate);
+        }
+    },
+    {
         title: 'Key',
         func: (a, b) => {
             const projectCmp = a.project.prefix.localeCompare(b.project.prefix);
