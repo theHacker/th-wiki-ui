@@ -244,8 +244,17 @@
                 </div>
             </div>
 
-            <div v-if="loading" class="mt-4">
-                <Loading>Loading issues…</Loading>
+            <div class="mt-2 mb-2">
+                <div v-if="loading" class="mt-4">
+                    <Loading>Loading issues…</Loading>
+                </div>
+
+                <span v-if="!loading && isFilterSet()">
+                    <b>{{ issuesFiltered.length }}</b> {{ issuesFiltered.length !== 1 ? 'issues' : 'issue'}} filtered.
+                </span>
+                <span v-if="!loading">
+                    <b>{{ issues.length }}</b> {{ issues.length !== 1 ? 'issues' : 'issue'}} total.
+                </span>
             </div>
 
             <table
