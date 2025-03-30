@@ -65,8 +65,15 @@ const version = ref({
 });
 
 axios
-    .get('/version')
-    .then(response => {
-        version.value.api = response.data;
+    .graphql(`
+        query Version {
+            version {
+                gitHash
+                gitDirty
+            }
+        }
+    `)
+    .then(data => {
+        version.value.api = data.version;
     });
 </script>

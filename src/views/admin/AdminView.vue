@@ -35,7 +35,11 @@
             </div>
 
             <div class="col-12 col-lg-6 col-xl-5">
-                <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
+                <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
+                    <ul>
+                        <li v-for="error in errors">{{ error }}</li>
+                    </ul>
+                </ErrorMessage>
 
                 <div class="card">
                     <div class="card-header text-bg-info">Add a project</div>
@@ -108,6 +112,7 @@ import Button from "@/components/Button.vue";
 import Loading from "@/components/Loading.vue";
 import axios from "@/axios.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
+import {handleError} from "@/helper/graphql-error-handling.js";
 
 const projects = ref([]);
 const loading = ref(true);
@@ -119,18 +124,31 @@ const project = ref({
 });
 
 const saving = ref(false);
-const error = ref(null);
+const errors = ref([]);
 const fieldErrors = ref({});
 
 fetchData();
 
 function fetchData() {
     axios
-        .get('/projects')
-        .then(response => {
+        .graphql(
+            `
+                query Projects {
+                    projects {
+                        id
+                        prefix
+                        title
+                        description
+                    }
+                }
+            `
+        )
+        .then(data => {
             loading.value = false;
-            projects.value = response.data
-                .sort((a, b) => (a.prefix < b.prefix) ? -1 : ((a.prefix > b.prefix) ? +1 : 0));
+            projects.value = data.projects;
+        })
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
         });
 }
 
@@ -175,35 +193,38 @@ function suggestPrefix() {
 function saveProject() {
     saving.value = true;
     fieldErrors.value = {};
-    error.value = null;
+    errors.value = [];
 
     axios
-        .post('/projects', project.value)
-        .then(_response => {
+        .graphql(
+            `
+                mutation CreateProject($input: CreateProjectInput!) {
+                    createProject(input: $input) {
+                        project {
+                            id
+                            prefix
+                            title
+                            description
+                        }
+                    }
+                }
+            `,
+            { input: project.value }
+        )
+        .then(data => {
+            projects.value.push(data.createProject.project);
+
             resetForm();
-            fetchData();
         })
         .catch(e => {
-            handleError(e);
+            const handledErrors = handleError(e);
+
+            errors.value = handledErrors.genericErrors;
+            fieldErrors.value = handledErrors.fieldErrors;
         })
         .finally(() => {
             saving.value = false;
         });
-}
-
-function handleError(e) {
-    if (e.response && e.response.data && e.response.data.message) {
-        const data = e.response.data;
-        if (data.field) {
-            fieldErrors.value[data.field] = data.message;
-        } else {
-            error.value = data.message;
-        }
-    } else if (error.request) {
-        error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
-    } else {
-        error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
-    }
 }
 
 function resetForm() {

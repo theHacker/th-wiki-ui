@@ -3,17 +3,17 @@
  * The result will still be a flat array, however the items are properly ordered and assign additional `level`
  * and `lines` properties to be rendered as a tree.
  *
- * `idProp` and `parentIdProp` must return the same types, e.g. String or Number.
- * `sortBy` typically resolves to a title or timestamp.
+ * `idFunction` and `parentIdFunction` must return the same types, e.g. String or Number.
+ * `sortByFunction` typically resolves to a title or timestamp.
  *
  * @param {Array<Object>} objects Objects to transform
- * @param {function(Object): String} idProp Function how to extract the `id` property from an object
- * @param {function(Object): String|null} parentIdProp Function how to extract the `parentId` property from an object
- * @param {function(Object): String} sortBy Function how to extract a string to which objects are sorted by
+ * @param {function(Object): String} idFunction Function how to extract the `id` property from an object
+ * @param {function(Object): String|null} parentIdFunction Function how to extract the `parentId` property from an object
+ * @param {function(Object): String} sortByFunction Function how to extract a string to which objects are sorted by
  * @returns {Array<*>} Flat array with additional properties
  */
-function treeifyArray(objects, idProp, parentIdProp, sortBy) {
-    const root = arrayToTree(objects, idProp, parentIdProp, sortBy);
+function treeifyArray(objects, idFunction, parentIdFunction, sortByFunction) {
+    const root = arrayToTree(objects, idFunction, parentIdFunction, sortByFunction);
     const array = treeToFlatArray(root);
 
     return addTreeLines(array);
@@ -22,16 +22,16 @@ function treeifyArray(objects, idProp, parentIdProp, sortBy) {
 /**
  * Transforms an array of objects with `id` and `parentId` properties into a tree structure.
  *
- * `idProp` and `parentIdProp` must return the same types, e.g. String or Number.
- * `sortBy` typically resolves to a title or timestamp.
+ * `idFunction` and `parentIdFunction` must return the same types, e.g. String or Number.
+ * `sortByFunction` typically resolves to a title or timestamp.
  *
  * @param {Array<Object>} objects Objects to transform
- * @param {function(Object): String} idProp Function how to extract the `id` property from an object
- * @param {function(Object): String|null} parentIdProp Function how to extract the `parentId` property from an object
- * @param {function(Object): String} sortBy Function how to extract a string to which objects are sorted by
+ * @param {function(Object): String} idFunction Function how to extract the `id` property from an object
+ * @param {function(Object): String|null} parentIdFunction Function how to extract the `parentId` property from an object
+ * @param {function(Object): String} sortByFunction Function how to extract a string to which objects are sorted by
  * @returns {{root: Boolean|null, level: Number, children: Array<*>}} Tree structure
  */
-function arrayToTree(objects, idProp, parentIdProp, sortBy) {
+function arrayToTree(objects, idFunction, parentIdFunction, sortByFunction) {
     const root = {
         root: true,
         level: 0,
@@ -49,8 +49,8 @@ function arrayToTree(objects, idProp, parentIdProp, sortBy) {
         if (level > objects.length || openList.size === 0) break;
 
         openList.forEach(item => {
-            const id = idProp(item);
-            const parentId = parentIdProp(item);
+            const id = idFunction(item);
+            const parentId = parentIdFunction(item);
 
             // When the parent is already inside the tree, attach yourselves as child there.
             const parentNode = closedMap[parentId];
@@ -72,7 +72,7 @@ function arrayToTree(objects, idProp, parentIdProp, sortBy) {
 
     // Sort each nodes children
     Object.values(closedMap).forEach(node => {
-        node.children.sort((a, b) => sortBy(a).localeCompare(sortBy(b)));
+        node.children.sort((a, b) => sortByFunction(a).localeCompare(sortByFunction(b)));
     });
 
     // TODO implement cycles and orphan detection. For now, this suffices.

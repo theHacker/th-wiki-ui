@@ -82,6 +82,7 @@ docker build -t th-wiki-ui .
 docker run --rm \
   -p 5173:80 \
   -e API_URL=http://localhost:8080/api \
+  -e GRAPHQL_API_URL=http://localhost:8080/api/graphql \
   -e BASE_URL=/ \
   th-wiki-ui
 ```

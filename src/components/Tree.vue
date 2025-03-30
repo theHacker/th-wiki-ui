@@ -2,7 +2,7 @@
     <ul class="tree d-flex flex-column list-unstyled mb-0">
         <li
             v-for="item in treeifiedArray"
-            :key="item[idProperty]"
+            :key="idFunction(item)"
             :class="isNodeVisible(item) ? 'd-flex' : 'd-none'"
         >
             <div class="tree-spacer" v-for="i in item.level">
@@ -31,29 +31,29 @@ const props = defineProps({
         type: Array,
         required: true
     },
-    idProperty: {
-        type: String,
+    idFunction: {
+        type: Function,
         required: true
     },
-    parentIdProperty: {
-        type: String,
+    parentIdFunction: {
+        type: Function,
         required: true
     },
-    sortedByProperty: {
-        type: String,
+    sortedByFunction: {
+        type: Function,
         required: true
     }
 });
 
 const allIds = computed(() => {
     return props.items
-        .map(item => item[props.idProperty]);
+        .map(item => props.idFunction(item));
 });
 
 const itemsById = computed(() => {
     return new Map(
         props.items
-            .map(item => [item[props.idProperty], item])
+            .map(item => [props.idFunction(item), item])
     );
 });
 
@@ -61,8 +61,9 @@ const leafIds = computed(() => {
     const idsHavingAParent = new Set();
 
     props.items.forEach(item => {
-        if (item[props.parentIdProperty] !== null) {
-            idsHavingAParent.add(item[props.parentIdProperty]);
+        const parentId = props.parentIdFunction(item);
+        if (parentId !== null) {
+            idsHavingAParent.add(parentId);
         }
     });
 
@@ -74,14 +75,14 @@ const expandedIds = ref(new Set(allIds.value)); // default: all nodes are expand
 const treeifiedArray = computed(() => {
     return treeifyArray(
         props.items,
-        e => e[props.idProperty],
-        e => e[props.parentIdProperty],
-        e => e[props.sortedByProperty]
+        props.idFunction,
+        props.parentIdFunction,
+        props.sortedByFunction
     );
 });
 
 function getButton(item) {
-    if (leafIds.value.has(item[props.idProperty])) {
+    if (leafIds.value.has(props.idFunction(item))) {
         return '';
     }
 
@@ -89,7 +90,7 @@ function getButton(item) {
 }
 
 function isNodeExpanded(item) {
-    const id = item[props.idProperty];
+    const id = props.idFunction(item);
 
     return expandedIds.value.has(id);
 }
@@ -101,7 +102,7 @@ function isNodeVisible(item) {
     let i = item;
 
     while (true) {
-        const parentId = i[props.parentIdProperty];
+        const parentId = props.parentIdFunction(i);
         if (parentId === null) {
             return true;
         }
@@ -115,7 +116,7 @@ function isNodeVisible(item) {
 }
 
 function expandCollapseNode(item) {
-    const id = item[props.idProperty];
+    const id = props.idFunction(item);
     if (expandedIds.value.has(id)) {
         expandedIds.value.delete(id);
     } else {

@@ -1,7 +1,7 @@
 <template>
     <div class="input-group" :class="{'has-validation': !!props.errorMessage}">
         <select
-            v-model="entryId"
+            v-model="wikiPageId"
             class="form-select"
             :class="{'is-invalid': !!props.errorMessage}"
             :disabled="loading"
@@ -11,8 +11,8 @@
             </template>
             <template v-if="!loading">
                 <option :value="null">(no parent)</option>
-                <option v-for="entry in entries" :key="entry.id" :value="entry.id">
-                    {{ optionIndent(entry) }}{{ entry.title }}
+                <option v-for="wikiPage in wikiPages" :key="wikiPage.id" :value="wikiPage.id">
+                    {{ optionIndent(wikiPage) }}{{ wikiPage.title }}
                 </option>
             </template>
         </select>
@@ -28,35 +28,41 @@ import axios from "@/axios.js";
 import {ref} from 'vue';
 import {treeifyArray} from "@/helper/tree.js";
 
-const entryId = defineModel();
+const wikiPageId = defineModel();
 
 const props = defineProps({
-    type: {
-        type: String,
-        required: true
-    },
     errorMessage: {
         type: String,
         required: false
     }
 });
 
-const entries = ref([]);
+const wikiPages = ref([]);
 const loading = ref(true);
 
-function optionIndent(entry) {
+function optionIndent(wikiPage) {
     const nbsp = String.fromCharCode(0xa0);
     const indent = nbsp.repeat(5);
 
-    return indent.repeat(entry.level - 1);
+    return indent.repeat(wikiPage.level - 1);
 }
 
 axios
-    .get(`/entries?type=${props.type}&fields=id,parentId,title`)
-    .then(response => {
-        const treeArray = treeifyArray(response.data, e => e.id, e => e.parentId, e => e.title);
+    .graphql(`
+        query WikiPagesForParentSelect {
+            wikiPages {
+                id
+                title
+                parent {
+                    id
+                }
+            }
+        }
+    `)
+    .then(data => {
+        const treeArray = treeifyArray(data.wikiPages, e => e.id, e => e.parent?.id || null, e => e.title);
 
         loading.value = false;
-        entries.value = treeArray;
+        wikiPages.value = treeArray;
     });
 </script>

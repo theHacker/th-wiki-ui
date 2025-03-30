@@ -5,20 +5,24 @@
         </template>
 
         <template #default>
-            <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
+            <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
+                <ul>
+                    <li v-for="error in errors">{{ error }}</li>
+                </ul>
+            </ErrorMessage>
 
             <WikiNoPage v-if="noPage" />
 
-            <div v-if="!entry && !noPage" class="mt-4">
-                <Loading>Loading entry…</Loading>
+            <div v-if="!wikiPage && !noPage" class="mt-4">
+                <Loading>Loading wiki page…</Loading>
             </div>
 
             <DeleteDialog
-                v-if="deleteDialogOpen && deleteDialogOpen.entry"
-                :text='"Do you really want to delete the wiki page \"" + deleteDialogOpen.entry.title + "\"?"'
+                v-if="deleteDialogOpen && deleteDialogOpen.wikiPage"
+                :text='"Do you really want to delete the wiki page \"" + deleteDialogOpen.wikiPage.title + "\"?"'
                 :dialogOpen="true"
                 :deleting="deleting"
-                @submit="deleteEntry"
+                @submit="deleteWikiPage"
                 @cancel="deleteDialogOpen = null"
             />
             <DeleteDialog
@@ -29,24 +33,9 @@
                 @submit="deleteAttachment(deleteDialogOpen.attachment)"
                 @cancel="deleteDialogOpen = null"
             />
-            <ConfirmDialog
-                :dialogOpen="convertToTaskDialog"
-                title="Convert wiki page to task"
-                color="warning"
-                :progressing="convertingToTask"
-                submitIcon="bolt"
-                submitTitle="Convert"
-                cancelIcon="xmark"
-                cancelTitle="Cancel"
-                @submit="convertWikiPageToTask"
-                @cancel="convertToTaskDialog = false"
-            >
-                Do you really want to convert this wiki page to a task?
-                As of now, this operation cannot be undone.
-            </ConfirmDialog>
 
-            <div v-if="entry && !noPage">
-                <h1>{{ entry.title }}</h1>
+            <div v-if="wikiPage && !noPage">
+                <h1>{{ wikiPage.title }}</h1>
 
                 <div class="d-flex flex-wrap flex-lg-nowrap mb-4 row-gap-3">
                     <div class="flex-grow-1 me-4">
@@ -73,7 +62,7 @@
                                 <Tab
                                     icon="paperclip"
                                     title="Attachments"
-                                    :badge="attachments.length > 0 ? attachments.length.toString() : null"
+                                    :badge="wikiPage.attachments.length > 0 ? wikiPage.attachments.length.toString() : null"
                                     :active="tabState === TabStates.Attachments"
                                     @click="tabState = TabStates.Attachments"
                                 />
@@ -82,34 +71,31 @@
                     </div>
 
                     <div class="hstack gap-2">
-                        <Dropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
-                            <DropdownItem icon="bolt" title="Convert to task" @click="convertToTaskDialog = true" />
-                        </Dropdown>
                         <Button
                             class="btn-text-lg"
                             icon="pen"
                             title="Edit"
                             color="light"
-                            @click="$router.push({ name: 'wikiPageEdit', params: { entryId: entry.id } });"
+                            @click="$router.push({ name: 'wikiPageEdit', params: { wikiPageId: wikiPage.id } });"
                         />
                         <Button
                             class="btn-text-lg"
                             icon="trash"
                             title="Delete"
                             color="danger"
-                            @click="deleteDialogOpen = { entry }"
+                            @click="deleteDialogOpen = { wikiPage }"
                         />
                     </div>
                 </div>
 
                 <div v-if="tabState === TabStates.Content">
-                    <article v-html="entry.renderedMarkdown" />
+                    <article v-html="wikiPage.renderedMarkdown" />
                 </div>
 
                 <div v-else-if="tabState === TabStates.Markdown">
                     <div class="highlightedCode">
                         <span class="language">Markdown</span>
-                        <pre><code v-html="entry.highlightedMarkdown" class="language-markdown" /></pre>
+                        <pre><code v-html="wikiPage.highlightedMarkdown" class="language-markdown" /></pre>
                     </div>
                 </div>
 
@@ -120,14 +106,14 @@
                                 <i class="fas fa-clock" />
                                 Creation Time
                             </div>
-                            <div>{{ new Date(entry.creationTime).toLocaleString() }}</div>
+                            <div>{{ new Date(wikiPage.creationTime).toLocaleString() }}</div>
                         </div>
                         <div class="col-12 col-md-6">
                             <div class="icon-link">
                                 <i class="fas fa-clock" />
                                 Modification Time
                             </div>
-                            <div>{{ new Date(entry.modificationTime).toLocaleString() }}</div>
+                            <div>{{ new Date(wikiPage.modificationTime).toLocaleString() }}</div>
                         </div>
                     </div>
                 </div>
@@ -144,7 +130,7 @@
                             </tr>
                         </thead>
                         <tbody class="table-group-divider">
-                            <tr v-for="attachment in attachments" :key="attachment.id">
+                            <tr v-for="attachment in wikiPage.attachments" :key="attachment.id">
                                 <td>
                                    <i :class="attachmentIconClass(attachment)" />
                                 </td>
@@ -182,7 +168,7 @@
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="attachments.length === 0">
+                            <tr v-if="wikiPage.attachments.length === 0">
                                 <td colspan="5" class="text-center">
                                     <i>No attachments.</i>
                                 </td>
@@ -224,20 +210,18 @@ import Loading from "@/components/Loading.vue";
 import AttachmentUploadForm from "@/components/general/AttachmentUploadForm.vue";
 import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 import DeleteDialog from "@/components/DeleteDialog.vue";
-import ConfirmDialog from "@/components/ConfirmDialog.vue";
-import Dropdown from "@/components/Dropdown.vue";
-import DropdownItem from "@/components/DropdownItem.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 import WikiNoPage from "@/components/wiki/WikiNoPage.vue";
+import {handleError} from "@/helper/graphql-error-handling.js";
+import {blobToBase64, base64ToBlob} from "@/helper/base64.js";
 
 const route = useRoute();
 const router = useRouter();
 
 const noPage = ref(true);
 
-const error = ref(null);
-const entry = ref(null);
-const attachments = ref([]);
+const errors = ref([]);
+const wikiPage = ref(null);
 
 const addAttachmentModel = ref({
     file: null,
@@ -250,15 +234,11 @@ const tabState = ref(TabStates.Content);
 const deleteDialogOpen = ref(null);
 const deleting = ref(false);
 
-const convertToTaskDialog = ref(false);
-const convertingToTask = ref(false);
-
-watch(() => route.params.entryId, fetchData, { immediate: true });
+watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 
 function fetchData(id) {
-    error.value = null;
-    entry.value = null;
-    attachments.value = [];
+    errors.value = [];
+    wikiPage.value = null;
 
     if (id == null) {
         noPage.value = true;
@@ -266,71 +246,118 @@ function fetchData(id) {
     }
 
     axios
-        .get('/entries/' + id)
-        .then(async response => {
-            entry.value = {
-                ...response.data,
-                renderedMarkdown: await renderMarkdown(response.data.content),
-                highlightedMarkdown: highlightMarkdown(response.data.content)
-            };
-            noPage.value = false;
+        .graphql(
+            `
+                query WikiPage($wikiPageId: ID!) {
+                    wikiPage(id: $wikiPageId) {
+                        id
+                        title
+                        content
+                        creationTime
+                        modificationTime
+                        parent {
+                            id
+                        }
+                        attachments {
+                            id
+                            filename
+                            description
+                            size
+                            mimeType
+                        }
+                    }
+                }
+            `,
+            { wikiPageId: id }
+        )
+        .then(async data => {
+            if (data.wikiPage === null) {
+                errors.value = ["Wiki page does not exist."];
+            } else {
+                wikiPage.value = {
+                    ...data.wikiPage,
+                    renderedMarkdown: await renderMarkdown(data.wikiPage.content),
+                    highlightedMarkdown: highlightMarkdown(data.wikiPage.content)
+                };
+                noPage.value = false;
+            }
         })
-        .catch(handleError);
-
-    loadAttachments(id);
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
+        });
 }
 
-function loadAttachments(entryId) {
-    attachments.value = [];
-
-    axios
-        .get('/attachments?entryId=' + entryId)
-        .then(response => {
-            attachments.value = response.data;
-        })
-        .catch(handleError);
-}
-
-function deleteEntry() {
+function deleteWikiPage() {
     deleting.value = true;
-    error.value = null;
+    errors.value = [];
 
     axios
-        .delete('/entries/' + entry.value.id)
+        .graphql(
+            `
+                mutation DeleteWikiPage($wikiPageId: ID!) {
+                    deleteWikiPage(id: $wikiPageId) {
+                        id
+                    }
+                }
+            `,
+            { wikiPageId: wikiPage.value.id }
+        )
         .then(() => {
             router.push({ name: 'wiki' });
         })
-        .catch(handleError)
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
+        })
         .finally(() => {
             deleteDialogOpen.value = null;
             deleting.value = false;
         });
 }
 
-function uploadAttachment() {
-    const entryId = entry.value.id;
+async function uploadAttachment() {
+    const wikiPageId = wikiPage.value.id;
 
-    if (!entryId) return;
+    if (!wikiPageId) return;
 
-    error.value = null;
+    errors.value = [];
     uploadingAttachment.value = true;
 
-    const formData = new FormData();
-    formData.append("entryId", entryId);
-    formData.append("file", addAttachmentModel.value.file);
-    formData.append("description", addAttachmentModel.value.description);
+    const file = addAttachmentModel.value.file;
+    const dataBase64 = await blobToBase64(file);
+
+    const input = {
+        wikiPageId,
+        filename: file.name,
+        description: addAttachmentModel.value.description,
+        dataBase64,
+        mimeType: (file.type !== '') ? file.type : null
+    }
 
     axios
-        .post('/attachments', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        .then(() => {
+        .graphql(
+            `
+                mutation CreateAttachment($input: CreateAttachmentInput!) {
+                    createAttachment(input: $input) {
+                        attachment {
+                            id
+                            filename
+                            description
+                            size
+                            mimeType
+                        }
+                    }
+                }
+            `,
+            { input }
+        )
+        .then(data => {
             resetAttachmentForm();
-            loadAttachments(entryId);
+
+            wikiPage.value.attachments.push(data.createAttachment.attachment);
         })
-        .catch(handleError)
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
+        })
         .finally(() => {
             uploadingAttachment.value = false;
         });
@@ -343,16 +370,6 @@ function resetAttachmentForm() {
     };
 }
 
-function handleError(e) {
-    if (e.response) {
-        error.value = e.response.data.message || e.response.data.error || 'Unknown error';
-    } else if (error.request) {
-        error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
-    } else {
-        error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
-    }
-}
-
 function attachmentIconClass(attachment) {
     const icon = getIconForMimeType(attachment.mimeType);
 
@@ -360,53 +377,66 @@ function attachmentIconClass(attachment) {
 }
 
 function openAttachment(attachment, download) {
-    const apiUrl = window.env.API_URL || import.meta.env.VITE_API_URL;
-    let url = apiUrl + '/attachments/' + attachment.id + '/file';
+    axios
+        .graphql(
+            `
+                query OpenAttachment($attachmentId: ID!) {
+                    attachment(id: $attachmentId) {
+                        filename
+                        dataBase64
+                        mimeType
+                    }
+                }
+            `,
+            { attachmentId: attachment.id }
+        )
+        .then(data => {
+            const att = data.attachment;
+            const blob = base64ToBlob(att.dataBase64, att.mimeType);
 
-    if (download) {
-        url += '?download=1';
-    }
+            // Hacky solution to trigger the download client-side
 
-    window.open(url, '_blank');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.target = '_blank';
+            if (download) {
+                a.download = att.filename;
+            }
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        })
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
+        });
 }
 
 function deleteAttachment(attachment) {
     deleting.value = true;
-    error.value = null;
+    errors.value = [];
 
     axios
-        .delete('/attachments/' + attachment.id)
-        .then(() => {
-            loadAttachments(entry.value.id);
+        .graphql(
+            `
+                mutation DeleteAttachment($attachmentId: ID!) {
+                    deleteAttachment(id: $attachmentId) {
+                        id
+                    }
+                }
+            `,
+            { attachmentId: attachment.id }
+        )
+        .then(data => {
+            wikiPage.value.attachments = wikiPage.value.attachments
+                .filter(a => a.id !== data.deleteAttachment.id);
         })
-        .catch(handleError)
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
+        })
         .finally(() => {
             deleteDialogOpen.value = null;
             deleting.value = false;
-        });
-}
-
-function convertWikiPageToTask() {
-    const entryId = entry.value.id;
-
-    if (!entryId) return;
-
-    error.value = null;
-    convertingToTask.value = true;
-
-    axios
-        .patch('/entries/' + entry.value.id, {
-            type: 'task'
-        })
-        .then(response => {
-            router.push({ name: 'task', params: { entryId: response.data.id } });
-        })
-        .catch(e => {
-            handleError(e);
-        })
-        .finally(() => {
-            convertToTaskDialog.value = false;
-            convertingToTask.value = false;
         });
 }
 </script>

@@ -3,7 +3,11 @@
         <div class="col-12 col-lg-8 offset-lg-2">
             <h1>New issue</h1>
 
-            <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
+            <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
+                <ul>
+                    <li v-for="error in errors">{{ error }}</li>
+                </ul>
+            </ErrorMessage>
 
             <div v-if="loading" class="mt-4">
                 <Loading>Loading…</Loading>
@@ -35,11 +39,12 @@ import Loading from "@/components/Loading.vue";
 import {computed, ref} from "vue";
 import {useRouter} from "vue-router";
 import axios from "@/axios.js";
+import {handleError} from "@/helper/graphql-error-handling.js";
 
 const router = useRouter();
 
 const saving = ref(false);
-const error = ref(null);
+const errors = ref([]);
 const fieldErrors = ref({});
 
 // TODO these could later be configured on the objects themselves once user can configure them
@@ -81,18 +86,34 @@ const loading = computed(() => {
 loadDropdowns();
 
 function loadDropdowns() {
-    Promise
-        .all([
-            axios.get(`/projects`),
-            axios.get(`/issue-types`),
-            axios.get(`/issue-priorities`),
-            axios.get(`/issue-statuses`)
-        ])
-        .then(responses => {
-            projects.value = responses[0].data;
-            issueTypes.value = responses[1].data;
-            issuePriorities.value = responses[2].data;
-            issueStatuses.value = responses[3].data;
+    axios
+        .graphql(
+            `
+                query IssueDropdowns {
+                    projects {
+                        id
+                        title
+                    }
+                    issueTypes {
+                        id
+                        title
+                    }
+                    issuePriorities {
+                        id
+                        title
+                    }
+                    issueStatuses {
+                        id
+                        title
+                    }
+                }
+            `
+        )
+        .then(data => {
+            projects.value = data.projects;
+            issueTypes.value = data.issueTypes;
+            issuePriorities.value = data.issuePriorities;
+            issueStatuses.value = data.issueStatuses;
 
             // Find default IDs
 
@@ -133,26 +154,52 @@ function loadDropdowns() {
             }
         })
         .catch(e => {
-            handleError(e);
+            const handledErrors = handleError(e);
+
+            errors.value = handledErrors.genericErrors;
+            fieldErrors.value = handledErrors.fieldErrors;
         });
 }
 
 function save(ctrlDown) {
-    saving.value = true;
     fieldErrors.value = {};
-    error.value = null;
+    errors.value = [];
+
+    // TODO more client-side validation. For now, we let the backend validate mostly.
+    //      With the new GraphQL API there are errors leading to an invalid request,
+    //      these must be stopped at client-side already.
+    if (!issue.value.projectId) {
+        fieldErrors.value.projectId = 'You must select a project.';
+        return;
+    }
+
+    saving.value = true;
 
     axios
-        .post('/issues', issue.value)
-        .then(response => {
+        .graphql(
+            `
+                mutation CreateIssue($input: CreateIssueInput!) {
+                    createIssue(input: $input) {
+                        issue {
+                            id
+                        }
+                    }
+                }
+            `,
+            { input: issue.value }
+        )
+        .then(data => {
             if (ctrlDown) {
                 resetForm();
             } else {
-                router.push({name: 'issue', params: {issueId: response.data.id}});
+                router.push({name: 'issue', params: {issueId: data.createIssue.issue.id}});
             }
         })
         .catch(e => {
-            handleError(e);
+            const handledErrors = handleError(e);
+
+            errors.value = handledErrors.genericErrors;
+            fieldErrors.value = handledErrors.fieldErrors;
         })
         .finally(() => {
             saving.value = false;
@@ -174,20 +221,5 @@ function resetForm() {
 
 function cancel() {
     router.back();
-}
-
-function handleError(e) {
-    if (e.response && e.response.data && e.response.data.message) {
-        const data = e.response.data;
-        if (data.field) {
-            fieldErrors.value[data.field] = data.message;
-        } else {
-            error.value = data.message;
-        }
-    } else if (error.request) {
-        error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
-    } else {
-        error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
-    }
 }
 </script>

@@ -266,12 +266,15 @@
                     <tr
                         v-for="issue in issuesFilteredAndSorted"
                         :key="issue.id"
-                        :class="{ overdue: isOverdue(issue), done: issue.done }"
+                        :class="{ overdue: isOverdue(issue), done: issue.issueStatus.doneStatus }"
                     >
                         <td>
                             <span class="icon-link">
                                 <span :class="{'d-inline': showIcons, 'd-none': !showIcons }">
-                                    <component :is="renderIcon(issueTypes, it => issue.issueTypeId === it.id )" />
+                                    <i
+                                        :class="`fas fa-${issue.issueType.icon} text-${issue.issueType.iconColor}`"
+                                        :title="issue.issueType.title"
+                                    />
                                 </span>
                                 <span :class="{'d-inline': !showIcons, 'd-none': showIcons }">
                                     {{ issue.issueType.title }}
@@ -300,8 +303,10 @@
                         <td>
                             <span class="icon-link">
                                 <span :class="{'d-inline': showIcons, 'd-none': !showIcons }">
-                                    <component
-                                        :is="renderIcon(issuePriorities, it => issue.issuePriorityId === it.id && it.showIconInList )"
+                                    <i
+                                        v-if="issue.issuePriority.showIconInList"
+                                        :class="`fas fa-${issue.issuePriority.icon} text-${issue.issuePriority.iconColor}`"
+                                        :title="issue.issuePriority.title"
                                     />
                                 </span>
                                 <span :class="{'d-inline': !showIcons, 'd-none': showIcons }">
@@ -312,8 +317,9 @@
                         <td>
                             <span class="icon-link">
                                 <span :class="{'d-inline': showIcons, 'd-none': !showIcons }">
-                                    <component
-                                        :is="renderIcon(issueStatuses, it => issue.issueStatusId === it.id , issue.progress)"
+                                    <i
+                                        :class="`fas fa-${issue.issueStatus.icon} text-${issue.issueStatus.iconColor}`"
+                                        :title="`${issue.issueStatus.title} (${issue.progress}%)`"
                                     />
                                 </span>
                                 <span :class="{'d-inline': !showIcons, 'd-none': showIcons }">
@@ -353,8 +359,9 @@ import SearchInput from "@/components/SearchInput.vue";
 import Loading from "@/components/Loading.vue";
 import {computed, ref} from "vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
-import {renderIcon, isOverdue, getDueColor} from "@/views/issues/issue-functions.js";
+import {isOverdue, getDueColor} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
+import {handleError} from "@/helper/graphql-error-handling.js";
 
 const sortFunctions = [
     {
@@ -379,8 +386,8 @@ const sortFunctions = [
         func: (a, b) => {
             const priorityToNumber = issuePriorityId => issuePriorities.value.findIndex(it => it.id === issuePriorityId);
 
-            const aPriority = priorityToNumber(a.issuePriorityId);
-            const bPriority = priorityToNumber(b.issuePriorityId);
+            const aPriority = priorityToNumber(a.issuePriority.id);
+            const bPriority = priorityToNumber(b.issuePriority.id);
             return -(aPriority - bPriority);
         }
     },
@@ -389,8 +396,8 @@ const sortFunctions = [
         func: (a, b) => {
             const statusToNumber = issueStatusId => issueStatuses.value.findIndex(it => it.id === issueStatusId);
 
-            const aStatus = statusToNumber(a.issueStatusId);
-            const bStatus = statusToNumber(b.issueStatusId);
+            const aStatus = statusToNumber(a.issueStatus.id);
+            const bStatus = statusToNumber(b.issueStatus.id);
             return aStatus - bStatus;
         }
     },
@@ -399,8 +406,8 @@ const sortFunctions = [
         func: (a, b) => {
             const typeToNumber = issueTypeId => issueTypes.value.findIndex(it => it.id === issueTypeId);
 
-            const aType = typeToNumber(a.issueTypeId);
-            const bType = typeToNumber(b.issueTypeId);
+            const aType = typeToNumber(a.issueType.id);
+            const bType = typeToNumber(b.issueType.id);
             return aType - bType;
         }
     },
@@ -459,28 +466,28 @@ const issuesFiltered = computed(() => {
         }
 
         if (filter.value.projectId != null) {
-            if (issue.projectId !== filter.value.projectId) {
+            if (issue.project.id !== filter.value.projectId) {
                 return false;
             }
         }
         if (filter.value.issueTypeId != null) {
-            if (issue.issueTypeId !== filter.value.issueTypeId) {
+            if (issue.issueType.id !== filter.value.issueTypeId) {
                 return false;
             }
         }
         if (filter.value.issuePriorityId != null) {
-            if (issue.issuePriorityId !== filter.value.issuePriorityId) {
+            if (issue.issuePriority.id !== filter.value.issuePriorityId) {
                 return false;
             }
         }
         if (filter.value.issueStatusId != null) {
-            if (issue.issueStatusId !== filter.value.issueStatusId) {
+            if (issue.issueStatus.id !== filter.value.issueStatusId) {
                 return false;
             }
         }
 
         if (!filter.value.showDone) {
-            if (issue.done) {
+            if (issue.issueStatus.doneStatus) {
                 return false;
             }
         }
@@ -506,46 +513,89 @@ const issuesFilteredAndSorted = computed(() => {
     return issuesFiltered.value.toSorted(sortFunctionToUse);
 });
 
-Promise
-    .all([
-        axios.get(`/issues`),
-        axios.get(`/projects`),
-        axios.get(`/issue-types`),
-        axios.get(`/issue-priorities`),
-        axios.get(`/issue-statuses`)
-    ])
-    .then(responses => {
-        projects.value = responses[1].data;
-        issueTypes.value = responses[2].data;
-        issuePriorities.value = responses[3].data;
-        issueStatuses.value = responses[4].data;
+axios
+    .graphql(
+        `
+            query Issues {
+                issues {
+                    id
+                    issueNumber # TODO issueKey
+                    project {
+                        id
+                        prefix
+                    }
+                    issueType {
+                        id
+                    }
+                    issuePriority {
+                        id
+                    }
+                    issueStatus {
+                        id
+                    }
+                    title
+                    progress
+                    dueDate
+                    creationTime
+                    modificationTime
+                    doneTime
+                }
+                projects {
+                    id
+                    prefix
+                    title
+                }
+                issueTypes {
+                    id
+                    title
+                    icon
+                    iconColor
+                }
+                issuePriorities {
+                    id
+                    title
+                    icon
+                    iconColor
+                    showIconInList
+                }
+                issueStatuses {
+                    id
+                    title
+                    icon
+                    iconColor
+                    doneStatus
+                }
+            }
+        `
+    )
+    .then(data => {
+        issues.value = data.issues;
+        projects.value = data.projects;
+        issueTypes.value = data.issueTypes;
+        issuePriorities.value = data.issuePriorities;
+        issueStatuses.value = data.issueStatuses;
 
-        // For convenience, add the full objects and a done flag to the issue
-        const issuesLoaded = [];
-        for (let issue of responses[0].data) {
-            const project = projects.value
-                .find(project => project.id === issue.projectId);
-            const issueType = issueTypes.value
-                .find(issueType => issueType.id === issue.issueTypeId);
-            const issuePriority = issuePriorities.value
-                .find(issuePriority => issuePriority.id === issue.issuePriorityId);
-            const issueStatus = issueStatuses.value
-                .find(issueStatus => issueStatus.id === issue.issueStatusId);
+        issues.value.forEach(it => {
+            // Synthesize issueKeys (GraphQL API does not offer them (yet))
+            it.issueKey = `${it.project.prefix}-${it.issueNumber}`;
 
-            const done = issueStatus.isDoneStatus;
+            // For convenience, add the full objects to the issue
+            // (We could let this populate by GraphQL but this would mean more traffic, we prefer doing this here)
 
-            issuesLoaded.push({
-                ...issue,
-                project,
-                issueType,
-                issuePriority,
-                issueStatus,
-                done
-            });
-        }
+            it.project = projects.value
+                .find(project => project.id === it.project.id);
+            it.issueType = issueTypes.value
+                .find(issueType => issueType.id === it.issueType.id);
+            it.issuePriority = issuePriorities.value
+                .find(issuePriority => issuePriority.id === it.issuePriority.id);
+            it.issueStatus = issueStatuses.value
+                .find(issueStatus => issueStatus.id === it.issueStatus.id);
+        });
 
-        issues.value = issuesLoaded;
         loading.value = false;
+    })
+    .catch(e => {
+        errors.value = handleError(e).genericErrors;
     });
 
 function clearFilter() {

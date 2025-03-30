@@ -1,10 +1,14 @@
 /**
  * Returns a Font Awesome icon for a given MIME Type.
  *
- * @param {String} mimeType MIME Type
+ * @param {?String} mimeType MIME Type
  * @returns {String} Icon name
  */
 function getIconForMimeType(mimeType) {
+    // None
+
+    if (!mimeType) return 'file';
+
     // Concrete MIME Types
 
     if (mimeType === 'text/css') return 'file-code';

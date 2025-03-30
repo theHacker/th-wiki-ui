@@ -3,10 +3,14 @@
         <div class="col-12 col-lg-8 offset-lg-2">
             <h1>New wiki page</h1>
 
-            <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
+            <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
+                <ul>
+                    <li v-for="error in errors">{{ error }}</li>
+                </ul>
+            </ErrorMessage>
 
             <WikiPageEditForm
-                v-model="entry"
+                v-model="wikiPage"
                 submitLabel="Create"
                 :saving="saving"
                 :fieldErrors="fieldErrors"
@@ -24,35 +28,46 @@ import {useRouter} from "vue-router";
 import WikiPageEditForm from "@/components/wiki/WikiPageEditForm.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
+import {handleError} from "@/helper/graphql-error-handling.js";
 
 const router = useRouter();
 
 const saving = ref(false);
-const error = ref(null);
+const errors = ref([]);
 const fieldErrors = ref({});
 
-const entry = ref({
+const wikiPage = ref({
     title: '',
     parentId: null,
     content: ''
-    // TODO new field folder
 });
 
 function save() {
     saving.value = true;
     fieldErrors.value = {};
-    error.value = null;
+    errors.value = [];
 
     axios
-        .post('/entries', {
-            ...entry.value,
-            type: 'wiki'
-        })
-        .then(response => {
-            router.push({ name: 'wikiPage', params: { entryId: response.data.id } });
+        .graphql(
+            `
+                mutation CreateWikiPage($input: CreateWikiPageInput!) {
+                    createWikiPage(input: $input) {
+                        wikiPage {
+                            id
+                        }
+                    }
+                }
+            `,
+            { input: wikiPage.value }
+        )
+        .then(data => {
+            router.push({ name: 'wikiPage', params: { wikiPageId: data.createWikiPage.wikiPage.id } });
         })
         .catch(e => {
-            handleError(e);
+            const handledErrors = handleError(e);
+
+            errors.value = handledErrors.genericErrors;
+            fieldErrors.value = handledErrors.fieldErrors;
         })
         .finally(() => {
             saving.value = false;
@@ -61,20 +76,5 @@ function save() {
 
 function cancel() {
     router.back();
-}
-
-function handleError(e) {
-    if (e.response && e.response.data && e.response.data.message) {
-        const data = e.response.data;
-        if (data.field) {
-            fieldErrors.value[data.field] = data.message;
-        } else {
-            error.value = data.message;
-        }
-    } else if (error.request) {
-        error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
-    } else {
-        error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
-    }
 }
 </script>

@@ -35,9 +35,18 @@ watch(
 
 onMounted(() => {
     axios
-        .get(`/issue-link-types`)
-        .then(response => {
-            issueLinkTypes.value = response.data;
+        .graphql(`
+            query IssueLinkTypesForDependencyGraph {
+                issueLinkTypes {
+                    id
+                    type
+                    wording
+                    wordingInverse
+                }
+            }
+        `)
+        .then(data => {
+            issueLinkTypes.value = data.issueLinkTypes;
         });
 });
 
@@ -57,20 +66,36 @@ async function fetchData() {
 
     let issueIdsToLoad = [props.issueId];
     for (let level = 1; level <= props.depth; level++) {
-        const issueLinksOnThisLevel = [];
-        const issueLinkRequests = issueIdsToLoad
-            .map(issueId => axios.get(`/issue-links?issueId=${issueId}`)); // TODO load in one request -> API only allows to fetch one at a time for now
-
-        const issueLinkResponses = await Promise.all(issueLinkRequests)
-        for (let response of issueLinkResponses) {
-            issueLinksOnThisLevel.push(...response.data); // issueLinksOnThisLevel may contain duplicates!
-        }
+        // issueLinksOnThisLevel may contain duplicates!
+        const issueLinksOnThisLevel = await axios
+            .graphql(
+                `
+                    query IssuesAndLinksForDependencyGraph($issueIds: [ID!]!) {
+                        issues(ids: $issueIds) {
+                            issueLinks {
+                                id
+                                issue1 {
+                                    id
+                                }
+                                issue2 {
+                                    id
+                                }
+                                issueLinkType {
+                                    id
+                                }
+                            }
+                        }
+                    }
+                `,
+                { issueIds: issueIdsToLoad }
+            )
+            .then(data => data.issues.flatMap(issue => issue.issueLinks));
 
         issueIdsToLoad = [];
         for (let issueLink of issueLinksOnThisLevel) {
             // Remember to load the issue later (issueIdsToFetch is a Set, so we don't need to check for duplicates)
-            issueIdsToFetch.add(issueLink.issue1Id);
-            issueIdsToFetch.add(issueLink.issue2Id);
+            issueIdsToFetch.add(issueLink.issue1.id);
+            issueIdsToFetch.add(issueLink.issue2.id);
 
             // Add links (filter out duplicates)
             if (!issueLinkIdsAlreadyProcessed.has(issueLink.id)) {
@@ -80,30 +105,44 @@ async function fetchData() {
 
             // Take the next issues and use them to fetch their links on the next level
             // Don't load an already processed one again!
-            if (!issueIdsAlreadyProcessed.has(issueLink.issue1Id)) {
-                issueIdsToLoad.push(issueLink.issue1Id);
-                issueIdsAlreadyProcessed.add(issueLink.issue1Id);
+            if (!issueIdsAlreadyProcessed.has(issueLink.issue1.id)) {
+                issueIdsToLoad.push(issueLink.issue1.id);
+                issueIdsAlreadyProcessed.add(issueLink.issue1.id);
             }
-            if (!issueIdsAlreadyProcessed.has(issueLink.issue2Id)) {
-                issueIdsToLoad.push(issueLink.issue2Id);
-                issueIdsAlreadyProcessed.add(issueLink.issue2Id);
+            if (!issueIdsAlreadyProcessed.has(issueLink.issue2.id)) {
+                issueIdsToLoad.push(issueLink.issue2.id);
+                issueIdsAlreadyProcessed.add(issueLink.issue2.id);
             }
         }
     }
     involvedIssueLinks.value = issueLinks;
 
     // Load issues involved
-    const issueRequests = issueIdsToFetch
-        .values()
-        .map(issueId => axios.get(`/issues/${issueId}`)); // TODO load in one request, only fetch fields=id,issueKey,title -> API only allows to fetch one at a time for now, no field selection
+    involvedIssues.value = await axios
+        .graphql(
+            `
+                query IssuesForDependencyGraph($issueIds: [ID!]!) {
+                    issues(ids: $issueIds) {
+                        id
+                        issueNumber # TODO issueKey
+                        project {
+                            prefix
+                        }
+                        title
+                    }
+                }
+            `,
+            { issueIds: [...issueIdsToFetch] }
+        )
+        .then(data => {
+            const issues = {};
+            for (let issue of data.issues) {
+                issue.issueKey = `${issue.project.prefix}-${issue.issueNumber}`;
+                issues[issue.id] = issue;
+            }
 
-    const issueResponses = await Promise.all(issueRequests);
-
-    const issues = {};
-    for (let response of issueResponses) {
-        issues[response.data.id] = response.data;
-    }
-    involvedIssues.value = issues;
+            return issues;
+        });
 }
 
 function escapeMermaid(str) {
@@ -142,13 +181,13 @@ const dependencyGraphSvg = computedAsync(async () => {
 
     let edgeIndex = 0;
     for (let issueLink of involvedIssueLinks.value) {
-        const issue1 = involvedIssues.value[issueLink.issue1Id];
-        const issue2 = involvedIssues.value[issueLink.issue2Id];
+        const issue1 = involvedIssues.value[issueLink.issue1.id];
+        const issue2 = involvedIssues.value[issueLink.issue2.id];
 
         addIssueNode(issue1);
         addIssueNode(issue2);
 
-        const issueLinkType = issueLinkTypes.value.find(it => it.id === issueLink.issueLinkTypeId);
+        const issueLinkType = issueLinkTypes.value.find(it => it.id === issueLink.issueLinkType.id);
 
         let linkStyle, linkColor;
         if (issueLinkType.type === 'subtask') {
