@@ -4,7 +4,7 @@
             <div class="card">
                 <div class="card-header">
                     <div class="hstack gap-2">
-                        <SearchInput v-model="filter.search" />
+                        <SearchInput v-model="quickSearch.search" />
                         <Button
                             class="btn-text-xxl"
                             icon="plus"
@@ -64,8 +64,8 @@
                         <div class="col-12 col-sm-6 col-lg-12 col-xl-6">
                             <label class="form-label">Sort function</label>
 
-                            <select v-model="sorting.sortFunctionTitle" class="form-select">
-                                <option v-for="sortFunction in sortFunctions" :value="sortFunction.title">
+                            <select v-model="quickSearch.sortFunctionKey" class="form-select">
+                                <option v-for="sortFunction in sortFunctions" :value="sortFunction.key">
                                     {{ sortFunction.title }}
                                 </option>
                             </select>
@@ -73,7 +73,7 @@
                         <div class="col-12 col-sm-6 col-lg-12 col-xl-6">
                             <div class="form-check">
                                 <input
-                                    v-model="sorting.sortInverse"
+                                    v-model="quickSearch.sortInverse"
                                     id="checkboxSortInverse"
                                     class="form-check-input"
                                     type="checkbox"
@@ -90,7 +90,7 @@
                             <div class="hstack gap-3">
                                 <div class="form-check">
                                     <input
-                                        v-model="filter.showDone"
+                                        v-model="quickSearch.showDone"
                                         id="checkboxShowDone"
                                         class="form-check-input"
                                         type="checkbox"
@@ -101,7 +101,7 @@
                                 </div>
                                 <div class="form-check">
                                     <input
-                                        v-model="filter.showOnlyDue"
+                                        v-model="quickSearch.showOnlyDue"
                                         id="checkboxShowOnlyDue"
                                         class="form-check-input"
                                         type="checkbox"
@@ -121,7 +121,7 @@
                             </div>
                             <ProjectSelect
                                 v-if="projects !== null"
-                                v-model="filter.projectId"
+                                v-model="quickSearch.projectId"
                                 :projects="projects"
                                 nullOption="– All projects –"
                             />
@@ -132,7 +132,7 @@
                             <div v-if="issueTypes === null">
                                 <Loading />
                             </div>
-                            <select v-if="issueTypes !== null" v-model="filter.issueTypeId" class="form-select">
+                            <select v-if="issueTypes !== null" v-model="quickSearch.issueTypeId" class="form-select">
                                 <option :value="null">– All types –</option>
                                 <option v-for="type in issueTypes" :value="type.id">
                                     {{ type.title }}
@@ -146,7 +146,7 @@
                             <div v-if="issuePriorities === null">
                                 <Loading />
                             </div>
-                            <select v-if="issuePriorities !== null" v-model="filter.issuePriorityId" class="form-select">
+                            <select v-if="issuePriorities !== null" v-model="quickSearch.issuePriorityId" class="form-select">
                                 <option :value="null">– All priorities –</option>
                                 <option v-for="priority in issuePriorities" :value="priority.id">
                                     {{ priority.title }}
@@ -159,7 +159,7 @@
                             <div v-if="issueStatuses === null">
                                 <Loading />
                             </div>
-                            <select v-if="issueStatuses !== null" v-model="filter.issueStatusId" class="form-select">
+                            <select v-if="issueStatuses !== null" v-model="quickSearch.issueStatusId" class="form-select">
                                 <option :value="null">– All statuses –</option>
                                 <option v-for="status in issueStatuses" :value="status.id">
                                     {{ status.title }}
@@ -168,13 +168,22 @@
                         </div>
 
                         <div class="col-12 mt-md-4">
-                            <Button
-                                icon="xmark"
-                                title="Clear all filters"
-                                color="danger"
-                                :disabled="!isFilterSet()"
-                                @click="clearFilter"
-                            />
+                            <div class="hstack gap-2 flex-wrap">
+                                <Button
+                                    icon="check"
+                                    title="Apply quick search"
+                                    color="success"
+                                    @click="query = quickSearchToQuery(quickSearch, projects, issueTypes, issuePriorities, issueStatuses)"
+                                />
+
+                                <Button
+                                    icon="xmark"
+                                    title="Clear search query"
+                                    color="danger"
+                                    :disabled="query === ''"
+                                    @click="clearFilter"
+                                />
+                            </div>
                         </div>
                     </fieldset>
                 </div>
@@ -194,7 +203,7 @@
                         />
                     </div>
 
-                    <SearchInput v-model="filter.search" />
+                    <SearchInput v-model="query" />
                 </div>
 
                 <div class="hstack gap-2 w-100 w-lg-auto">
@@ -222,16 +231,6 @@
                         />
                     </div>
 
-                    <div class="btn-group">
-                        <Button
-                            icon="check"
-                            tooltip="Show done issues"
-                            fixedWidth
-                            :active="filter.showDone"
-                            @click="filter.showDone = !filter.showDone"
-                        />
-                    </div>
-
                     <div class="ms-auto ms-lg-2" />
 
                     <Button
@@ -249,11 +248,14 @@
                     <Loading>Loading issues…</Loading>
                 </div>
 
-                <span v-if="!loading && isFilterSet()">
-                    <b>{{ issuesFiltered.length }}</b> {{ issuesFiltered.length !== 1 ? 'issues' : 'issue'}} filtered.
-                </span>
                 <span v-if="!loading">
-                    <b>{{ issues.length }}</b> {{ issues.length !== 1 ? 'issues' : 'issue'}} total.
+                    <div v-if="queryError" class="text-danger">
+                        {{ queryError }}
+                    </div>
+                    <div v-else>
+                        <b>{{ issuesResultingFromQuery.length }}</b> {{ issuesResultingFromQuery.length !== 1 ? 'issues' : 'issue'}} filtered.
+                        <b>{{ issues.length }}</b> {{ issues.length !== 1 ? 'issues' : 'issue'}} total.
+                    </div>
                 </span>
             </div>
 
@@ -273,7 +275,7 @@
                 </thead>
                 <tbody>
                     <tr
-                        v-for="issue in issuesFilteredAndSorted"
+                        v-for="issue in issuesResultingFromQuery"
                         :key="issue.id"
                         :class="{ overdue: isOverdue(issue), done: issue.issueStatus.doneStatus }"
                     >
@@ -343,14 +345,17 @@
                             </div>
                         </td>
                     </tr>
-                    <tr v-if="issuesFilteredAndSorted.length === 0">
+                    <tr v-if="issuesResultingFromQuery.length === 0">
                         <td colspan="5" class="text-center">
                             <i>No issues.</i>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <div v-if="issuesFilteredAndSorted.length === 0 && isFilterSet()" class="d-flex justify-content-center mt-4">
+            <div
+                v-if="issuesResultingFromQuery.length === 0 && query !== ''"
+                class="d-flex justify-content-center mt-4"
+            >
                 <Button
                     icon="xmark"
                     title="Clear all filters"
@@ -366,104 +371,37 @@
 import Button from "@/components/Button.vue";
 import SearchInput from "@/components/SearchInput.vue";
 import Loading from "@/components/Loading.vue";
-import {computed, ref} from "vue";
+import {ref, watch} from "vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 import {isOverdue, getDueColor} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import ProjectSelect from "@/components/general/ProjectSelect.vue";
+import {executeQuery, quickSearchToQuery, buildSortFunctions, defaultSortFunctionKey} from "./issue-search.js";
 
-const sortFunctions = [
-    {
-        title: 'Modification time',
-        func: (a, b) => -a.modificationTime.localeCompare(b.modificationTime)
-    },
-    {
-        title: 'Due date',
-        func: (a, b) => {
-            if (a.dueDate && !b.dueDate) {
-                return -1;
-            }
-            else if (!a.dueDate && b.dueDate) {
-                return +1;
-            }
-            else if (!a.dueDate && !b.dueDate) {
-                return 0;
-            }
+const sortFunctions = ref([]);
 
-            return a.dueDate.localeCompare(b.dueDate);
-        }
-    },
-    {
-        title: 'Key',
-        func: (a, b) => {
-            const projectCmp = a.project.prefix.localeCompare(b.project.prefix);
-            if (projectCmp !== 0) {
-                return projectCmp;
-            }
-
-            return -(a.issueNumber - b.issueNumber);
-        }
-    },
-    {
-        title: 'Priority',
-        func: (a, b) => {
-            const priorityToNumber = issuePriorityId => issuePriorities.value.findIndex(it => it.id === issuePriorityId);
-
-            const aPriority = priorityToNumber(a.issuePriority.id);
-            const bPriority = priorityToNumber(b.issuePriority.id);
-            return -(aPriority - bPriority);
-        }
-    },
-    {
-        title: 'Status',
-        func: (a, b) => {
-            const statusToNumber = issueStatusId => issueStatuses.value.findIndex(it => it.id === issueStatusId);
-
-            const aStatus = statusToNumber(a.issueStatus.id);
-            const bStatus = statusToNumber(b.issueStatus.id);
-            return aStatus - bStatus;
-        }
-    },
-    {
-        title: 'Type',
-        func: (a, b) => {
-            const typeToNumber = issueTypeId => issueTypes.value.findIndex(it => it.id === issueTypeId);
-
-            const aType = typeToNumber(a.issueType.id);
-            const bType = typeToNumber(b.issueType.id);
-            return aType - bType;
-        }
-    },
-    {
-        title: 'Title',
-        func: (a, b) => a.title.localeCompare(b.title)
-    },
-    {
-        title: 'Creation time',
-        func: (a, b) => -a.creationTime.localeCompare(b.creationTime)
-    }
-];
-
-const filter = ref({
+const quickSearch = ref({
     search: '',
     projectId: null,
     issueTypeId: null,
     issuePriorityId: null,
     issueStatusId: null,
     showDone: false,
-    showOnlyDue: false
-});
-const sorting = ref({
-    sortFunctionTitle: sortFunctions[0].title,
+    showOnlyDue: false,
+    sortFunctionKey: defaultSortFunctionKey,
     sortInverse: false
 });
+const query = ref('');
 
 const issues = ref([]);
 const projects = ref(null);
 const issueTypes = ref(null);
 const issuePriorities = ref(null);
 const issueStatuses = ref(null);
+
+const issuesResultingFromQuery = ref([]);
+const queryError = ref(null);
 
 const loading = ref(true);
 
@@ -473,69 +411,19 @@ const showKeys = ref(true);
 const showIcons = ref(true);
 const denseTable = ref(false);
 
-const issuesFiltered = computed(() => {
-
-    // Optimization: No filters? Just return everything
-    if (!isFilterSet()) {
-        return issues.value;
+watch(
+    [ query, issues ],
+    () => {
+        try {
+            issuesResultingFromQuery.value = executeQuery(query.value, issues.value, sortFunctions.value);
+            queryError.value = '';
+        } catch (e) {
+            // We don't change issuesResultingFromQuery, so the previous result is still displayed,
+            // in addition to the error message.
+            queryError.value = e;
+        }
     }
-
-    // Apply filters
-    return issues.value.filter(issue => {
-
-        if (filter.value.search != null) {
-            if (!issue.title.toLowerCase().includes(filter.value.search.toLowerCase())) {
-                return false;
-            }
-        }
-
-        if (filter.value.projectId != null) {
-            if (issue.project.id !== filter.value.projectId) {
-                return false;
-            }
-        }
-        if (filter.value.issueTypeId != null) {
-            if (issue.issueType.id !== filter.value.issueTypeId) {
-                return false;
-            }
-        }
-        if (filter.value.issuePriorityId != null) {
-            if (issue.issuePriority.id !== filter.value.issuePriorityId) {
-                return false;
-            }
-        }
-        if (filter.value.issueStatusId != null) {
-            if (issue.issueStatus.id !== filter.value.issueStatusId) {
-                return false;
-            }
-        }
-
-        if (!filter.value.showDone) {
-            if (issue.issueStatus.doneStatus) {
-                return false;
-            }
-        }
-        if (filter.value.showOnlyDue) {
-            if (!issue.dueDate) {
-                return false;
-            }
-        }
-
-        return true;
-    });
-});
-
-const issuesFilteredAndSorted = computed(() => {
-    const sortFunction = sortFunctions
-        .find(it => it.title === sorting.value.sortFunctionTitle)
-        .func;
-
-    const sortFunctionToUse = (sorting.value.sortInverse)
-        ? (a, b) => -sortFunction(a, b)
-        : sortFunction;
-
-    return issuesFiltered.value.toSorted(sortFunctionToUse);
-});
+);
 
 axios
     .graphql(
@@ -558,6 +446,7 @@ axios
                         id
                     }
                     title
+                    description # TODO only until we have server-side search functionality
                     progress
                     dueDate
                     creationTime
@@ -616,6 +505,8 @@ axios
                 .find(issueStatus => issueStatus.id === it.issueStatus.id);
         });
 
+        sortFunctions.value = buildSortFunctions(issuePriorities.value, issueStatuses.value, issueTypes.value);
+
         loading.value = false;
     })
     .catch(e => {
@@ -623,27 +514,18 @@ axios
     });
 
 function clearFilter() {
-    filter.value = {
+    query.value = '';
+    quickSearch.value = {
         search: '',
         projectId: null,
         issueTypeId: null,
         issuePriorityId: null,
         issueStatusId: null,
-        showDone: true,
-        showOnlyDue: false
+        showDone: false,
+        showOnlyDue: false,
+        sortFunctionKey: defaultSortFunctionKey,
+        sortInverse: false
     };
-}
-
-function isFilterSet() {
-    return (
-        filter.value.search !== '' ||
-        filter.value.projectId !== null ||
-        filter.value.issueTypeId !== null ||
-        filter.value.issuePriorityId !== null ||
-        filter.value.issueStatusId !== null ||
-        !filter.value.showDone ||
-        filter.value.showOnlyDue
-    );
 }
 </script>
 

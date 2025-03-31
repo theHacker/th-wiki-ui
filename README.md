@@ -73,6 +73,29 @@ With `--fix`, which changes the code:
 npm run lint:fix
 ```
 
+### ANTLR
+
+Downloading ANTLR:
+
+```sh
+curl -O https://www.antlr.org/download/antlr-4.13.2-complete.jar
+```
+
+Invoking ANTLR:
+
+```sh
+alias antlr="java -jar antlr-4.13.2-complete.jar"
+alias grun="java -cp .:antlr-4.13.2-complete.jar org.antlr.v4.gui.TestRig"
+
+antlr
+```
+
+Generating sources:
+
+```sh
+antlr -Dlanguage=JavaScript -no-listener -visitor src/antlr/SearchQuery.g4 
+```
+
 How to Docker
 --------------
 

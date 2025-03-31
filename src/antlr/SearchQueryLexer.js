@@ -1,0 +1,58 @@
+// Generated from src/antlr/SearchQuery.g4 by ANTLR 4.13.2
+// jshint ignore: start
+import antlr4 from 'antlr4';
+
+
+const serializedATN = [4,0,9,51,6,-1,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,
+7,4,2,5,7,5,2,6,7,6,2,7,7,7,2,8,7,8,1,0,1,0,1,1,1,1,1,2,1,2,1,3,1,3,1,3,
+1,4,1,4,1,4,1,5,1,5,1,6,4,6,35,8,6,11,6,12,6,36,1,7,1,7,5,7,41,8,7,10,7,
+12,7,44,9,7,1,7,1,7,1,8,1,8,1,8,1,8,1,42,0,9,1,1,3,2,5,3,7,4,9,5,11,6,13,
+7,15,8,17,9,1,0,2,13,0,45,45,48,57,65,90,97,122,126,126,196,196,214,214,
+220,220,223,223,228,228,246,246,252,252,7838,7838,2,0,32,32,160,160,52,0,
+1,1,0,0,0,0,3,1,0,0,0,0,5,1,0,0,0,0,7,1,0,0,0,0,9,1,0,0,0,0,11,1,0,0,0,0,
+13,1,0,0,0,0,15,1,0,0,0,0,17,1,0,0,0,1,19,1,0,0,0,3,21,1,0,0,0,5,23,1,0,
+0,0,7,25,1,0,0,0,9,28,1,0,0,0,11,31,1,0,0,0,13,34,1,0,0,0,15,38,1,0,0,0,
+17,47,1,0,0,0,19,20,5,40,0,0,20,2,1,0,0,0,21,22,5,41,0,0,22,4,1,0,0,0,23,
+24,5,58,0,0,24,6,1,0,0,0,25,26,5,38,0,0,26,27,5,38,0,0,27,8,1,0,0,0,28,29,
+5,124,0,0,29,30,5,124,0,0,30,10,1,0,0,0,31,32,5,33,0,0,32,12,1,0,0,0,33,
+35,7,0,0,0,34,33,1,0,0,0,35,36,1,0,0,0,36,34,1,0,0,0,36,37,1,0,0,0,37,14,
+1,0,0,0,38,42,5,34,0,0,39,41,9,0,0,0,40,39,1,0,0,0,41,44,1,0,0,0,42,43,1,
+0,0,0,42,40,1,0,0,0,43,45,1,0,0,0,44,42,1,0,0,0,45,46,5,34,0,0,46,16,1,0,
+0,0,47,48,7,1,0,0,48,49,1,0,0,0,49,50,6,8,0,0,50,18,1,0,0,0,3,0,36,42,1,
+6,0,0];
+
+
+const atn = new antlr4.atn.ATNDeserializer().deserialize(serializedATN);
+
+const decisionsToDFA = atn.decisionToState.map( (ds, index) => new antlr4.dfa.DFA(ds, index) );
+
+export default class SearchQueryLexer extends antlr4.Lexer {
+
+    static grammarFileName = "SearchQuery.g4";
+    static channelNames = [ "DEFAULT_TOKEN_CHANNEL", "HIDDEN" ];
+	static modeNames = [ "DEFAULT_MODE" ];
+	static literalNames = [ null, "'('", "')'", "':'", "'&&'", "'||'", "'!'" ];
+	static symbolicNames = [ null, "LPARENS", "RPARENS", "COLON", "AND", "OR", 
+                          "NOT", "WORD", "QUOTED_STRING", "SPACE" ];
+	static ruleNames = [ "LPARENS", "RPARENS", "COLON", "AND", "OR", "NOT", 
+                      "WORD", "QUOTED_STRING", "SPACE" ];
+
+    constructor(input) {
+        super(input)
+        this._interp = new antlr4.atn.LexerATNSimulator(this, atn, decisionsToDFA, new antlr4.atn.PredictionContextCache());
+    }
+}
+
+SearchQueryLexer.EOF = antlr4.Token.EOF;
+SearchQueryLexer.LPARENS = 1;
+SearchQueryLexer.RPARENS = 2;
+SearchQueryLexer.COLON = 3;
+SearchQueryLexer.AND = 4;
+SearchQueryLexer.OR = 5;
+SearchQueryLexer.NOT = 6;
+SearchQueryLexer.WORD = 7;
+SearchQueryLexer.QUOTED_STRING = 8;
+SearchQueryLexer.SPACE = 9;
+
+
+

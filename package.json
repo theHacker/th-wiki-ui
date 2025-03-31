@@ -16,11 +16,12 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.0",
     "@vueuse/core": "^12.3.0",
+    "antlr4": "^4.13.2",
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
+    "highlight.js": "^11.9.0",
     "marked": "^13.0.0",
     "mermaid": "^11.4.1",
-    "highlight.js": "^11.9.0",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
   },
