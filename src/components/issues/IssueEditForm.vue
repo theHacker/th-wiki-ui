@@ -18,16 +18,12 @@
 
         <div class="col-12 col-md-6">
             <label class="form-label">Project</label>
-            <select
+            <ProjectSelect
                 v-model="issue.projectId"
-                class="form-select"
+                :projects="projects"
                 :class="{'is-invalid': !!fieldErrors.projectId}"
                 :disabled="disableProject"
-            >
-                <option v-for="project in projects" :value="project.id">
-                    {{ project.title }}
-                </option>
-            </select>
+            />
             <div v-if="fieldErrors.projectId" class="invalid-feedback">{{ fieldErrors.projectId }}</div>
         </div>
 
@@ -139,6 +135,7 @@
 import Button from "@/components/Button.vue";
 import MarkdownTextarea from "@/components/general/MarkdownTextarea.vue";
 import {onMounted, onUnmounted, ref, watch} from "vue";
+import ProjectSelect from "@/components/general/ProjectSelect.vue";
 
 const ctrlDown = ref(false);
 

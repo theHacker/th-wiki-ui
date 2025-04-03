@@ -92,6 +92,7 @@ function loadDropdowns() {
                 query IssueDropdowns {
                     projects {
                         id
+                        prefix
                         title
                     }
                     issueTypes {
