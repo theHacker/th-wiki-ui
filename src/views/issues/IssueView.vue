@@ -277,28 +277,54 @@
 
                         <div v-if="linksTabState === LinksTabStates.Table">
                             <template v-for="linkGroup in linkGroups">
-                                <h2 class="fs-5">This issue {{ linkGroup.caption }}</h2>
+                                <h2 class="fs-5">
+                                    <i :class="`fas fa-${linkGroup.icon} text-${linkGroup.iconColor}`" />
+                                    This issue {{ linkGroup.caption }}
+                                </h2>
                                 <table class="table table-responsive table-sm table-hover align-middle mb-5 linkGroup">
                                     <thead>
                                         <tr>
                                             <th>Type</th>
                                             <th>Key</th>
                                             <th>Title</th>
+                                            <th>Priority</th>
+                                            <th>Status</th>
                                             <th>Commands</th>
                                         </tr>
                                     </thead>
                                     <tbody class="table-group-divider">
-                                        <tr v-for="link in linkGroup.links">
+                                        <tr
+                                            v-for="link in linkGroup.links"
+                                            :class="{ done: link.issueStatus.doneStatus }"
+                                        >
                                             <td>
-                                                <i :class="`fas fa-${linkGroup.icon} text-${linkGroup.iconColor}`" />
+                                                <i
+                                                    :class="`fas fa-${link.issueType.icon} text-${link.issueType.iconColor}`"
+                                                    :title="link.issueType.title"
+                                                />
                                             </td>
                                             <td>
                                                 <span class="pe-2">{{ link.issueKey }}</span>
                                             </td>
                                             <td>
-                                                <RouterLink :to="{ name: 'issue', params: { issueId: link.issueId } }">
+                                                <RouterLink
+                                                    :to="{ name: 'issue', params: { issueId: link.issueId } }"
+                                                    class="title"
+                                                >
                                                     {{ link.title }}
                                                 </RouterLink>
+                                            </td>
+                                            <td>
+                                                <i
+                                                    :class="`fas fa-${link.issuePriority.icon} text-${link.issuePriority.iconColor}`"
+                                                    :title="link.issuePriority.title"
+                                                />
+                                            </td>
+                                            <td>
+                                                <i
+                                                    :class="`fas fa-${link.issueStatus.icon} text-${link.issueStatus.iconColor}`"
+                                                    :title="link.issueStatus.title"
+                                                />
                                             </td>
                                             <td>
                                                 <Button
@@ -562,7 +588,10 @@ const linkGroups = computed(() => {
                         issueLinkId: link.id,
                         issueId: linkedIssue.id,
                         issueKey: linkedIssue.issueKey,
-                        title: linkedIssue.title
+                        title: linkedIssue.title,
+                        issueType: linkedIssue.issueType,
+                        issuePriority: linkedIssue.issuePriority,
+                        issueStatus: linkedIssue.issueStatus
                     };
                 });
 
@@ -583,7 +612,10 @@ const linkGroups = computed(() => {
                         issueLinkId: link.id,
                         issueId: linkedIssue.id,
                         issueKey: linkedIssue.issueKey,
-                        title: linkedIssue.title
+                        title: linkedIssue.title,
+                        issueType: linkedIssue.issueType,
+                        issuePriority: linkedIssue.issuePriority,
+                        issueStatus: linkedIssue.issueStatus
                     };
                 });
 
@@ -609,7 +641,10 @@ const linkGroups = computed(() => {
                         issueLinkId: link.id,
                         issueId: linkedIssue.id,
                         issueKey: linkedIssue.issueKey,
-                        title: linkedIssue.title
+                        title: linkedIssue.title,
+                        issueType: linkedIssue.issueType,
+                        issuePriority: linkedIssue.issuePriority,
+                        issueStatus: linkedIssue.issueStatus
                     };
                 });
 
@@ -705,6 +740,23 @@ function fetchData(id) {
                                 project {
                                     prefix
                                 }
+                                issueType {
+                                    title
+                                    icon
+                                    iconColor
+                                }
+                                issuePriority {
+                                    title
+                                    icon
+                                    iconColor
+                                }
+                                issueStatus {
+                                    id
+                                    title
+                                    icon
+                                    iconColor
+                                    doneStatus
+                                }
                                 title
                             }
                             issue2 {
@@ -712,6 +764,23 @@ function fetchData(id) {
                                 issueNumber # TODO issueKey
                                 project {
                                     prefix
+                                }
+                                issueType {
+                                    title
+                                    icon
+                                    iconColor
+                                }
+                                issuePriority {
+                                    title
+                                    icon
+                                    iconColor
+                                }
+                                issueStatus {
+                                    id
+                                    title
+                                    icon
+                                    iconColor
+                                    doneStatus
                                 }
                                 title
                             }
@@ -919,6 +988,23 @@ function linkIssues(issueId, issueLinkType, otherIssueId) {
                                 project {
                                     prefix
                                 }
+                                issueType {
+                                    title
+                                    icon
+                                    iconColor
+                                }
+                                issuePriority {
+                                    title
+                                    icon
+                                    iconColor
+                                }
+                                issueStatus {
+                                    id
+                                    title
+                                    icon
+                                    iconColor
+                                    doneStatus
+                                }
                                 title
                             }
                             issue2 {
@@ -926,6 +1012,23 @@ function linkIssues(issueId, issueLinkType, otherIssueId) {
                                 issueNumber # TODO issueKey
                                 project {
                                     prefix
+                                }
+                                issueType {
+                                    title
+                                    icon
+                                    iconColor
+                                }
+                                issuePriority {
+                                    title
+                                    icon
+                                    iconColor
+                                }
+                                issueStatus {
+                                    id
+                                    title
+                                    icon
+                                    iconColor
+                                    doneStatus
                                 }
                                 title
                             }
@@ -1005,18 +1108,32 @@ function deleteIssueLink(issueLinkId) {
 
 .table.linkGroup {
 
-    td:nth-child(1) {
+    td:nth-child(1), td:nth-child(4), td:nth-child(5) {
         width: 32px;
         text-align: center;
     }
     td:nth-child(2) {
         width: 10%;
     }
-    td:nth-child(4) {
+    td:nth-child(6) {
         $countButtons: 1;
 
         width: calc($countButtons * 32px + ($countButtons - 1) * 0.25rem);
         text-align: center;
+    }
+
+    tr.done {
+        td, a {
+            color: var(--bs-gray-700);
+        }
+        .title {
+            text-decoration: color-mix(in srgb, var(--bs-gray-400) 40%, transparent) 1px solid line-through;
+            filter: grayscale(100%); // make emojis in the text also gray
+
+            &:hover {
+                text-decoration-line: underline;
+            }
+        }
     }
 }
 </style>
