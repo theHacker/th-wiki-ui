@@ -371,9 +371,19 @@ article {
     }
 
     // GFM Checkbox task lists
-    ul:has(input[type=checkbox]) {
-        padding-left: 0;
+    //
+    // We do a CSS only solution, no magic markdown generation. (GitHub uses special CSS classes)
+    // Since :has() cannot be nested(*), we do not fully support checkboxes and non-checkboxes nested
+    // within the same list.
+    // If a list has any checkbox, we turn off bullet points completely, even if some sub lists
+    // do not have checkboxes.
+    //
+    // (*) To 100% correctly implement we would need a selector
+    //     "ul:has(> li:has(> input[type=checkbox]))"
+    //     = only transform lists when they have a *direct* list item with a checkbox in it.
 
+    // Lists having checkboxes have no bullet points
+    ul:has(input[type=checkbox]) {
         li {
             list-style-type: none;
 
@@ -383,6 +393,11 @@ article {
                 @extend .form-check-input;
             }
         }
+    }
+
+    // Do not intend first level (as they have a checkbox instead of a bullet point)
+    > ul:has(input[type=checkbox]) {
+        padding-left: 0;
     }
 }
 
