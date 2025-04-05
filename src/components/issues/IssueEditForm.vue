@@ -120,7 +120,7 @@
 
         <div class="hstack gap-2">
             <Button
-                :icon="ctrlDown ? 'plus' : 'check'"
+                :icon="ctrlDown ? 'floppy-disk' : 'check'"
                 :title="ctrlDown ? submitCtrlLabel : submitLabel"
                 color="primary"
                 :loading="saving"
