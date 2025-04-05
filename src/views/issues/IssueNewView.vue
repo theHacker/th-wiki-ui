@@ -210,7 +210,7 @@ function save(ctrlDown) {
 function resetForm() {
     issue.value = {
         title: '',
-        projectId: null,
+        projectId: issue.value.projectId, // keep project for "Create and continue"
         issueTypeId: defaultIssueTypeId.value,
         issuePriorityId: defaultIssuePriorityId.value,
         issueStatusId: defaultIssueStatusId.value,

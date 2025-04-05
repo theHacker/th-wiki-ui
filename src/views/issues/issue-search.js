@@ -9,6 +9,8 @@ import SearchQueryLexer from "@/antlr/SearchQueryLexer.js";
 import SearchQueryParser from "@/antlr/SearchQueryParser.js";
 import SearchQueryVisitor from "@/antlr/SearchQueryVisitor.js";
 
+const defaultSortFunctionKey = 'modificationTime';
+
 /**
  * Visitor traversing the search query AST and performing the filtering and ordering.
  */
@@ -264,6 +266,17 @@ function executeQuery(query, issues, sortFunctions) {
         issuesResult = issuesResult.filter(it => !it.issueStatus.doneStatus);
     }
 
+    // If no explicit ordering was specified, we use a default sorting.
+    // Never return an unsorted list.
+    if (orderBy.length === 0) {
+        orderBy.push(
+            {
+                key: defaultSortFunctionKey,
+                inverse: false
+            }
+        );
+    }
+
     if (orderBy.length > 0) {
         // Build summary sort function
         const summarySortFunction = (a, b) => {
@@ -291,8 +304,6 @@ function executeQuery(query, issues, sortFunctions) {
 
     return issuesResult;
 }
-
-const defaultSortFunctionKey = 'modificationTime';
 
 /**
  * Converts the quick search to a quick string.
