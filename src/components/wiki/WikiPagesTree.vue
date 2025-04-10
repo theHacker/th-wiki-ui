@@ -21,7 +21,7 @@
                 :items="filteredWikiPages"
                 :idFunction="wp => wp.id"
                 :parentIdFunction="wp => wp.parent?.id || null"
-                :sortedByFunction="wp => wp.title"
+                :sortFunction="(a, b) => a.title.localeCompare(b.title)"
             >
                 <template #default="{ item }">
                     <RouterLink

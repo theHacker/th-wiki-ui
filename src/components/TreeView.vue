@@ -1,7 +1,7 @@
 <template>
     <ul class="tree d-flex flex-column list-unstyled mb-0">
         <li
-            v-for="item in treeifiedArray"
+            v-for="item in treeArray"
             :key="idFunction(item)"
             :class="isNodeVisible(item) ? 'd-flex' : 'd-none'"
         >
@@ -24,7 +24,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import TreeSpacerBox from "@/components/TreeSpacerBox.vue";
-import {treeifyArray} from "@/helper/tree.js";
+import {Tree} from "@/helper/tree.js";
 
 const props = defineProps({
     items: {
@@ -39,7 +39,7 @@ const props = defineProps({
         type: Function,
         required: true
     },
-    sortedByFunction: {
+    sortFunction: {
         type: Function,
         required: true
     }
@@ -72,13 +72,15 @@ const leafIds = computed(() => {
 
 const expandedIds = ref(new Set(allIds.value)); // default: all nodes are expanded
 
-const treeifiedArray = computed(() => {
-    return treeifyArray(
-        props.items,
-        props.idFunction,
-        props.parentIdFunction,
-        props.sortedByFunction
-    );
+const treeArray = computed(() => {
+    const tree = new Tree({
+        items: props.items,
+        idFunction: props.idFunction,
+        parentIdFunction: props.parentIdFunction,
+        sortFunction: props.sortFunction
+    });
+
+    return tree.toLinearArray();
 });
 
 function getButton(item) {

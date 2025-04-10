@@ -134,7 +134,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import SearchInput from "@/components/SearchInput.vue";
 import {computed, ref} from "vue";
 import axios from "@/axios.js";
-import {treeifyArray} from "@/helper/tree.js";
+import {Tree} from "@/helper/tree.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 
@@ -169,7 +169,12 @@ const filteredEntries = computed(() => {
         result = entries.value;
     }
 
-    return treeifyArray(result, e => e.id, e => e.parentId, e => e.title);
+    const tree = new Tree({
+        items: result,
+        parentIdFunction: n => n.parent?.id || null,
+        sortFunction: (a, b) => a.title.localeCompare(b.title)
+    });
+    return tree.toLinearArray();
 });
 
 axios

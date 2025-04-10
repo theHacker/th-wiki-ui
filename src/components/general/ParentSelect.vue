@@ -26,7 +26,7 @@
 <script setup>
 import axios from "@/axios.js";
 import {ref} from 'vue';
-import {treeifyArray} from "@/helper/tree.js";
+import {Tree} from "@/helper/tree.js";
 
 const wikiPageId = defineModel();
 
@@ -60,7 +60,12 @@ axios
         }
     `)
     .then(data => {
-        const treeArray = treeifyArray(data.wikiPages, e => e.id, e => e.parent?.id || null, e => e.title);
+        const tree = new Tree({
+            items: data.wikiPages,
+            parentIdFunction: n => n.parent?.id || null,
+            sortFunction: (a, b) => a.title.localeCompare(b.title)
+        });
+        const treeArray = tree.toLinearArray();
 
         loading.value = false;
         wikiPages.value = treeArray;
