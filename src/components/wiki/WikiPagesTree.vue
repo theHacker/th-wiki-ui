@@ -3,7 +3,7 @@
         <div class="card-header">
             <div class="hstack gap-2">
                 <SearchInput v-model="search" />
-                <Button
+                <BaseButton
                     class="btn-text-xxl"
                     icon="plus"
                     title="New page"
@@ -14,10 +14,10 @@
         </div>
 
         <div v-if="loading" class="card-body">
-            <Loading />
+            <LoadingIndicator />
         </div>
         <div v-if="!loading" class="card-body overflow-x-hidden">
-            <Tree
+            <TreeView
                 :items="filteredWikiPages"
                 :idFunction="wp => wp.id"
                 :parentIdFunction="wp => wp.parent?.id || null"
@@ -36,7 +36,7 @@
                         </span>
                     </RouterLink>
                 </template>
-            </Tree>
+            </TreeView>
         </div>
     </div>
 </template>
@@ -45,9 +45,9 @@
 import axios from "@/axios.js";
 import {computed, ref} from 'vue';
 import SearchInput from "@/components/SearchInput.vue";
-import Loading from "@/components/Loading.vue";
-import Tree from "@/components/Tree.vue";
-import Button from "@/components/Button.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
+import TreeView from "@/components/TreeView.vue";
+import BaseButton from "@/components/BaseButton.vue";
 
 const search = ref('');
 

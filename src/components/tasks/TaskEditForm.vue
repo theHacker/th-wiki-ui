@@ -87,20 +87,20 @@
         </div>
 
         <div class="hstack gap-2">
-            <Button
+            <BaseButton
                 icon="check"
                 :title="ctrlDown ? submitCtrlLabel : submitLabel"
                 color="primary"
                 :loading="saving"
                 @click="$emit('submit', ctrlDown)"
             />
-            <Button icon="xmark" title="Cancel" color="light" @click="$emit('cancel')" />
+            <BaseButton icon="xmark" title="Cancel" color="light" @click="$emit('cancel')" />
         </div>
     </fieldset>
 </template>
 
 <script setup>
-import Button from "@/components/Button.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import ParentSelect from "@/components/general/ParentSelect.vue";
 import MarkdownTextarea from "@/components/general/MarkdownTextarea.vue";
 import {onMounted, onUnmounted, ref} from "vue";

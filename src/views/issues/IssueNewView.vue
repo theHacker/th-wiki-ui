@@ -10,7 +10,7 @@
             </ErrorMessage>
 
             <div v-if="loading" class="mt-4">
-                <Loading>Loading…</Loading>
+                <LoadingIndicator>Loading…</LoadingIndicator>
             </div>
 
             <IssueEditForm
@@ -35,7 +35,7 @@
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import IssueEditForm from "@/components/issues/IssueEditForm.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
-import Loading from "@/components/Loading.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import {computed, ref} from "vue";
 import {useRouter} from "vue-router";
 import axios from "@/axios.js";

@@ -6,7 +6,7 @@
             <div class="hstack gap-2 mb-4">
                 <div class="hstack gap-2 me-4 me-lg-0">
                     <SearchInput v-model="search" />
-                    <Button
+                    <BaseButton
                         class="btn-text-md"
                         :icon="hideDone ? 'eye-slash' : 'eye'"
                         :title="hideDone ? 'Show done' : 'Hide done'"
@@ -15,7 +15,7 @@
                     />
                 </div>
 
-                <Button
+                <BaseButton
                     class="btn-text-sm ms-auto"
                     icon="plus"
                     title="New task"
@@ -73,7 +73,7 @@
                         <td>
                             <div class="hstack gap-1">
                                 <!-- TODO ordering requires a new field on the entry
-                                <Button
+                                <BaseButton
                                     icon="arrow-up"
                                     tooltip="Move up"
                                     size="small"
@@ -81,7 +81,7 @@
                                     color="info"
                                     :disabled="!entry.canBeMovedUp"
                                 />
-                                <Button
+                                <BaseButton
                                     icon="arrow-down"
                                     tooltip="Move down"
                                     size="small"
@@ -90,7 +90,7 @@
                                     :disabled="!entry.canBeMovedDown"
                                 />
                                 -->
-                                <Button
+                                <BaseButton
                                     :icon="entry.done ? 'xmark' : 'check'"
                                     :tooltip="entry.done ? 'Mark undone' : 'Mark done'"
                                     size="small"
@@ -98,7 +98,7 @@
                                     :color="entry.done ? 'warning' : 'success'"
                                     @click="toggleDone(entry)"
                                 />
-                                <Button
+                                <BaseButton
                                     icon="pen"
                                     tooltip="Edit task"
                                     size="small"
@@ -106,14 +106,14 @@
                                     color="primary"
                                     @click="$router.push({ name: 'taskEdit', params: { entryId: entry.id } });"
                                 />
-                                <Button
+                                <BaseButton
                                     icon="list-check"
                                     tooltip="New subtask"
                                     size="small"
                                     fixedWidth
                                     color="light"
                                 />
-                                <Button
+                                <BaseButton
                                     icon="trash"
                                     tooltip="Delete"
                                     size="small"
@@ -130,7 +130,7 @@
 </template>
 
 <script setup>
-import Button from "@/components/Button.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import SearchInput from "@/components/SearchInput.vue";
 import {computed, ref} from "vue";
 import axios from "@/axios.js";

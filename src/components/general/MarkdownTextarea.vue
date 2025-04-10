@@ -3,7 +3,7 @@
         <label class="form-label">{{ label }}</label>
         <div class="position-absolute top-0 end-0 hstack gap-1">
             <div class="btn-group">
-                <Button
+                <BaseButton
                     icon="file-lines"
                     tooltip="Text view (regular font)"
                     size="small"
@@ -11,7 +11,7 @@
                     :active="buttonState === ButtonStates.Text"
                     @click="buttonState = ButtonStates.Text"
                 />
-                <Button
+                <BaseButton
                     icon="code"
                     tooltip="Code view (monospace font)"
                     size="small"
@@ -19,7 +19,7 @@
                     :active="buttonState === ButtonStates.Code"
                     @click="buttonState = ButtonStates.Code"
                 />
-                <Button
+                <BaseButton
                     icon="newspaper"
                     tooltip="Preview view"
                     size="small"
@@ -65,7 +65,7 @@ const ButtonStates = {
 <script setup>
 import {ref} from "vue";
 import {computedAsync} from "@vueuse/core";
-import Button from "@/components/Button.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import {renderMarkdown} from "@/markdown";
 
 const model = defineModel();

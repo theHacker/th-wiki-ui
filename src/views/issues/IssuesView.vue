@@ -5,7 +5,7 @@
                 <div class="card-header">
                     <div class="hstack gap-2">
                         <SearchInput v-model="quickSearch.search" />
-                        <Button
+                        <BaseButton
                             class="btn-text-xxl"
                             icon="plus"
                             title="New issue"
@@ -117,7 +117,7 @@
                             <label class="form-label">Project</label>
 
                             <div v-if="projects === null">
-                                <Loading />
+                                <LoadingIndicator />
                             </div>
                             <ProjectSelect
                                 v-if="projects !== null"
@@ -130,7 +130,7 @@
                             <label class="form-label">Type</label>
 
                             <div v-if="issueTypes === null">
-                                <Loading />
+                                <LoadingIndicator />
                             </div>
                             <select v-if="issueTypes !== null" v-model="quickSearch.issueTypeId" class="form-select">
                                 <option :value="null">– All types –</option>
@@ -144,7 +144,7 @@
                             <label class="form-label">Priority</label>
 
                             <div v-if="issuePriorities === null">
-                                <Loading />
+                                <LoadingIndicator />
                             </div>
                             <select v-if="issuePriorities !== null" v-model="quickSearch.issuePriorityId" class="form-select">
                                 <option :value="null">– All priorities –</option>
@@ -157,7 +157,7 @@
                             <label class="form-label">Status</label>
 
                             <div v-if="issueStatuses === null">
-                                <Loading />
+                                <LoadingIndicator />
                             </div>
                             <select v-if="issueStatuses !== null" v-model="quickSearch.issueStatusId" class="form-select">
                                 <option :value="null">– All statuses –</option>
@@ -169,14 +169,14 @@
 
                         <div class="col-12 mt-md-4">
                             <div class="hstack gap-2 flex-wrap">
-                                <Button
+                                <BaseButton
                                     icon="check"
                                     title="Apply quick search"
                                     color="success"
                                     @click="query = quickSearchToQuery(quickSearch, projects, issueTypes, issuePriorities, issueStatuses)"
                                 />
 
-                                <Button
+                                <BaseButton
                                     icon="xmark"
                                     title="Clear search query"
                                     color="danger"
@@ -194,7 +194,7 @@
             <div class="d-flex flex-wrap flex-lg-nowrap mb-2 row-gap-2 gap-2">
                 <div class="hstack gap-2 flex-grow-1">
                     <div class="btn-group">
-                        <Button
+                        <BaseButton
                             icon="filter"
                             tooltip="Show filters"
                             fixedWidth
@@ -208,21 +208,21 @@
 
                 <div class="hstack gap-2 w-100 w-lg-auto">
                     <div class="btn-group">
-                        <Button
+                        <BaseButton
                             icon="key"
                             tooltip="Show keys"
                             fixedWidth
                             :active="showKeys"
                             @click="showKeys = !showKeys"
                         />
-                        <Button
+                        <BaseButton
                             icon="icons"
                             tooltip="Show icons only"
                             fixedWidth
                             :active="showIcons"
                             @click="showIcons = !showIcons"
                         />
-                        <Button
+                        <BaseButton
                             icon="table-cells"
                             tooltip="Dense table"
                             fixedWidth
@@ -233,7 +233,7 @@
 
                     <div class="ms-auto ms-lg-2" />
 
-                    <Button
+                    <BaseButton
                         class="btn-text"
                         icon="plus"
                         title="New issue"
@@ -245,7 +245,7 @@
 
             <div class="mt-2 mb-2">
                 <div v-if="loading" class="mt-4">
-                    <Loading>Loading issues…</Loading>
+                    <LoadingIndicator>Loading issues…</LoadingIndicator>
                 </div>
 
                 <span v-if="!loading">
@@ -356,7 +356,7 @@
                 v-if="issuesResultingFromQuery.length === 0 && query !== ''"
                 class="d-flex justify-content-center mt-4"
             >
-                <Button
+                <BaseButton
                     icon="xmark"
                     title="Clear all filters"
                     color="danger"
@@ -368,9 +368,9 @@
 </template>
 
 <script setup>
-import Button from "@/components/Button.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import SearchInput from "@/components/SearchInput.vue";
-import Loading from "@/components/Loading.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import {ref, watch} from "vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 import {isOverdue, getDueColor} from "@/views/issues/issue-functions.js";

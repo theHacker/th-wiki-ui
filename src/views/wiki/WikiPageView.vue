@@ -14,7 +14,7 @@
             <WikiNoPage v-if="noPage" />
 
             <div v-if="!wikiPage && !noPage" class="mt-4">
-                <Loading>Loading wiki page…</Loading>
+                <LoadingIndicator>Loading wiki page…</LoadingIndicator>
             </div>
 
             <DeleteDialog
@@ -41,25 +41,25 @@
                     <div class="flex-grow-1 me-4">
                         <div class="tabs">
                             <ul class="nav nav-tabs">
-                                <Tab
+                                <TabItem
                                     icon="image"
                                     title="Content"
                                     :active="tabState === TabStates.Content"
                                     @click="tabState = TabStates.Content"
                                 />
-                                <Tab
+                                <TabItem
                                     icon="file-text"
                                     title="Markdown"
                                     :active="tabState === TabStates.Markdown"
                                     @click="tabState = TabStates.Markdown"
                                 />
-                                <Tab
+                                <TabItem
                                     icon="tags"
                                     title="Metadata"
                                     :active="tabState === TabStates.Metadata"
                                     @click="tabState = TabStates.Metadata"
                                 />
-                                <Tab
+                                <TabItem
                                     icon="paperclip"
                                     title="Attachments"
                                     :badge="wikiPage.attachments.length > 0 ? wikiPage.attachments.length.toString() : null"
@@ -71,14 +71,14 @@
                     </div>
 
                     <div class="hstack gap-2">
-                        <Button
+                        <BaseButton
                             class="btn-text-lg"
                             icon="pen"
                             title="Edit"
                             color="light"
                             @click="$router.push({ name: 'wikiPageEdit', params: { wikiPageId: wikiPage.id } });"
                         />
-                        <Button
+                        <BaseButton
                             class="btn-text-lg"
                             icon="trash"
                             title="Delete"
@@ -141,7 +141,7 @@
                                 <td>{{ attachment.size }}</td>
                                 <td>
                                     <div class="hstack gap-1">
-                                        <Button
+                                        <BaseButton
                                             icon="eye"
                                             tooltip="View"
                                             size="small"
@@ -149,7 +149,7 @@
                                             color="primary"
                                             @click="openAttachment(attachment, false)"
                                         />
-                                        <Button
+                                        <BaseButton
                                             icon="download"
                                             tooltip="Download"
                                             size="small"
@@ -157,7 +157,7 @@
                                             color="success"
                                             @click="openAttachment(attachment, true)"
                                         />
-                                        <Button
+                                        <BaseButton
                                             icon="trash"
                                             tooltip="Delete"
                                             size="small"
@@ -203,10 +203,10 @@ import {ref, watch} from 'vue';
 import {useRoute, useRouter} from "vue-router";
 import {renderMarkdown, highlightMarkdown} from "@/markdown";
 import WikiPagesTree from "@/components/wiki/WikiPagesTree.vue";
-import Button from "@/components/Button.vue";
-import Tab from "@/components/Tab.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import TabItem from "@/components/TabItem.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
-import Loading from "@/components/Loading.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import AttachmentUploadForm from "@/components/general/AttachmentUploadForm.vue";
 import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 import DeleteDialog from "@/components/DeleteDialog.vue";

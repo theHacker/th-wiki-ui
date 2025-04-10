@@ -10,7 +10,7 @@
             </ErrorMessage>
 
             <div v-if="!wikiPage" class="mt-4">
-                <Loading>Loading wiki page…</Loading>
+                <LoadingIndicator>Loading wiki page…</LoadingIndicator>
             </div>
 
             <WikiPageEditForm
@@ -33,7 +33,7 @@ import {ref, watch} from 'vue';
 import {useRoute, useRouter} from "vue-router";
 import WikiPageEditForm from "@/components/wiki/WikiPageEditForm.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
-import Loading from "@/components/Loading.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 import {handleError} from "@/helper/graphql-error-handling.js";
 
