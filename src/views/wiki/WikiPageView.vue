@@ -1,7 +1,7 @@
 <template>
     <GridLayout>
         <template #sidebar>
-            <WikiPagesTree />
+            <WikiPagesTree ref="wikiPagesTree" @onNodeDragDrop="onTreeNodeDragDrop" />
         </template>
 
         <template #default>
@@ -16,6 +16,32 @@
             <div v-if="!wikiPage && !noPage" class="mt-4">
                 <LoadingIndicator>Loading wiki page…</LoadingIndicator>
             </div>
+
+            <ConfirmDialog
+                v-if="moveDialog"
+                color="success"
+                title="Move wiki page"
+                :dialogOpen="true"
+                :progressing="moveDialog.moving"
+                submitIcon="arrow-right-long"
+                submitTitle="Move"
+                :submitDisabled="moveDialog.sourceWikiPage.id === null || moveDialog.sourceWikiPage.id === moveDialog.targetWikiPage.id"
+                cancelIcon="xmark"
+                cancelTitle="Cancel"
+                @submit="moveWikiPage(moveDialog.sourceWikiPage.id, moveDialog.targetWikiPage.id)"
+                @cancel="moveDialog = null"
+            >
+                <fieldset
+                    :disabled="moveDialog.moving"
+                    class="row my-3 align-items-center"
+                >
+                    <div class="col-auto">
+                        Do you want to move the wiki page
+                        "<b>{{ moveDialog.sourceWikiPage.title }}</b>"
+                        to have "<b>{{ moveDialog.targetWikiPage.title }}</b>" as its new parent?
+                    </div>
+                </fieldset>
+            </ConfirmDialog>
 
             <DeleteDialog
                 v-if="deleteDialogOpen && deleteDialogOpen.wikiPage"
@@ -214,6 +240,9 @@ import GridLayout from "@/components/layout/GridLayout.vue";
 import WikiNoPage from "@/components/wiki/WikiNoPage.vue";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import {blobToBase64, base64ToBlob} from "@/helper/base64.js";
+import ProjectSelect from "@/components/general/ProjectSelect.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import {Tree} from "@/helper/tree.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -222,6 +251,9 @@ const noPage = ref(true);
 
 const errors = ref([]);
 const wikiPage = ref(null);
+
+const wikiPagesTree = ref(null);
+const allWikiPagesTree = ref(null);
 
 const addAttachmentModel = ref({
     file: null,
@@ -233,6 +265,8 @@ const tabState = ref(TabStates.Content);
 
 const deleteDialogOpen = ref(null);
 const deleting = ref(false);
+
+const moveDialog = ref(null);
 
 watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 
@@ -248,7 +282,7 @@ function fetchData(id) {
     axios
         .graphql(
             `
-                query WikiPage($wikiPageId: ID!) {
+                query WikiPageAndTree($wikiPageId: ID!) {
                     wikiPage(id: $wikiPageId) {
                         id
                         title
@@ -266,6 +300,13 @@ function fetchData(id) {
                             mimeType
                         }
                     }
+                    wikiPages {
+                        id
+                        title
+                        parent {
+                            id
+                        }
+                    }
                 }
             `,
             { wikiPageId: id }
@@ -279,6 +320,11 @@ function fetchData(id) {
                     renderedMarkdown: await renderMarkdown(data.wikiPage.content),
                     highlightedMarkdown: highlightMarkdown(data.wikiPage.content)
                 };
+                allWikiPagesTree.value = new Tree({
+                    items: data.wikiPages,
+                    parentIdFunction: n => n.parent?.id || null,
+                    sortFunction: (a, b) => a.title.localeCompare(b.title)
+                });
                 noPage.value = false;
             }
         })
@@ -437,6 +483,66 @@ function deleteAttachment(attachment) {
         .finally(() => {
             deleteDialogOpen.value = null;
             deleting.value = false;
+        });
+}
+
+function onTreeNodeDragDrop(sourceWikiPageId, targetWikiPageId) {
+    const sourceWikiPage = allWikiPagesTree.value.nodesById[sourceWikiPageId];
+    const targetWikiPage = allWikiPagesTree.value.nodesById[targetWikiPageId];
+
+    moveDialog.value = {
+        sourceWikiPage,
+        targetWikiPage,
+        moving: false
+    };
+}
+
+function moveWikiPage(sourceWikiPageId, targetWikiPageId) {
+    moveDialog.value.moving = true;
+    errors.value = [];
+
+    // "Moving" is just a shortcut for "Query and update the parentId".
+    // There is no designated "move" API.
+    axios
+        .graphql(
+            `
+                query WikiPage($wikiPageId: ID!) {
+                    wikiPage(id: $wikiPageId) {
+                        id
+                        title
+                        content
+                    }
+                }
+            `,
+            { wikiPageId: sourceWikiPageId }
+        )
+        .then(data => {
+            const input = {
+                ...data.wikiPage,
+                parentId: targetWikiPageId
+            };
+
+            return axios
+                .graphql(
+                    `
+                        mutation UpdateWikiPage($input: UpdateWikiPageInput!) {
+                            updateWikiPage(input: $input) {
+                                wikiPage {
+                                    id
+                                }
+                            }
+                        }
+                    `,
+                    { input }
+                );
+        })
+        .then(_data => {
+            moveDialog.value = null;
+
+            wikiPagesTree.value.refreshTree();
+        })
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
         });
 }
 </script>

@@ -88,6 +88,91 @@ class Tree {
     }
 
     /**
+     * Checks if a node is the parent of another.
+     *
+     * @param {*} nodeId ID of node to check
+     * @param {*} otherNodeId ID of the other node
+     * @returns {boolean} `true` if `node` is the parent of `otherNode`
+     */
+    isParent(nodeId, otherNodeId) {
+        const node = this._getNodeOrThrow(nodeId);
+        const otherNode = this._getNodeOrThrow(otherNodeId);
+
+        return (node === otherNode.parentNode);
+    }
+
+    /**
+     * Checks if a node is a child of another.
+     *
+     * @param {*} nodeId ID of node to check
+     * @param {*} otherNodeId ID of the other node
+     * @returns {boolean} `true` if `node` is a child of `otherNode`
+     */
+    isChild(nodeId, otherNodeId) {
+        return this.isParent(otherNodeId, nodeId);
+    }
+
+    /**
+     * Checks if a node is a descendant of another.
+     *
+     * @param {*} nodeId ID of node to check
+     * @param {*} otherNodeId ID of the other node
+     * @returns {boolean} `true` if `node` is a descendant of `otherNode`
+     */
+    isDescendant(nodeId, otherNodeId) {
+        let node = this._getNodeOrThrow(nodeId);
+        const otherNode = this._getNodeOrThrow(otherNodeId);
+
+        if (node === otherNode) {
+            return false;
+        }
+
+        while (node.parentNode !== null) {
+            if (node === otherNode) {
+                return true;
+            }
+
+            node = node.parentNode;
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if a node is an ancestor of another.
+     *
+     * @param {*} nodeId ID of node to check
+     * @param {*} otherNodeId ID of the other node
+     * @returns {boolean} `true` if `node` is an ancestor of `otherNode`
+     */
+    isAncestor(nodeId, otherNodeId) {
+        return this.isDescendant(otherNodeId, nodeId);
+    }
+
+    /**
+     * Checks if a node is a sibling of another.
+     *
+     * @param {*} nodeId ID of node to check
+     * @param {*} otherNodeId ID of the other node
+     * @returns {boolean} `true` if `node` is a sibling of `otherNode`
+     */
+    isSibling(nodeId, otherNodeId) {
+        const node = this._getNodeOrThrow(nodeId);
+        const otherNode = this._getNodeOrThrow(otherNodeId);
+
+        return ((node.parentNode === otherNode.parentNode) && (node !== otherNode));
+    }
+
+    _getNodeOrThrow(nodeId) {
+        const node = this.nodesById[nodeId];
+        if (!node) {
+            throw new Error(`There is no node '${nodeId}' in the tree.`);
+        }
+
+        return node;
+    }
+
+    /**
      * Iterates the tree. Starting from the root node node, each child node is visited, then their children.
      *
      * @param {function(*, Number)} callbackFunction Function to be called. Gets the node, and an index
