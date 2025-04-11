@@ -4,7 +4,7 @@
             <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
             <div v-if="!entry" class="mt-4">
-                <Loading>Loading entry…</Loading>
+                <LoadingIndicator>Loading entry…</LoadingIndicator>
             </div>
 
             <DeleteDialog
@@ -23,7 +23,7 @@
                     <div class="flex-grow-1 me-4">
                         <div class="tabs">
                             <ul class="nav nav-tabs">
-                                <Tab
+                                <TabItem
                                     icon="list-check"
                                     title="Task"
                                     :active="tabState === TabStates.Task"
@@ -34,13 +34,13 @@
                     </div>
 
                     <div class="hstack gap-2">
-                        <Button
+                        <BaseButton
                             icon="pen"
                             title="Edit"
                             color="light"
                             @click="$router.push({ name: 'taskEdit', params: { entryId: entry.id } });"
                         />
-                        <Button
+                        <BaseButton
                             icon="trash"
                             title="Delete"
                             color="danger"
@@ -102,9 +102,9 @@ import {ref, watch} from 'vue';
 import {useRoute, useRouter} from "vue-router";
 import {renderMarkdown, highlightMarkdown} from "@/markdown";
 import ErrorMessage from "@/components/ErrorMessage.vue";
-import Loading from "@/components/Loading.vue";
-import Button from "@/components/Button.vue";
-import Tab from "@/components/Tab.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import TabItem from "@/components/TabItem.vue";
 import DeleteDialog from "@/components/DeleteDialog.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 

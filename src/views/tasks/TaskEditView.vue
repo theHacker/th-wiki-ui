@@ -6,7 +6,7 @@
             <ErrorMessage v-if="error">{{ error }}</ErrorMessage>
 
             <div v-if="!entry" class="mt-4">
-                <Loading>Loading entry…</Loading>
+                <LoadingIndicator>Loading entry…</LoadingIndicator>
             </div>
 
             <TaskEditForm
@@ -29,7 +29,7 @@ import {ref, watch} from 'vue';
 import {useRoute, useRouter} from "vue-router";
 import TaskEditForm from "@/components/tasks/TaskEditForm.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
-import Loading from "@/components/Loading.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 
 const route = useRoute();

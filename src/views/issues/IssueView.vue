@@ -120,7 +120,7 @@
 
         <div :class="{'container-xl g-0': !fullWidth}">
             <div v-if="!issue" class="mt-4">
-                <Loading>Loading issue…</Loading>
+                <LoadingIndicator>Loading issue…</LoadingIndicator>
             </div>
 
             <div v-if="issue" class="row">
@@ -136,32 +136,32 @@
                         <div class="flex-grow-1 me-4">
                             <div class="tabs">
                                 <ul class="nav nav-tabs">
-                                    <Tab
+                                    <TabItem
                                         icon="image"
                                         title="Description"
                                         :active="tabState === TabStates.Description"
                                         @click="tabState = TabStates.Description"
                                     />
-                                    <Tab
+                                    <TabItem
                                         icon="file-text"
                                         title="Markdown"
                                         :active="tabState === TabStates.Markdown"
                                         @click="tabState = TabStates.Markdown"
                                     />
-                                    <Tab
+                                    <TabItem
                                         icon="tags"
                                         title="Metadata"
                                         :active="tabState === TabStates.Metadata"
                                         @click="tabState = TabStates.Metadata"
                                     />
-                                    <Tab
+                                    <TabItem
                                         icon="diagram-predecessor"
                                         title="Links"
                                         :badge="issue.issueLinks.length > 0 ? issue.issueLinks.length.toString() : null"
                                         :active="tabState === TabStates.Links"
                                         @click="tabState = TabStates.Links"
                                     />
-                                    <Tab
+                                    <TabItem
                                         icon="paperclip"
                                         title="Attachments"
                                         :active="tabState === TabStates.Attachments"
@@ -172,7 +172,7 @@
                         </div>
 
                         <div class="hstack align-items-start gap-2">
-                            <Button
+                            <BaseButton
                                 class="d-none d-xl-block"
                                 icon="arrows-left-right-to-line"
                                 tooltip="Use full width"
@@ -181,8 +181,8 @@
                                 @click="fullWidth = !fullWidth"
                             />
 
-                            <Dropdown buttonClass="btn-text-lg" icon="circle-arrow-right" title="Change status" color="success">
-                                <DropdownItem
+                            <BaseDropdown buttonClass="btn-text-lg" icon="circle-arrow-right" title="Change status" color="success">
+                                <BaseDropdownItem
                                     v-for="issueStatus in issueStatuses"
                                     :icon="issueStatus.icon"
                                     :iconColor="issueStatus.iconColor"
@@ -191,31 +191,31 @@
                                     :disabled="issueStatus.id === issue.issueStatus.id"
                                     @click="changeIssueStatus(issue.id, issueStatus.id)"
                                 />
-                            </Dropdown>
+                            </BaseDropdown>
 
-                            <Dropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
-                                <DropdownItem
+                            <BaseDropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
+                                <BaseDropdownItem
                                     icon="truck-arrow-right"
                                     title="Move to another project"
                                     fixedWidth
                                     @click="moveToProjectId = null; moveToAnotherProjectDialog = true;"
                                 />
-                                <DropdownItem
+                                <BaseDropdownItem
                                     icon="diagram-predecessor"
                                     title="Link to another issue"
                                     fixedWidth
                                     @click="addNewIssueLink"
                                 />
-                            </Dropdown>
+                            </BaseDropdown>
 
-                            <Button
+                            <BaseButton
                                 class="btn-text-lg"
                                 icon="pen"
                                 title="Edit"
                                 color="light"
                                 @click="$router.push({ name: 'issueEdit', params: { issueId: issue.id } })"
                             />
-                            <Button
+                            <BaseButton
                                 class="btn-text-lg"
                                 icon="trash"
                                 title="Delete"
@@ -260,13 +260,13 @@
                     <div v-else-if="tabState === TabStates.Links">
                         <div class="tabs mb-4 mt-lg-n4">
                             <ul class="nav nav-tabs">
-                                <Tab
+                                <TabItem
                                     icon="table-list"
                                     title="Table"
                                     :active="linksTabState === LinksTabStates.Table"
                                     @click="linksTabState = LinksTabStates.Table"
                                 />
-                                <Tab
+                                <TabItem
                                     icon="chart-diagram"
                                     title="Dependency graph"
                                     :active="linksTabState === LinksTabStates.Graph"
@@ -327,7 +327,7 @@
                                                 />
                                             </td>
                                             <td>
-                                                <Button
+                                                <BaseButton
                                                     icon="trash"
                                                     tooltip="Delete"
                                                     size="small"
@@ -363,7 +363,7 @@
                             <DependencyGraph :issueId="issue.id" :depth="dependencyGraphDepth" class="mb-5" />
                         </div>
 
-                        <Button
+                        <BaseButton
                             icon="plus"
                             title="Add link"
                             color="success"
@@ -514,11 +514,11 @@ import {useRoute, useRouter} from "vue-router";
 import {getDueColor} from "@/views/issues/issue-functions.js";
 import {highlightMarkdown, renderMarkdown} from "@/markdown";
 import ErrorMessage from "@/components/ErrorMessage.vue";
-import Dropdown from "@/components/Dropdown.vue";
-import DropdownItem from "@/components/DropdownItem.vue";
-import Tab from "@/components/Tab.vue";
-import Button from "@/components/Button.vue";
-import Loading from "@/components/Loading.vue";
+import BaseDropdown from "@/components/BaseDropdown.vue";
+import BaseDropdownItem from "@/components/BaseDropdownItem.vue";
+import TabItem from "@/components/TabItem.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import DeleteDialog from "@/components/DeleteDialog.vue";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import DependencyGraph from "@/components/issues/DependencyGraph.vue";

@@ -29,7 +29,7 @@
                     <div class="card-header text-bg-info">API</div>
 
                     <div class="card-body">
-                        <Loading v-if="version.api === null">Contacting API…</Loading>
+                        <LoadingIndicator v-if="version.api === null">Contacting API…</LoadingIndicator>
 
                         <div v-if="version.api?.gitHash">
                             <span class="icon-link">
@@ -53,7 +53,7 @@
 <script setup>
 import axios from "@/axios.js";
 import {ref} from "vue";
-import Loading from "@/components/Loading.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 
 const version = ref({

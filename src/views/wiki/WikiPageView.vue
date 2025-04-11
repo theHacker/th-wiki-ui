@@ -1,7 +1,7 @@
 <template>
     <GridLayout>
         <template #sidebar>
-            <WikiPagesTree />
+            <WikiPagesTree ref="wikiPagesTree" @onNodeDragDrop="onTreeNodeDragDrop" />
         </template>
 
         <template #default>
@@ -14,8 +14,46 @@
             <WikiNoPage v-if="noPage" />
 
             <div v-if="!wikiPage && !noPage" class="mt-4">
-                <Loading>Loading wiki page…</Loading>
+                <LoadingIndicator>Loading wiki page…</LoadingIndicator>
             </div>
+
+            <ConfirmDialog
+                v-if="moveDialog"
+                color="success"
+                title="Move wiki page"
+                :dialogOpen="true"
+                :progressing="moveDialog.moving"
+                submitIcon="arrow-right-long"
+                submitTitle="Move"
+                :submitDisabled="!isMovingAllowed(moveDialog.sourceWikiPageId, moveDialog.targetWikiPageId)"
+                cancelIcon="xmark"
+                cancelTitle="Cancel"
+                @submit="moveWikiPage(moveDialog.sourceWikiPageId, moveDialog.targetWikiPageId)"
+                @cancel="moveDialog = null"
+            >
+                <fieldset
+                    :disabled="moveDialog.moving"
+                    class="row my-3 align-items-center"
+                >
+                    <div class="col-auto">
+                        Wiki page "<b>{{ moveDialog.sourceWikiPageTitle }}</b>" will get
+                    </div>
+                    <div class="col-auto my-3">
+                        <select
+                            v-model="moveDialog.targetWikiPageId"
+                            class="form-select"
+                        >
+                            <option :value="null">(no parent)</option>
+                            <option v-for="wikiPage in allWikiPagesTree.toLinearArray()" :value="wikiPage.id">
+                                {{ optionIndent(wikiPage) }}{{ wikiPage.title }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        as its new parent.
+                    </div>
+                </fieldset>
+            </ConfirmDialog>
 
             <DeleteDialog
                 v-if="deleteDialogOpen && deleteDialogOpen.wikiPage"
@@ -41,25 +79,25 @@
                     <div class="flex-grow-1 me-4">
                         <div class="tabs">
                             <ul class="nav nav-tabs">
-                                <Tab
+                                <TabItem
                                     icon="image"
                                     title="Content"
                                     :active="tabState === TabStates.Content"
                                     @click="tabState = TabStates.Content"
                                 />
-                                <Tab
+                                <TabItem
                                     icon="file-text"
                                     title="Markdown"
                                     :active="tabState === TabStates.Markdown"
                                     @click="tabState = TabStates.Markdown"
                                 />
-                                <Tab
+                                <TabItem
                                     icon="tags"
                                     title="Metadata"
                                     :active="tabState === TabStates.Metadata"
                                     @click="tabState = TabStates.Metadata"
                                 />
-                                <Tab
+                                <TabItem
                                     icon="paperclip"
                                     title="Attachments"
                                     :badge="wikiPage.attachments.length > 0 ? wikiPage.attachments.length.toString() : null"
@@ -71,14 +109,23 @@
                     </div>
 
                     <div class="hstack gap-2">
-                        <Button
+                        <BaseDropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
+                            <BaseDropdownItem
+                                icon="arrow-right-long"
+                                title="Move"
+                                fixedWidth
+                                @click="onMoveAction"
+                            />
+                        </BaseDropdown>
+
+                        <BaseButton
                             class="btn-text-lg"
                             icon="pen"
                             title="Edit"
                             color="light"
                             @click="$router.push({ name: 'wikiPageEdit', params: { wikiPageId: wikiPage.id } });"
                         />
-                        <Button
+                        <BaseButton
                             class="btn-text-lg"
                             icon="trash"
                             title="Delete"
@@ -141,7 +188,7 @@
                                 <td>{{ attachment.size }}</td>
                                 <td>
                                     <div class="hstack gap-1">
-                                        <Button
+                                        <BaseButton
                                             icon="eye"
                                             tooltip="View"
                                             size="small"
@@ -149,7 +196,7 @@
                                             color="primary"
                                             @click="openAttachment(attachment, false)"
                                         />
-                                        <Button
+                                        <BaseButton
                                             icon="download"
                                             tooltip="Download"
                                             size="small"
@@ -157,7 +204,7 @@
                                             color="success"
                                             @click="openAttachment(attachment, true)"
                                         />
-                                        <Button
+                                        <BaseButton
                                             icon="trash"
                                             tooltip="Delete"
                                             size="small"
@@ -203,10 +250,10 @@ import {ref, watch} from 'vue';
 import {useRoute, useRouter} from "vue-router";
 import {renderMarkdown, highlightMarkdown} from "@/markdown";
 import WikiPagesTree from "@/components/wiki/WikiPagesTree.vue";
-import Button from "@/components/Button.vue";
-import Tab from "@/components/Tab.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import TabItem from "@/components/TabItem.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
-import Loading from "@/components/Loading.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import AttachmentUploadForm from "@/components/general/AttachmentUploadForm.vue";
 import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 import DeleteDialog from "@/components/DeleteDialog.vue";
@@ -214,6 +261,11 @@ import GridLayout from "@/components/layout/GridLayout.vue";
 import WikiNoPage from "@/components/wiki/WikiNoPage.vue";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import {blobToBase64, base64ToBlob} from "@/helper/base64.js";
+import ProjectSelect from "@/components/general/ProjectSelect.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import {Tree} from "@/helper/tree.js";
+import BaseDropdownItem from "@/components/BaseDropdownItem.vue";
+import BaseDropdown from "@/components/BaseDropdown.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -222,6 +274,9 @@ const noPage = ref(true);
 
 const errors = ref([]);
 const wikiPage = ref(null);
+
+const wikiPagesTree = ref(null);
+const allWikiPagesTree = ref(null);
 
 const addAttachmentModel = ref({
     file: null,
@@ -233,6 +288,8 @@ const tabState = ref(TabStates.Content);
 
 const deleteDialogOpen = ref(null);
 const deleting = ref(false);
+
+const moveDialog = ref(null);
 
 watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 
@@ -248,7 +305,7 @@ function fetchData(id) {
     axios
         .graphql(
             `
-                query WikiPage($wikiPageId: ID!) {
+                query WikiPageAndTree($wikiPageId: ID!) {
                     wikiPage(id: $wikiPageId) {
                         id
                         title
@@ -266,6 +323,13 @@ function fetchData(id) {
                             mimeType
                         }
                     }
+                    wikiPages {
+                        id
+                        title
+                        parent {
+                            id
+                        }
+                    }
                 }
             `,
             { wikiPageId: id }
@@ -279,6 +343,11 @@ function fetchData(id) {
                     renderedMarkdown: await renderMarkdown(data.wikiPage.content),
                     highlightedMarkdown: highlightMarkdown(data.wikiPage.content)
                 };
+                allWikiPagesTree.value = new Tree({
+                    items: data.wikiPages,
+                    parentIdFunction: n => n.parent?.id || null,
+                    sortFunction: (a, b) => a.title.localeCompare(b.title)
+                });
                 noPage.value = false;
             }
         })
@@ -303,6 +372,8 @@ function deleteWikiPage() {
             { wikiPageId: wikiPage.value.id }
         )
         .then(() => {
+            wikiPagesTree.value.refreshTree();
+
             router.push({ name: 'wiki' });
         })
         .catch(e => {
@@ -438,6 +509,109 @@ function deleteAttachment(attachment) {
             deleteDialogOpen.value = null;
             deleting.value = false;
         });
+}
+
+function onTreeNodeDragDrop(sourceWikiPageId, targetWikiPageId) {
+    const sourceWikiPage = allWikiPagesTree.value.nodesById[sourceWikiPageId];
+
+    moveDialog.value = {
+        sourceWikiPageId,
+        sourceWikiPageTitle: sourceWikiPage.title,
+        targetWikiPageId,
+        moving: false
+    };
+}
+
+function onMoveAction() {
+    const sourceWikiPageId = wikiPage.value.id;
+    const targetWikiPageId = wikiPage.value.parent?.id || null;
+
+    moveDialog.value = {
+        sourceWikiPageId,
+        sourceWikiPageTitle: wikiPage.value.title,
+        targetWikiPageId,
+        moving: false
+    };
+}
+
+function moveWikiPage(sourceWikiPageId, targetWikiPageId) {
+    moveDialog.value.moving = true;
+    errors.value = [];
+
+    // "Moving" is just a shortcut for "Query and update the parentId".
+    // There is no designated "move" API.
+    axios
+        .graphql(
+            `
+                query WikiPage($wikiPageId: ID!) {
+                    wikiPage(id: $wikiPageId) {
+                        id
+                        title
+                        content
+                    }
+                }
+            `,
+            { wikiPageId: sourceWikiPageId }
+        )
+        .then(data => {
+            const input = {
+                ...data.wikiPage,
+                parentId: targetWikiPageId
+            };
+
+            return axios
+                .graphql(
+                    `
+                        mutation UpdateWikiPageParent($input: UpdateWikiPageInput!) {
+                            updateWikiPage(input: $input) {
+                                wikiPage {
+                                    id
+                                }
+                            }
+                        }
+                    `,
+                    { input }
+                );
+        })
+        .then(_data => {
+            // Refresh trees.
+            // Note: Not perfect, as we have the state twice (here and in wikiPagesTree),
+            // we do two identical requests.
+            fetchData(wikiPage.value.id);
+            wikiPagesTree.value.refreshTree();
+
+            moveDialog.value = null;
+        })
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
+        });
+}
+
+function isMovingAllowed(sourceWikiPageId, targetWikiPageId) {
+    // Can't move into itself
+    if (sourceWikiPageId === targetWikiPageId) {
+        return false;
+    }
+
+    // Doesn't make sense if it's already the direct parent
+    if (allWikiPagesTree.value.isParent(targetWikiPageId, sourceWikiPageId)) {
+        return false;
+    }
+
+    // Can't create a cycle
+    if (allWikiPagesTree.value.isDescendant(targetWikiPageId, sourceWikiPageId)) {
+        return false;
+    }
+
+    // Fine to move
+    return true;
+}
+
+function optionIndent(wikiPage) {
+    const nbsp = String.fromCharCode(0xa0);
+    const indent = nbsp.repeat(5);
+
+    return indent.repeat(wikiPage.level - 1);
 }
 </script>
 

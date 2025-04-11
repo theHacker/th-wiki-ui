@@ -18,7 +18,7 @@
         </div>
 
         <div class="hstack gap-2">
-            <Button
+            <BaseButton
                 icon="check"
                 title="Upload"
                 color="primary"
@@ -26,7 +26,7 @@
                 :loading="uploading"
                 @click="$emit('submit')"
             />
-            <Button
+            <BaseButton
                 icon="xmark"
                 title="Cancel"
                 color="light"
@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import Button from "@/components/Button.vue";
+import BaseButton from "@/components/BaseButton.vue";
 
 const model = defineModel();
 

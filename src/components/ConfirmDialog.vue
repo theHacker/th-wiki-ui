@@ -15,7 +15,7 @@
                 <div class="modal-footer">
                     <fieldset :disabled="progressing">
                         <div class="hstack gap-2">
-                            <Button
+                            <BaseButton
                                 :icon="submitIcon"
                                 :title="submitTitle"
                                 :color="color"
@@ -23,7 +23,7 @@
                                 :loading="progressing"
                                 @click="$emit('submit')"
                             />
-                            <Button
+                            <BaseButton
                                 :icon="cancelIcon"
                                 :title="cancelTitle"
                                 color="light"
@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import Button from "@/components/Button.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import {computed} from "vue";
 
 const props = defineProps({

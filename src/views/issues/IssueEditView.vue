@@ -10,7 +10,7 @@
             </ErrorMessage>
 
             <div v-if="loading" class="mt-4">
-                <Loading>Loading issue…</Loading>
+                <LoadingIndicator>Loading issue…</LoadingIndicator>
             </div>
 
             <IssueEditForm
@@ -39,7 +39,7 @@ import GridLayout from "@/components/layout/GridLayout.vue";
 import {computed, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import axios from "@/axios.js";
-import Loading from "@/components/Loading.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import {handleError} from "@/helper/graphql-error-handling.js";
 
 const route = useRoute();

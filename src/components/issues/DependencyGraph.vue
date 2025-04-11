@@ -1,12 +1,12 @@
 <template>
     <div>
-        <Loading v-if="issueLinkTypes === null || involvedIssues === null|| involvedIssueLinks === null" />
+        <LoadingIndicator v-if="issueLinkTypes === null || involvedIssues === null|| involvedIssueLinks === null" />
         <div v-html="dependencyGraphSvg" class="dependencyGraph text-center" />
     </div>
 </template>
 
 <script setup>
-import Loading from "@/components/Loading.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import {computedAsync} from "@vueuse/core";
 import {renderMarkdown} from "@/markdown";
 import {onMounted, ref, watch} from "vue";

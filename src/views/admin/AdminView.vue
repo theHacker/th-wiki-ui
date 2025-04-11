@@ -8,7 +8,7 @@
                     <div class="card-header text-bg-info">Projects</div>
 
                     <div class="card-body">
-                        <Loading v-if="loading" />
+                        <LoadingIndicator v-if="loading" />
 
                         <template v-if="!loading">
                             <div v-if="projects.length === 0">No projects yet.</div>
@@ -88,14 +88,14 @@
                             </div>
 
                             <div class="hstack gap-2">
-                                <Button
+                                <BaseButton
                                     icon="check"
                                     title="Create"
                                     color="primary"
                                     :loading="saving"
                                     @click="saveProject"
                                 />
-                                <Button icon="trash" title="Reset" color="light" @click="resetForm" />
+                                <BaseButton icon="trash" title="Reset" color="light" @click="resetForm" />
                             </div>
                         </fieldset>
                     </div>
@@ -108,8 +108,8 @@
 <script setup>
 import {ref} from "vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
-import Button from "@/components/Button.vue";
-import Loading from "@/components/Loading.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import axios from "@/axios.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import {handleError} from "@/helper/graphql-error-handling.js";

@@ -12,7 +12,7 @@
         <div class="card m-5">
             <div class="card-header text-bg-success">Create a new wiki page</div>
             <div class="card-body">
-                <Button
+                <BaseButton
                     icon="plus"
                     title="Create new wiki page"
                     color="primary"
@@ -24,6 +24,6 @@
 </template>
 
 <script setup>
-import Button from "@/components/Button.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import SearchInput from "@/components/SearchInput.vue";
 </script>
