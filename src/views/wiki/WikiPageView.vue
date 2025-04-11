@@ -209,7 +209,11 @@
                                     {{ attachment.filename }}
                                 </td>
                                 <td>{{ attachment.description }}</td>
-                                <td>{{ attachment.size }}</td>
+                                <td>
+                                    <span :title="`${attachment.size} bytes`">
+                                        {{ formatBytes(attachment.size) }}
+                                    </span>
+                                </td>
                                 <td>
                                     <div class="hstack gap-1">
                                         <BaseButton
@@ -280,7 +284,9 @@
                                         <div class="hstack gap-2">
                                             <small class="text-body-secondary">
                                                 {{ attachment.mimeType }}<br />
-                                                {{ attachment.size }} bytes
+                                                <span :title="`${attachment.size} bytes`">
+                                                    {{ formatBytes(attachment.size) }}
+                                                </span>
                                                 <template v-if="attachment.imageSize">
                                                     · {{ attachment.imageSize.width }}×{{ attachment.imageSize.width }}
                                                 </template>
@@ -369,6 +375,7 @@ import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import {Tree} from "@/helper/tree.js";
 import BaseDropdownItem from "@/components/BaseDropdownItem.vue";
 import BaseDropdown from "@/components/BaseDropdown.vue";
+import {formatBytes} from "@/helper/format-bytes.js";
 
 const route = useRoute();
 const router = useRouter();
