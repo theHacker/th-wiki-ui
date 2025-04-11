@@ -135,7 +135,7 @@ class Tree {
             node = node.parentNode;
         }
 
-        return false;
+        return (node === otherNode);
     }
 
     /**
@@ -164,6 +164,10 @@ class Tree {
     }
 
     _getNodeOrThrow(nodeId) {
+        if (nodeId === null) {
+            return this.rootNode;
+        }
+
         const node = this.nodesById[nodeId];
         if (!node) {
             throw new Error(`There is no node '${nodeId}' in the tree.`);

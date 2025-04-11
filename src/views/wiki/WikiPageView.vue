@@ -25,10 +25,10 @@
                 :progressing="moveDialog.moving"
                 submitIcon="arrow-right-long"
                 submitTitle="Move"
-                :submitDisabled="moveDialog.sourceWikiPage.id === null || moveDialog.sourceWikiPage.id === moveDialog.targetWikiPage.id"
+                :submitDisabled="!isMovingAllowed(moveDialog.sourceWikiPageId, moveDialog.targetWikiPageId)"
                 cancelIcon="xmark"
                 cancelTitle="Cancel"
-                @submit="moveWikiPage(moveDialog.sourceWikiPage.id, moveDialog.targetWikiPage.id)"
+                @submit="moveWikiPage(moveDialog.sourceWikiPageId, moveDialog.targetWikiPageId)"
                 @cancel="moveDialog = null"
             >
                 <fieldset
@@ -36,9 +36,21 @@
                     class="row my-3 align-items-center"
                 >
                     <div class="col-auto">
-                        Do you want to move the wiki page
-                        "<b>{{ moveDialog.sourceWikiPage.title }}</b>"
-                        to have "<b>{{ moveDialog.targetWikiPage.title }}</b>" as its new parent?
+                        Wiki page "<b>{{ moveDialog.sourceWikiPageTitle }}</b>" will get
+                    </div>
+                    <div class="col-auto my-3">
+                        <select
+                            v-model="moveDialog.targetWikiPageId"
+                            class="form-select"
+                        >
+                            <option :value="null">(no parent)</option>
+                            <option v-for="wikiPage in allWikiPagesTree.toLinearArray()" :value="wikiPage.id">
+                                {{ optionIndent(wikiPage) }}{{ wikiPage.title }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        as its new parent.
                     </div>
                 </fieldset>
             </ConfirmDialog>
@@ -97,6 +109,15 @@
                     </div>
 
                     <div class="hstack gap-2">
+                        <BaseDropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
+                            <BaseDropdownItem
+                                icon="arrow-right-long"
+                                title="Move"
+                                fixedWidth
+                                @click="onMoveAction"
+                            />
+                        </BaseDropdown>
+
                         <BaseButton
                             class="btn-text-lg"
                             icon="pen"
@@ -243,6 +264,8 @@ import {blobToBase64, base64ToBlob} from "@/helper/base64.js";
 import ProjectSelect from "@/components/general/ProjectSelect.vue";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import {Tree} from "@/helper/tree.js";
+import BaseDropdownItem from "@/components/BaseDropdownItem.vue";
+import BaseDropdown from "@/components/BaseDropdown.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -490,11 +513,23 @@ function deleteAttachment(attachment) {
 
 function onTreeNodeDragDrop(sourceWikiPageId, targetWikiPageId) {
     const sourceWikiPage = allWikiPagesTree.value.nodesById[sourceWikiPageId];
-    const targetWikiPage = allWikiPagesTree.value.nodesById[targetWikiPageId];
 
     moveDialog.value = {
-        sourceWikiPage,
-        targetWikiPage,
+        sourceWikiPageId,
+        sourceWikiPageTitle: sourceWikiPage.title,
+        targetWikiPageId,
+        moving: false
+    };
+}
+
+function onMoveAction() {
+    const sourceWikiPageId = wikiPage.value.id;
+    const targetWikiPageId = wikiPage.value.parent?.id || null;
+
+    moveDialog.value = {
+        sourceWikiPageId,
+        sourceWikiPageTitle: wikiPage.value.title,
+        targetWikiPageId,
         moving: false
     };
 }
@@ -527,7 +562,7 @@ function moveWikiPage(sourceWikiPageId, targetWikiPageId) {
             return axios
                 .graphql(
                     `
-                        mutation UpdateWikiPage($input: UpdateWikiPageInput!) {
+                        mutation UpdateWikiPageParent($input: UpdateWikiPageInput!) {
                             updateWikiPage(input: $input) {
                                 wikiPage {
                                     id
@@ -539,13 +574,44 @@ function moveWikiPage(sourceWikiPageId, targetWikiPageId) {
                 );
         })
         .then(_data => {
-            moveDialog.value = null;
-
+            // Refresh trees.
+            // Note: Not perfect, as we have the state twice (here and in wikiPagesTree),
+            // we do two identical requests.
+            fetchData(wikiPage.value.id);
             wikiPagesTree.value.refreshTree();
+
+            moveDialog.value = null;
         })
         .catch(e => {
             errors.value = handleError(e).genericErrors;
         });
+}
+
+function isMovingAllowed(sourceWikiPageId, targetWikiPageId) {
+    // Can't move into itself
+    if (sourceWikiPageId === targetWikiPageId) {
+        return false;
+    }
+
+    // Doesn't make sense if it's already the direct parent
+    if (allWikiPagesTree.value.isParent(targetWikiPageId, sourceWikiPageId)) {
+        return false;
+    }
+
+    // Can't create a cycle
+    if (allWikiPagesTree.value.isDescendant(targetWikiPageId, sourceWikiPageId)) {
+        return false;
+    }
+
+    // Fine to move
+    return true;
+}
+
+function optionIndent(wikiPage) {
+    const nbsp = String.fromCharCode(0xa0);
+    const indent = nbsp.repeat(5);
+
+    return indent.repeat(wikiPage.level - 1);
 }
 </script>
 
