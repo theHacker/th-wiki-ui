@@ -3,7 +3,7 @@ workflow:
     on_new_commit: conservative
 
 default:
-  image: node:22.5.1-alpine
+  image: oven/bun:1.2.9-alpine
   cache: &global-cache
     key: "$CI_COMMIT_REF_NAME"
     paths:
@@ -19,7 +19,7 @@ stages:
 setup:
   stage: setup
   interruptible: true
-  script: npm ci
+  script: bun i
   cache:
     <<: *global-cache
     policy: push
@@ -27,7 +27,7 @@ setup:
 vitest:
   stage: test
   interruptible: true
-  script: npm run test:unit
+  script: bun test
   cache:
     <<: *global-cache
     policy: pull
@@ -41,8 +41,8 @@ vitest:
 #  stage: test
 #  interruptible: true
 #  script:
-#    - npm ci
-#    - npm run test:e2e
+#    - bun i
+#    - bun test:e2e
 #  cache: []
 #  artifacts:
 #    when: always
@@ -53,7 +53,7 @@ build:
   stage: build
   interruptible: true
   before_script: apk add git # install Git for git-describe
-  script: npm run build
+  script: bun run build
   cache:
     <<: *global-cache
     policy: pull
