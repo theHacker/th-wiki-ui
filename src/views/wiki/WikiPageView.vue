@@ -196,7 +196,9 @@
                                 <th>Icon</th>
                                 <th>Filename</th>
                                 <th>Description</th>
+                                <th>MIME Type</th>
                                 <th>Size</th>
+                                <th>Dimensions</th>
                                 <th>Commands</th>
                             </tr>
                         </thead>
@@ -210,9 +212,17 @@
                                 </td>
                                 <td>{{ attachment.description }}</td>
                                 <td>
+                                    <code>{{ attachment.mimeType }}</code>
+                                </td>
+                                <td>
                                     <span :title="`${attachment.size} bytes`">
                                         {{ formatBytes(attachment.size) }}
                                     </span>
+                                </td>
+                                <td>
+                                    <template v-if="attachment.imageSize">
+                                        {{ attachment.imageSize.width }}×{{ attachment.imageSize.height }}
+                                    </template>
                                 </td>
                                 <td>
                                     <div class="hstack gap-1">
@@ -288,7 +298,7 @@
                                                     {{ formatBytes(attachment.size) }}
                                                 </span>
                                                 <template v-if="attachment.imageSize">
-                                                    · {{ attachment.imageSize.width }}×{{ attachment.imageSize.width }}
+                                                    · {{ attachment.imageSize.width }}×{{ attachment.imageSize.height }}
                                                 </template>
                                             </small>
 
@@ -783,7 +793,10 @@ function optionIndent(wikiPage) {
     td:nth-child(1) {
         width: 32px;
     }
-    td:nth-child(5) {
+    td:nth-child(3) {
+        width: 25%;
+    }
+    td:nth-child(7) {
         $countButtons: 3;
 
         width: calc($countButtons * 32px + ($countButtons - 1) * 0.25rem);
