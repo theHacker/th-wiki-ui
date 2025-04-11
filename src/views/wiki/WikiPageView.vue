@@ -283,7 +283,7 @@
                                     <div class="card-footer">
                                         <div class="hstack gap-2">
                                             <small class="text-body-secondary">
-                                                {{ attachment.mimeType }}<br />
+                                                <code class="ms-n2">{{ attachment.mimeType }}</code><br />
                                                 <span :title="`${attachment.size} bytes`">
                                                     {{ formatBytes(attachment.size) }}
                                                 </span>
