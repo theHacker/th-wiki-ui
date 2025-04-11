@@ -349,6 +349,8 @@ function deleteWikiPage() {
             { wikiPageId: wikiPage.value.id }
         )
         .then(() => {
+            wikiPagesTree.value.refreshTree();
+
             router.push({ name: 'wiki' });
         })
         .catch(e => {
