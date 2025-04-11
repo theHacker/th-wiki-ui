@@ -42,6 +42,11 @@
                         >
                             <i class="fas fa-file" />
                             <span class="title text-truncate">{{ item.title }}</span>
+                            <i
+                                v-if="item.attachments.length > 0"
+                                class="fas fa-paperclip fa-xs" style="margin-left: -2px;"
+                                title="has attachments"
+                            />
                         </span>
                     </RouterLink>
                 </template>
@@ -132,6 +137,9 @@ function fetchData() {
                     id
                     title
                     parent {
+                        id
+                    }
+                    attachments {
                         id
                     }
                 }
