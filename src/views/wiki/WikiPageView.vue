@@ -166,7 +166,31 @@
                 </div>
 
                 <div v-if="tabState === TabStates.Attachments">
-                    <table class="table table-responsive table-hover align-middle mb-5 attachments">
+                    <div class="d-flex flex-wrap flex-lg-nowrap mb-2 row-gap-2 gap-2">
+                        <div class="hstack gap-2 w-100 w-lg-auto">
+                            <div class="btn-group">
+                                <BaseButton
+                                    icon="table-list"
+                                    tooltip="Show table"
+                                    fixedWidth
+                                    :active="attachmentsView === AttachmentsView.Table"
+                                    @click="attachmentsView = AttachmentsView.Table"
+                                />
+                                <BaseButton
+                                    icon="image"
+                                    tooltip="Show thumbnails"
+                                    fixedWidth
+                                    :active="attachmentsView === AttachmentsView.Thumbnails"
+                                    @click="attachmentsView = AttachmentsView.Thumbnails"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <table
+                        v-if="attachmentsView === AttachmentsView.Table"
+                        class="table table-responsive table-hover align-middle mb-5 attachments"
+                    >
                         <thead>
                             <tr>
                                 <th>Icon</th>
@@ -223,6 +247,80 @@
                         </tbody>
                     </table>
 
+                    <div v-if="attachmentsView === AttachmentsView.Thumbnails" class="pt-3 pb-4">
+                        <div v-if="wikiPage.attachments.length === 0">
+                            <i>No attachments.</i>
+                        </div>
+                        <div class="row g-2 row-cols-1 row-cols-md-2 row-cols-xl-3 row-cols-xxl-4">
+                            <div class="col" v-for="attachment in wikiPage.attachments" :key="attachment.id">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i :class="attachmentIconClass(attachment)" />
+                                            {{ attachment.filename }}
+                                        </h5>
+                                        <div class="card-title text-center my-3">
+                                            <span v-if="!attachment.imageSize" class="fa-stack fa-6x opacity-50" title="No image">
+                                                <i class="fas fa-ban fa-flip-horizontal fa-stack-2x opacity-25" />
+                                                <i class="fas fa-image fa-stack-1x" />
+                                            </span>
+                                            <a v-if="attachment.imageSize" target="_blank" :href="attachmentsThumbnails[attachment.id]">
+                                                <img
+                                                    :src="attachmentsThumbnails[attachment.id]"
+                                                    class="img-thumbnail border-0"
+                                                    alt="Thumbnail"
+                                                />
+                                            </a>
+                                        </div>
+                                        <p class="card-text">
+                                            {{ attachment.description }}
+                                        </p>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="hstack gap-2">
+                                            <small class="text-body-secondary">
+                                                {{ attachment.mimeType }}<br />
+                                                {{ attachment.size }} bytes
+                                                <template v-if="attachment.imageSize">
+                                                    · {{ attachment.imageSize.width }}×{{ attachment.imageSize.width }}
+                                                </template>
+                                            </small>
+
+                                            <div class="ms-auto" />
+
+                                            <div class="hstack gap-1">
+                                                <BaseButton
+                                                    icon="eye"
+                                                    tooltip="View"
+                                                    size="small"
+                                                    fixedWidth
+                                                    color="primary"
+                                                    @click="openAttachment(attachment, false)"
+                                                />
+                                                <BaseButton
+                                                    icon="download"
+                                                    tooltip="Download"
+                                                    size="small"
+                                                    fixedWidth
+                                                    color="success"
+                                                    @click="openAttachment(attachment, true)"
+                                                />
+                                                <BaseButton
+                                                    icon="trash"
+                                                    tooltip="Delete"
+                                                    size="small"
+                                                    fixedWidth
+                                                    color="danger"
+                                                    @click="deleteDialogOpen = { attachment }"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <AttachmentUploadForm
                         v-model="addAttachmentModel"
                         :uploading="uploadingAttachment"
@@ -241,6 +339,11 @@ const TabStates = {
     Markdown: Symbol('Markdown'),
     Metadata: Symbol('Metadata'),
     Attachments: Symbol('Attachments')
+};
+
+const AttachmentsView = {
+    Table: Symbol('Table'),
+    Thumbnails: Symbol('Thumbnails')
 };
 </script>
 
@@ -277,6 +380,9 @@ const wikiPage = ref(null);
 
 const wikiPagesTree = ref(null);
 const allWikiPagesTree = ref(null);
+
+const attachmentsView = ref(AttachmentsView.Table);
+const attachmentsThumbnails = ref({});
 
 const addAttachmentModel = ref({
     file: null,
@@ -321,6 +427,10 @@ function fetchData(id) {
                             description
                             size
                             mimeType
+                            imageSize {
+                                width
+                                height
+                            }
                         }
                     }
                     wikiPages {
@@ -349,7 +459,40 @@ function fetchData(id) {
                     sortFunction: (a, b) => a.title.localeCompare(b.title)
                 });
                 noPage.value = false;
+
+                const imageAttachmentIds = data.wikiPage.attachments
+                    .filter(a => a.imageSize)
+                    .map(a => a.id);
+
+                loadAttachmentThumbnails(imageAttachmentIds);
             }
+        })
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
+        });
+}
+
+function loadAttachmentThumbnails(attachmentIds) {
+    // Note: There is no thumbnail available yet, so we just load the whole thing.
+    axios
+        .graphql(
+            `
+                query AttachmentThumbnails($attachmentIds: [ID!]!) {
+                    attachments(ids: $attachmentIds) {
+                        id
+                        dataBase64
+                        mimeType
+                    }
+                }
+            `,
+            { attachmentIds }
+        )
+        .then(data => {
+            data.attachments.forEach(attachment => {
+                const blob = base64ToBlob(attachment.dataBase64, attachment.mimeType);
+
+                attachmentsThumbnails.value[attachment.id] = URL.createObjectURL(blob);
+            });
         })
         .catch(e => {
             errors.value = handleError(e).genericErrors;
@@ -415,6 +558,10 @@ async function uploadAttachment() {
                             description
                             size
                             mimeType
+                            imageSize {
+                                width
+                                height
+                            }
                         }
                     }
                 }
@@ -425,6 +572,10 @@ async function uploadAttachment() {
             resetAttachmentForm();
 
             wikiPage.value.attachments.push(data.createAttachment.attachment);
+
+            if (data.createAttachment.attachment.imageSize) {
+                loadAttachmentThumbnails([data.createAttachment.attachment.id]);
+            }
         })
         .catch(e => {
             errors.value = handleError(e).genericErrors;
@@ -447,8 +598,8 @@ function attachmentIconClass(attachment) {
     return `fas fa-${icon}`;
 }
 
-function openAttachment(attachment, download) {
-    axios
+function queryAttachmentData(attachment) {
+    return axios
         .graphql(
             `
                 query OpenAttachment($attachmentId: ID!) {
@@ -462,25 +613,29 @@ function openAttachment(attachment, download) {
             { attachmentId: attachment.id }
         )
         .then(data => {
-            const att = data.attachment;
-            const blob = base64ToBlob(att.dataBase64, att.mimeType);
-
-            // Hacky solution to trigger the download client-side
-
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.target = '_blank';
-            if (download) {
-                a.download = att.filename;
-            }
-
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            return data.attachment;
         })
         .catch(e => {
             errors.value = handleError(e).genericErrors;
         });
+}
+
+async function openAttachment(attachment, download) {
+    const attachmentWithData = await queryAttachmentData(attachment);
+    const blob = base64ToBlob(attachmentWithData.dataBase64, attachmentWithData.mimeType);
+
+    // Hacky solution to trigger the download client-side
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.target = '_blank';
+    if (download) {
+        a.download = attachmentWithData.filename;
+    }
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
 function deleteAttachment(attachment) {
