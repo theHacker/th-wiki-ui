@@ -101,7 +101,6 @@
 
 <script setup>
 import BaseButton from "@/components/BaseButton.vue";
-import ParentSelect from "@/components/general/ParentSelect.vue";
 import MarkdownTextarea from "@/components/general/MarkdownTextarea.vue";
 import {onMounted, onUnmounted, ref} from "vue";
 
@@ -124,14 +123,14 @@ const props = defineProps({
     },
     fieldErrors: {
         type: Object,
-        default: {}
+        default() { return {}; }
     }
 });
 
 defineEmits(['submit', 'cancel']);
 
 if (props.submitCtrlLabel) {
-    function onKeyEvent(e) {
+    const onKeyEvent = function(e) {
         if (e.key === 'Control') {
             if (e.type === 'keydown') {
                 ctrlDown.value = true;
@@ -139,7 +138,7 @@ if (props.submitCtrlLabel) {
                 ctrlDown.value = false;
             }
         }
-    }
+    };
 
     onMounted(() => {
         window.addEventListener('keydown', onKeyEvent);

@@ -1,9 +1,22 @@
-/* eslint-env node */
 module.exports = {
     root: true,
-    'extends': [
+    env: {
+        node: true
+    },
+    extends: [
         'plugin:vue/vue3-essential',
         'eslint:recommended'
+    ],
+    rules: {
+        "no-constant-condition": ["error", {
+            "checkLoops": false // TODO in ESLint v9, there is "allExceptWhileTrue"
+        }],
+        "no-unused-vars": ["error", {
+            "argsIgnorePattern": "^_"
+        }]
+    },
+    ignorePatterns: [
+        "src/antlr/**" // generated code by ANTLR
     ],
     overrides: [
         {

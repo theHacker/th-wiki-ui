@@ -97,7 +97,7 @@ class ExecutingQueryVisitor extends SearchQueryVisitor {
                 }
                 throw `Unknown value '${string}' for 'include:'.`;
 
-            case 'orderby':
+            case 'orderby': {
                 let order;
                 if (string.startsWith('~')) {
                     order = {
@@ -115,6 +115,7 @@ class ExecutingQueryVisitor extends SearchQueryVisitor {
                 return {
                     noOp: true
                 };
+            }
 
             default:
                 throw `Unknown attribute '${attribute}:'.`;
@@ -367,7 +368,7 @@ function quickSearchToQuery(quickSearch, projects, issueTypes, issuePriorities, 
  * Since sorting functions have dependencies, this function builds them.
  *
  * @param {Array<*>} issuePriorities all issue priorities
- * @param {Array<*>} issueStatuses all issus statuses
+ * @param {Array<*>} issueStatuses all issue statuses
  * @param {Array<*>} issueTypes all issue types
  * @returns {Array<{key: string, title: string, func: function}>}
  */

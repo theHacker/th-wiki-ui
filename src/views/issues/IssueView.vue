@@ -2,7 +2,7 @@
     <GridLayout>
         <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
             <ul>
-                <li v-for="error in errors">{{ error }}</li>
+                <li v-for="(error, index) in errors" :key="index">{{ error }}</li>
             </ul>
         </ErrorMessage>
 
@@ -90,7 +90,7 @@
                         v-model="addIssueLinkDialog.issueLinkType"
                         class="form-select"
                     >
-                        <template v-for="issueLinkType in issueLinkTypes">
+                        <template v-for="issueLinkType in issueLinkTypes" :key="issueLinkType.id">
                             <option
                                 :value="{ id: issueLinkType.id, inverse: false }"
                             >{{ issueLinkType.wording }}</option>
@@ -106,7 +106,7 @@
                         v-model="addIssueLinkDialog.otherIssueId"
                         class="form-select"
                     >
-                        <template v-for="issueInAllIssues in allIssues">
+                        <template v-for="issueInAllIssues in allIssues" :key="issueInAllIssues.id">
                             <option
                                 :value="issueInAllIssues.id"
                                 :disabled="issueInAllIssues.id === issue.id"
@@ -184,6 +184,7 @@
                             <BaseDropdown buttonClass="btn-text-lg" icon="circle-arrow-right" title="Change status" color="success">
                                 <BaseDropdownItem
                                     v-for="issueStatus in issueStatuses"
+                                    :key="issueStatus.id"
                                     :icon="issueStatus.icon"
                                     :iconColor="issueStatus.iconColor"
                                     :title="issueStatus.title"
@@ -276,7 +277,7 @@
                         </div>
 
                         <div v-if="linksTabState === LinksTabStates.Table">
-                            <template v-for="linkGroup in linkGroups">
+                            <template v-for="linkGroup in linkGroups" :key="linkGroup.caption">
                                 <h2 class="fs-5">
                                     <i :class="`fas fa-${linkGroup.icon} text-${linkGroup.iconColor}`" />
                                     This issue {{ linkGroup.caption }}
@@ -295,6 +296,7 @@
                                     <tbody class="table-group-divider">
                                         <tr
                                             v-for="link in linkGroup.links"
+                                            :key="link.issueLinkId"
                                             :class="{ done: link.issueStatus.doneStatus }"
                                         >
                                             <td>

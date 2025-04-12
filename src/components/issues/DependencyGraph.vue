@@ -226,7 +226,7 @@ function darkenColor(color, amount) {
 
 const dependencyGraphSvg = computedAsync(async () => {
     // Can only be computed, if all needed data is present
-    if (issueLinkTypes === null || involvedIssues === null|| involvedIssueLinks === null) {
+    if (issueLinkTypes.value === null || involvedIssues.value === null|| involvedIssueLinks.value === null) {
         return null;
     }
 

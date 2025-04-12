@@ -99,7 +99,7 @@ function handleError(e) {
         } else {
             error.value = data.message;
         }
-    } else if (error.request) {
+    } else if (e.request) {
         error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
     } else {
         error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors

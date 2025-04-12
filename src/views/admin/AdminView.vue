@@ -14,7 +14,7 @@
                             <div v-if="projects.length === 0">No projects yet.</div>
 
                             <ul v-if="projects.length > 0" class="list-group">
-                                <li v-for="project in projects" class="list-group-item">
+                                <li v-for="project in projects" :key="project.id" class="list-group-item">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h5 class="mb-1">{{ project.title }}</h5>
                                         <small><strong>{{ project.prefix }}</strong></small>
@@ -37,7 +37,7 @@
             <div class="col-12 col-lg-6 col-xl-5">
                 <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
                     <ul>
-                        <li v-for="error in errors">{{ error }}</li>
+                        <li v-for="(error, index) in errors" :key="index">{{ error }}</li>
                     </ul>
                 </ErrorMessage>
 

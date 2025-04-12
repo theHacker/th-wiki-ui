@@ -18,7 +18,7 @@
                 Please select what data to upload, and what filename to use.
             </div>
             <div class="my-3">
-                <div v-for="(item, index) in clipboardDataDialog.items" class="form-check">
+                <div v-for="(item, index) in clipboardDataDialog.items" :key="item.type" class="form-check">
                     <input
                         v-model="clipboardDataDialog.selectedType"
                         class="form-check-input"
@@ -140,7 +140,6 @@ function onFileChange(e) {
 
 async function onPaste(e) {
     const clipboardData = e.clipboardData;
-    debugger;
 
     // Check for files in clipboard
     if (clipboardData.files.length > 0) {

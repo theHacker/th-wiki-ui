@@ -1,7 +1,12 @@
 <template>
     <select v-model="projectId" class="form-select" :disabled="disabled">
         <option v-if="nullOption" :value="null">{{ nullOption }}</option>
-        <option v-for="project in projects" :value="project.id" :disabled="isOptionDisabled(project)">
+        <option
+            v-for="project in projects"
+            :key="project.id"
+            :value="project.id"
+            :disabled="isOptionDisabled(project)"
+        >
             {{ project.title }} &nbsp;({{ project.prefix }})
         </option>
     </select>

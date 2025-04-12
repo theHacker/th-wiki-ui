@@ -34,7 +34,7 @@
                 class="form-select"
                 :class="{'is-invalid': !!fieldErrors.issueTypeId}"
             >
-                <option v-for="issueType in issueTypes" :value="issueType.id">
+                <option v-for="issueType in issueTypes" :key="issueType.id" :value="issueType.id">
                     {{ issueType.title }}
                 </option>
             </select>
@@ -48,7 +48,7 @@
                 class="form-select"
                 :class="{'is-invalid': !!fieldErrors.issuePriorityId}"
             >
-                <option v-for="issuePriority in issuePriorities" :value="issuePriority.id">
+                <option v-for="issuePriority in issuePriorities" :key="issuePriority.id" :value="issuePriority.id">
                     {{ issuePriority.title }}
                 </option>
             </select>
@@ -62,8 +62,8 @@
                 class="form-select"
                 :class="{'is-invalid': !!fieldErrors.issueStatusId}"
              >
-                <option v-for="issusStatus in issueStatuses" :value="issusStatus.id">
-                    {{ issusStatus.title }}
+                <option v-for="issueStatus in issueStatuses" :key="issueStatus.id" :value="issueStatus.id">
+                    {{ issueStatus.title }}
                 </option>
             </select>
             <div v-if="fieldErrors.issueStatusId" class="invalid-feedback">{{ fieldErrors.issueStatusId }}</div>
@@ -176,14 +176,14 @@ const props = defineProps({
     },
     fieldErrors: {
         type: Object,
-        default: {}
+        default() { return {}; }
     }
 });
 
 defineEmits(['submit', 'cancel']);
 
 if (props.submitCtrlLabel) {
-    function onKeyEvent(e) {
+    const onKeyEvent = function(e) {
         if (e.key === 'Control') {
             if (e.type === 'keydown') {
                 ctrlDown.value = true;
@@ -191,7 +191,7 @@ if (props.submitCtrlLabel) {
                 ctrlDown.value = false;
             }
         }
-    }
+    };
 
     onMounted(() => {
         window.addEventListener('keydown', onKeyEvent);

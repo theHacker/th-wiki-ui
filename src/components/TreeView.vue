@@ -5,7 +5,7 @@
             :key="idFunction(item)"
             :class="isNodeVisible(item) ? 'd-flex' : 'd-none'"
         >
-            <div class="tree-spacer" v-for="i in item.level">
+            <div class="tree-spacer" v-for="i in item.level" :key="i">
                 <TreeSpacerBox
                     :top="item.lines[i-1] === '└' || item.lines[i-1] === '│' || item.lines[i-1] === '├'"
                     :bottom="item.lines[i-1] === '┌' || item.lines[i-1] === '│' || item.lines[i-1] === '├'"

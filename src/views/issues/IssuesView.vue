@@ -65,7 +65,11 @@
                             <label class="form-label">Sort function</label>
 
                             <select v-model="quickSearch.sortFunctionKey" class="form-select">
-                                <option v-for="sortFunction in sortFunctions" :value="sortFunction.key">
+                                <option
+                                    v-for="sortFunction in sortFunctions"
+                                    :key="sortFunction.key"
+                                    :value="sortFunction.key"
+                                >
                                     {{ sortFunction.title }}
                                 </option>
                             </select>
@@ -134,7 +138,7 @@
                             </div>
                             <select v-if="issueTypes !== null" v-model="quickSearch.issueTypeId" class="form-select">
                                 <option :value="null">– All types –</option>
-                                <option v-for="type in issueTypes" :value="type.id">
+                                <option v-for="type in issueTypes" :key="type.id" :value="type.id">
                                     {{ type.title }}
                                 </option>
                             </select>
@@ -148,7 +152,7 @@
                             </div>
                             <select v-if="issuePriorities !== null" v-model="quickSearch.issuePriorityId" class="form-select">
                                 <option :value="null">– All priorities –</option>
-                                <option v-for="priority in issuePriorities" :value="priority.id">
+                                <option v-for="priority in issuePriorities" :key="priority.id" :value="priority.id">
                                     {{ priority.title }}
                                 </option>
                             </select>
@@ -161,7 +165,7 @@
                             </div>
                             <select v-if="issueStatuses !== null" v-model="quickSearch.issueStatusId" class="form-select">
                                 <option :value="null">– All statuses –</option>
-                                <option v-for="status in issueStatuses" :value="status.id">
+                                <option v-for="status in issueStatuses" :key="status.id" :value="status.id">
                                     {{ status.title }}
                                 </option>
                             </select>
@@ -191,6 +195,12 @@
         </template>
 
         <template #default>
+            <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
+                <ul>
+                    <li v-for="(error, index) in errors" :key="index">{{ error }}</li>
+                </ul>
+            </ErrorMessage>
+
             <div class="d-flex flex-wrap flex-lg-nowrap mb-2 row-gap-2 gap-2">
                 <div class="hstack gap-2 flex-grow-1">
                     <div class="btn-group">
@@ -248,7 +258,7 @@
                     <LoadingIndicator>Loading issues…</LoadingIndicator>
                 </div>
 
-                <span v-if="!loading">
+                <div v-if="!loading">
                     <div v-if="queryError" class="text-danger">
                         {{ queryError }}
                     </div>
@@ -256,7 +266,7 @@
                         <b>{{ issuesResultingFromQuery.length }}</b> {{ issuesResultingFromQuery.length !== 1 ? 'issues' : 'issue'}} filtered.
                         <b>{{ issues.length }}</b> {{ issues.length !== 1 ? 'issues' : 'issue'}} total.
                     </div>
-                </span>
+                </div>
             </div>
 
             <table
@@ -378,6 +388,7 @@ import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import ProjectSelect from "@/components/general/ProjectSelect.vue";
 import {executeQuery, quickSearchToQuery, buildSortFunctions, defaultSortFunctionKey} from "./issue-search.js";
+import ErrorMessage from "@/components/ErrorMessage.vue";
 
 const sortFunctions = ref([]);
 
@@ -394,6 +405,7 @@ const quickSearch = ref({
 });
 const query = ref('');
 
+const errors = ref([]);
 const issues = ref([]);
 const projects = ref(null);
 const issueTypes = ref(null);
