@@ -24,7 +24,7 @@ setup:
     <<: *global-cache
     policy: push
 
-vitest:
+test:
   stage: test
   interruptible: true
   script: bun test
