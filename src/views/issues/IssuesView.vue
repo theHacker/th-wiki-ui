@@ -191,6 +191,12 @@
         </template>
 
         <template #default>
+            <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
+                <ul>
+                    <li v-for="error in errors">{{ error }}</li>
+                </ul>
+            </ErrorMessage>
+
             <div class="d-flex flex-wrap flex-lg-nowrap mb-2 row-gap-2 gap-2">
                 <div class="hstack gap-2 flex-grow-1">
                     <div class="btn-group">
@@ -378,6 +384,7 @@ import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import ProjectSelect from "@/components/general/ProjectSelect.vue";
 import {executeQuery, quickSearchToQuery, buildSortFunctions, defaultSortFunctionKey} from "./issue-search.js";
+import ErrorMessage from "@/components/ErrorMessage.vue";
 
 const sortFunctions = ref([]);
 
@@ -394,6 +401,7 @@ const quickSearch = ref({
 });
 const query = ref('');
 
+const errors = ref([]);
 const issues = ref([]);
 const projects = ref(null);
 const issueTypes = ref(null);
