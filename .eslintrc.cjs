@@ -7,6 +7,11 @@ module.exports = {
         'plugin:vue/vue3-essential',
         'eslint:recommended'
     ],
+    rules: {
+        "no-unused-vars": ["error", {
+            "argsIgnorePattern": "^_"
+        }]
+    },
     ignorePatterns: [
         "src/antlr/**" // generated code by ANTLR
     ],
