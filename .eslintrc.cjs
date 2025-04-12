@@ -7,6 +7,9 @@ module.exports = {
         'plugin:vue/vue3-essential',
         'eslint:recommended'
     ],
+    ignorePatterns: [
+        "src/antlr/**" // generated code by ANTLR
+    ],
     overrides: [
         {
             files: [
