@@ -183,7 +183,7 @@ const props = defineProps({
 defineEmits(['submit', 'cancel']);
 
 if (props.submitCtrlLabel) {
-    function onKeyEvent(e) {
+    const onKeyEvent = function(e) {
         if (e.key === 'Control') {
             if (e.type === 'keydown') {
                 ctrlDown.value = true;
@@ -191,7 +191,7 @@ if (props.submitCtrlLabel) {
                 ctrlDown.value = false;
             }
         }
-    }
+    };
 
     onMounted(() => {
         window.addEventListener('keydown', onKeyEvent);
