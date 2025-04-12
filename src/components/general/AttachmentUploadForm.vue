@@ -140,7 +140,6 @@ function onFileChange(e) {
 
 async function onPaste(e) {
     const clipboardData = e.clipboardData;
-    debugger;
 
     // Check for files in clipboard
     if (clipboardData.files.length > 0) {
