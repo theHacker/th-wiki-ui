@@ -62,8 +62,8 @@
                 class="form-select"
                 :class="{'is-invalid': !!fieldErrors.issueStatusId}"
              >
-                <option v-for="issusStatus in issueStatuses" :key="issueStatus.id" :value="issusStatus.id">
-                    {{ issusStatus.title }}
+                <option v-for="issueStatus in issueStatuses" :key="issueStatus.id" :value="issueStatus.id">
+                    {{ issueStatus.title }}
                 </option>
             </select>
             <div v-if="fieldErrors.issueStatusId" class="invalid-feedback">{{ fieldErrors.issueStatusId }}</div>
