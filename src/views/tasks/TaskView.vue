@@ -163,7 +163,7 @@ function deleteEntry() {
 function handleError(e) {
     if (e.response) {
         error.value = e.response.data.message || e.response.data.error || 'Unknown error';
-    } else if (error.request) {
+    } else if (e.request) {
         error.value = e.request; // untested, see https://axios-http.com/docs/handling_errors
     } else {
         error.value = e.message; // untested, see https://axios-http.com/docs/handling_errors
