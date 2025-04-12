@@ -184,6 +184,7 @@
                             <BaseDropdown buttonClass="btn-text-lg" icon="circle-arrow-right" title="Change status" color="success">
                                 <BaseDropdownItem
                                     v-for="issueStatus in issueStatuses"
+                                    :key="issueStatus.id"
                                     :icon="issueStatus.icon"
                                     :iconColor="issueStatus.iconColor"
                                     :title="issueStatus.title"
