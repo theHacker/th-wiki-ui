@@ -176,7 +176,7 @@ const props = defineProps({
     },
     fieldErrors: {
         type: Object,
-        default: {}
+        default() { return {}; }
     }
 });
 
