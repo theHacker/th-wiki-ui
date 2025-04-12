@@ -24,6 +24,14 @@ setup:
     <<: *global-cache
     policy: push
 
+lint:
+  stage: test
+  interruptible: true
+  script: bun run lint
+  cache:
+    <<: *global-cache
+    policy: pull
+
 test:
   stage: test
   interruptible: true
