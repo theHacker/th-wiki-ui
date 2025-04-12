@@ -380,7 +380,6 @@ import GridLayout from "@/components/layout/GridLayout.vue";
 import WikiNoPage from "@/components/wiki/WikiNoPage.vue";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import {blobToBase64, base64ToBlob} from "@/helper/base64.js";
-import ProjectSelect from "@/components/general/ProjectSelect.vue";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import {Tree} from "@/helper/tree.js";
 import BaseDropdownItem from "@/components/BaseDropdownItem.vue";

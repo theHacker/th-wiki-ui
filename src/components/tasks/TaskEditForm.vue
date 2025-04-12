@@ -101,7 +101,6 @@
 
 <script setup>
 import BaseButton from "@/components/BaseButton.vue";
-import ParentSelect from "@/components/general/ParentSelect.vue";
 import MarkdownTextarea from "@/components/general/MarkdownTextarea.vue";
 import {onMounted, onUnmounted, ref} from "vue";
 
