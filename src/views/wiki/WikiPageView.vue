@@ -7,7 +7,7 @@
         <template #default>
             <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
                 <ul>
-                    <li v-for="error in errors">{{ error }}</li>
+                    <li v-for="(error, index) in errors" :key="index">{{ error }}</li>
                 </ul>
             </ErrorMessage>
 
@@ -44,7 +44,11 @@
                             class="form-select"
                         >
                             <option :value="null">(no parent)</option>
-                            <option v-for="wikiPage in allWikiPagesTree.toLinearArray()" :value="wikiPage.id">
+                            <option
+                                v-for="wikiPage in allWikiPagesTree.toLinearArray()"
+                                :key="wikiPage.id"
+                                :value="wikiPage.id"
+                            >
                                 {{ optionIndent(wikiPage) }}{{ wikiPage.title }}
                             </option>
                         </select>

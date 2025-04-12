@@ -18,7 +18,7 @@
                 Please select what data to upload, and what filename to use.
             </div>
             <div class="my-3">
-                <div v-for="(item, index) in clipboardDataDialog.items" class="form-check">
+                <div v-for="(item, index) in clipboardDataDialog.items" :key="item.type" class="form-check">
                     <input
                         v-model="clipboardDataDialog.selectedType"
                         class="form-check-input"

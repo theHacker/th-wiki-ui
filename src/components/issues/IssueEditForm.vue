@@ -34,7 +34,7 @@
                 class="form-select"
                 :class="{'is-invalid': !!fieldErrors.issueTypeId}"
             >
-                <option v-for="issueType in issueTypes" :value="issueType.id">
+                <option v-for="issueType in issueTypes" :key="issueType.id" :value="issueType.id">
                     {{ issueType.title }}
                 </option>
             </select>
@@ -48,7 +48,7 @@
                 class="form-select"
                 :class="{'is-invalid': !!fieldErrors.issuePriorityId}"
             >
-                <option v-for="issuePriority in issuePriorities" :value="issuePriority.id">
+                <option v-for="issuePriority in issuePriorities" :key="issuePriority.id" :value="issuePriority.id">
                     {{ issuePriority.title }}
                 </option>
             </select>
@@ -62,7 +62,7 @@
                 class="form-select"
                 :class="{'is-invalid': !!fieldErrors.issueStatusId}"
              >
-                <option v-for="issusStatus in issueStatuses" :value="issusStatus.id">
+                <option v-for="issusStatus in issueStatuses" :key="issueStatus.id" :value="issusStatus.id">
                     {{ issusStatus.title }}
                 </option>
             </select>

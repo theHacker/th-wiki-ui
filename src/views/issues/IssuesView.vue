@@ -65,7 +65,11 @@
                             <label class="form-label">Sort function</label>
 
                             <select v-model="quickSearch.sortFunctionKey" class="form-select">
-                                <option v-for="sortFunction in sortFunctions" :value="sortFunction.key">
+                                <option
+                                    v-for="sortFunction in sortFunctions"
+                                    :key="sortFunction.key"
+                                    :value="sortFunction.key"
+                                >
                                     {{ sortFunction.title }}
                                 </option>
                             </select>
@@ -134,7 +138,7 @@
                             </div>
                             <select v-if="issueTypes !== null" v-model="quickSearch.issueTypeId" class="form-select">
                                 <option :value="null">– All types –</option>
-                                <option v-for="type in issueTypes" :value="type.id">
+                                <option v-for="type in issueTypes" :key="type.id" :value="type.id">
                                     {{ type.title }}
                                 </option>
                             </select>
@@ -148,7 +152,7 @@
                             </div>
                             <select v-if="issuePriorities !== null" v-model="quickSearch.issuePriorityId" class="form-select">
                                 <option :value="null">– All priorities –</option>
-                                <option v-for="priority in issuePriorities" :value="priority.id">
+                                <option v-for="priority in issuePriorities" :key="priority.id" :value="priority.id">
                                     {{ priority.title }}
                                 </option>
                             </select>
@@ -161,7 +165,7 @@
                             </div>
                             <select v-if="issueStatuses !== null" v-model="quickSearch.issueStatusId" class="form-select">
                                 <option :value="null">– All statuses –</option>
-                                <option v-for="status in issueStatuses" :value="status.id">
+                                <option v-for="status in issueStatuses" :key="status.id" :value="status.id">
                                     {{ status.title }}
                                 </option>
                             </select>
@@ -193,7 +197,7 @@
         <template #default>
             <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
                 <ul>
-                    <li v-for="error in errors">{{ error }}</li>
+                    <li v-for="(error, index) in errors" :key="index">{{ error }}</li>
                 </ul>
             </ErrorMessage>
 
