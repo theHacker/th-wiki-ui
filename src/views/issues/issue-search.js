@@ -97,7 +97,7 @@ class ExecutingQueryVisitor extends SearchQueryVisitor {
                 }
                 throw `Unknown value '${string}' for 'include:'.`;
 
-            case 'orderby':
+            case 'orderby': {
                 let order;
                 if (string.startsWith('~')) {
                     order = {
@@ -115,6 +115,7 @@ class ExecutingQueryVisitor extends SearchQueryVisitor {
                 return {
                     noOp: true
                 };
+            }
 
             default:
                 throw `Unknown attribute '${attribute}:'.`;
