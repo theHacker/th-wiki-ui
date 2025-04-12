@@ -40,8 +40,10 @@ describe('formatBytes()', () => {
         expect(formatBytes(1013309916158361)).toBe('921.60 TiB');
         expect(formatBytes(1013309916158362)).toBe('0.90 PiB');
 
+        /* eslint-disable no-loss-of-precision */
         expect(formatBytes(1037629354146162239)).toBe('921.60 PiB'); // 1037629354146162278 cannot be represented exactly, taking next adjacent number
         expect(formatBytes(1037629354146162300)).toBe('0.90 EiB'); //   1037629354146162279 cannot be represented exactly, taking next adjacent number
+        /* eslint-enable no-loss-of-precision */
     });
 
     it('should return null for negative or invalid values', () => {
