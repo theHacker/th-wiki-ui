@@ -8,6 +8,9 @@ module.exports = {
         'eslint:recommended'
     ],
     rules: {
+        "no-constant-condition": ["error", {
+            "checkLoops": false // TODO in ESLint v9, there is "allExceptWhileTrue"
+        }],
         "no-unused-vars": ["error", {
             "argsIgnorePattern": "^_"
         }]
