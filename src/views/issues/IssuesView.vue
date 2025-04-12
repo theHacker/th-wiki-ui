@@ -254,7 +254,7 @@
                     <LoadingIndicator>Loading issues…</LoadingIndicator>
                 </div>
 
-                <span v-if="!loading">
+                <div v-if="!loading">
                     <div v-if="queryError" class="text-danger">
                         {{ queryError }}
                     </div>
@@ -262,7 +262,7 @@
                         <b>{{ issuesResultingFromQuery.length }}</b> {{ issuesResultingFromQuery.length !== 1 ? 'issues' : 'issue'}} filtered.
                         <b>{{ issues.length }}</b> {{ issues.length !== 1 ? 'issues' : 'issue'}} total.
                     </div>
-                </span>
+                </div>
             </div>
 
             <table
