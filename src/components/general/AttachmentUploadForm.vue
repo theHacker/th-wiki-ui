@@ -1,10 +1,73 @@
 <template>
-    <h2 class="fs-3 mb-4">Upload an attachment</h2>
+    <ConfirmDialog
+        v-if="clipboardDataDialog"
+        color="success"
+        title="Clipboard data with no filename"
+        :dialogOpen="true"
+        submitIcon="paste"
+        submitTitle="Paste"
+        :submitDisabled="clipboardDataDialog.selectedType === null || clipboardDataDialog.filename === ''"
+        cancelIcon="xmark"
+        cancelTitle="Cancel"
+        @submit="processClipboardDataDialog"
+        @cancel="clipboardDataDialog = null"
+    >
+        <fieldset>
+            <div>
+                You pasted data from the clipboard with no filename.<br />
+                Please select what data to upload, and what filename to use.
+            </div>
+            <div class="my-3">
+                <div v-for="(item, index) in clipboardDataDialog.items" class="form-check">
+                    <input
+                        v-model="clipboardDataDialog.selectedType"
+                        class="form-check-input"
+                        type="radio"
+                        :id="`radioType${index}`"
+                        :value="item.type"
+                    >
+                    <label class="form-check-label" :for="`radioType${index}`">
+                        <code>{{ item.type }}</code>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <label for="filename" class="col-sm-2 col-form-label">Filename</label>
+                <div class="col-sm-10">
+                    <input v-model="clipboardDataDialog.filename" class="form-control" id="filename" type="text" />
+                </div>
+            </div>
+        </fieldset>
+    </ConfirmDialog>
+
+    <h2 class="fs-3 mb-4">Upload or paste an attachment</h2>
 
     <fieldset :disabled="uploading" class="row g-3">
-        <div class="col-12">
-            <label class="form-label">File to upload</label>
+        <div class="col-12 col-sm-6">
+            <label class="form-label">Select file to upload…</label>
             <input class="form-control" type="file" name="file" @change="onFileChange" />
+            <div v-if="feedbackMessage === FeedbackMessage.SelectedFile" class="form-text text-success">
+                <i class="fas fa-check" /> File selected for upload.
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6">
+            <label class="form-label">… or paste here</label><br />
+            <input class="form-control" type="text" readonly @paste="onPaste" />
+            <div v-if="feedbackMessage === FeedbackMessage.PastedFile" class="form-text text-success">
+                <i class="fas fa-check" /> File pasted from clipboard.
+            </div>
+            <div v-if="feedbackMessage === FeedbackMessage.PastedData" class="form-text text-success">
+                <i class="fas fa-check" /> Data pasted from clipboard.
+            </div>
+            <div v-if="feedbackMessage === FeedbackMessage.PastedUnsupported" class="form-text text-danger">
+                <i class="fas fa-xmark" /> No supported data inside the clipboard.
+            </div>
+        </div>
+
+        <div class="col-12">
+            <label class="form-label">Filename</label>
+            <input class="form-control" type="text" v-model="filename" disabled />
         </div>
 
         <div class="col-12">
@@ -36,8 +99,19 @@
     </fieldset>
 </template>
 
+<script>
+const FeedbackMessage = {
+    SelectedFile: Symbol('SelectedFile'),
+    PastedFile: Symbol('PastedFile'),
+    PastedData: Symbol('PastedData'),
+    PastedUnsupported: Symbol('PastedUnsupported')
+};
+</script>
+
 <script setup>
+import {ref} from "vue";
 import BaseButton from "@/components/BaseButton.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
 
 const model = defineModel();
 
@@ -50,9 +124,95 @@ defineProps({
 
 defineEmits(['submit', 'cancel']);
 
+const filename = ref('');
+const feedbackMessage = ref(null);
+const clipboardDataDialog = ref(null);
+
 function onFileChange(e) {
     if (e.target.files.length > 0) {
-        model.value.file = e.target.files[0];
+        const file = e.target.files[0];
+
+        model.value.file = file;
+        filename.value = file.name;
+        feedbackMessage.value = FeedbackMessage.SelectedFile;
     }
+}
+
+async function onPaste(e) {
+    const clipboardData = e.clipboardData;
+    debugger;
+
+    // Check for files in clipboard
+    if (clipboardData.files.length > 0) {
+        const file = clipboardData.files.item(0);
+
+        model.value.file = file;
+        filename.value = file.name;
+        feedbackMessage.value = FeedbackMessage.PastedFile;
+        return;
+    }
+
+    // Check if any data is supported
+    // (It can be the case, there is data from a special application the browser does not recognizes)
+    if (clipboardData.items.length === 0) {
+        model.value.file = null;
+        filename.value = '';
+        feedbackMessage.value = FeedbackMessage.PastedUnsupported;
+        return;
+    }
+
+    // Data in clipboard
+    const items = [];
+    for (let i = 0; i < clipboardData.items.length; i++) {
+        items.push({
+            type: clipboardData.items[i].type,
+            textPromise: getAsStringPromise(clipboardData.items[i])
+        });
+    }
+
+    // Await of promises
+    // (we can't do this inside the loop directly, this would somehow change the clipboardData)
+    for (const item of items) {
+        item.text = await item.textPromise;
+    }
+
+    // Open dialog
+    clipboardDataDialog.value = {
+        items,
+        selectedType: null,
+        filename: ''
+    };
+}
+
+/**
+ * Promise-wrapper for `DataTransferItem.getAsString()`.
+ *
+ * @param {DataTransferItem} item
+ * @returns {Promise<string>}
+ */
+function getAsStringPromise(item) {
+    return new Promise(resolve => {
+        item.getAsString(stringData => {
+            resolve(stringData);
+        });
+    });
+}
+
+function processClipboardDataDialog() {
+    const stringData = clipboardDataDialog.value.items
+        .find(it => it.type === clipboardDataDialog.value.selectedType)
+        .text;
+
+    const file = new File(
+        [stringData],
+        clipboardDataDialog.value.filename,
+        { type: clipboardDataDialog.value.selectedType }
+    );
+
+    model.value.file = file;
+    filename.value = file.name;
+    feedbackMessage.value = FeedbackMessage.PastedData;
+
+    clipboardDataDialog.value = null;
 }
 </script>
