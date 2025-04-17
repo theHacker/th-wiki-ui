@@ -21,6 +21,7 @@
 import GridLayout from "@/components/layout/GridLayout.vue";
 
 const tiles = [
-    { title: 'Projects', icon: 'rocket', linkTo: '/projects' }
+    { title: 'Projects', icon: 'rocket', linkTo: '/projects' },
+    { title: 'Tags', icon: 'tags', linkTo: '/tags' }
 ];
 </script>
