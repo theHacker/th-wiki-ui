@@ -36,6 +36,11 @@ const router = createRouter({
                             path: 'new',
                             name: 'adminTagNew',
                             component: () => import('./views/admin/AdminTagNewView.vue')
+                        },
+                        {
+                            path: ':tagId([0-9a-f-]+)/edit',
+                            name: 'adminTagEdit',
+                            component: () => import('./views/admin/AdminTagEditView.vue')
                         }
                     ]
                 }

@@ -130,7 +130,7 @@
                                             size="small"
                                             fixedWidth
                                             color="light"
-                                            @click="console.log('Not yet implemented.')"
+                                            @click="$router.push({name: 'adminTagEdit', params: { tagId: tag.id }})"
                                         />
                                         <BaseButton
                                             icon="trash"

@@ -6,7 +6,7 @@
     >
         <div class="col-12">
             <b>Project</b>
-            <div class="form-text">Note: The project cannot be changed later.</div>
+            <div v-if="!disableProject" class="form-text">Note: The project cannot be changed later.</div>
         </div>
 
         <div class="col-12 col-md-6">
@@ -17,6 +17,7 @@
                     type="radio"
                     id="radioGlobal"
                     value="global"
+                    :disabled="disableProject"
                 />
                 <label class="form-check-label" for="radioGlobal">
                     Global tag
@@ -32,7 +33,7 @@
                     type="radio"
                     id="radioProject"
                     value="project"
-                    :disabled="projects === null || projects.length === 0"
+                    :disabled="disableProject || projects === null || projects.length === 0"
                 />
                 <label class="form-check-label" for="radioProject">
                     Project tag
@@ -179,6 +180,10 @@ import TagBadge from "@/components/TagBadge.vue";
 const tag = defineModel();
 
 defineProps({
+    disableProject: {
+        type: Boolean,
+        default: false
+    },
     submitLabel: {
         type: String,
         required: true
