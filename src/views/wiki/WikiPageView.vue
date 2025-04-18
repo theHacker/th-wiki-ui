@@ -61,20 +61,22 @@
 
             <DeleteDialog
                 v-if="deleteDialogOpen && deleteDialogOpen.wikiPage"
-                :text='"Do you really want to delete the wiki page \"" + deleteDialogOpen.wikiPage.title + "\"?"'
                 :dialogOpen="true"
                 :deleting="deleting"
                 @submit="deleteWikiPage"
                 @cancel="deleteDialogOpen = null"
-            />
+            >
+                Do you really want to delete the wiki page "<b>{{ deleteDialogOpen.wikiPage.title }}</b>"?
+            </DeleteDialog>
             <DeleteDialog
                 v-if="deleteDialogOpen && deleteDialogOpen.attachment"
-                :text='"Do you really want to delete the attachment \"" + deleteDialogOpen.attachment.filename + "\"?"'
                 :dialogOpen="true"
                 :deleting="deleting"
                 @submit="deleteAttachment(deleteDialogOpen.attachment)"
                 @cancel="deleteDialogOpen = null"
-            />
+            >
+                Do you really want to delete the attachment "<b>{{ deleteDialogOpen.attachment.filename }}</b>"?
+            </DeleteDialog>
 
             <div v-if="wikiPage && !noPage">
                 <h1>{{ wikiPage.title }}</h1>

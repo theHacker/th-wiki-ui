@@ -2,12 +2,18 @@
     <GridLayout>
         <DeleteDialog
             v-if="deleteDialogOpen"
-            :text='"Do you really want to delete the tag \"" + deleteDialogOpen.formattedTagTitle + "\"?"'
             :dialogOpen="true"
             :deleting="deleting"
             @submit="deleteTag"
             @cancel="deleteDialogOpen = null"
-        />
+        >
+            Do you really want to delete the tag
+            <TagBadge
+                class="mx-1"
+                :scope="deleteDialogOpen.tag.scope" :scopeIcon="deleteDialogOpen.tag.scopeIcon" :scopeColor="deleteDialogOpen.tag.scopeColor"
+                :title="deleteDialogOpen.tag.title" :titleIcon="deleteDialogOpen.tag.titleIcon" :titleColor="deleteDialogOpen.tag.titleColor"
+            />?
+        </DeleteDialog>
 
         <h1>Tags</h1>
 
@@ -147,7 +153,7 @@
                                             size="small"
                                             fixedWidth
                                             color="danger"
-                                            @click="deleteDialogOpen = { tagId: tag.id, formattedTagTitle: formatTag(tag) }"
+                                            @click="deleteDialogOpen = { tag }"
                                         />
                                     </div>
                                 </td>
@@ -262,14 +268,6 @@ function fetchData() {
         });
 }
 
-function formatTag(tag) {
-    if (tag.scope) {
-        return `${tag.scope}::${tag.title}`;
-    } else {
-        return tag.title;
-    }
-}
-
 function deleteTag() {
     deleting.value = true;
     errors.value = [];
@@ -283,7 +281,7 @@ function deleteTag() {
                     }
                 }
             `,
-            { tagId: deleteDialogOpen.value.tagId }
+            { tagId: deleteDialogOpen.value.tag.id }
         )
         .then(() => {
             fetchData();

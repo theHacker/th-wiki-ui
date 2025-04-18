@@ -11,7 +11,7 @@
         @submit="$emit('submit')"
         @cancel="$emit('cancel')"
     >
-        {{ text }}
+        <slot />
     </ConfirmDialog>
 </template>
 
@@ -19,10 +19,6 @@
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 
 defineProps({
-    text: {
-        type: String,
-        required: true
-    },
     dialogOpen: {
         type: Boolean,
         default: false

@@ -8,21 +8,26 @@
 
         <DeleteDialog
             v-if="deleteDialogOpen && deleteDialogOpen.issue"
-            :text='`Do you really want to delete the issue ${deleteDialogOpen.issue.issueKey} "${deleteDialogOpen.issue.title}"?`'
             :dialogOpen="true"
             :deleting="deleting"
             @submit="deleteIssue(deleteDialogOpen.issue.id)"
             @cancel="deleteDialogOpen = null"
-        />
+        >
+            Do you really want to delete the issue
+            <b><i>{{deleteDialogOpen.issue.issueKey}}</i></b> "<b>{{deleteDialogOpen.issue.title}}</b>"?
+        </DeleteDialog>
 
         <DeleteDialog
             v-if="deleteDialogOpen && deleteDialogOpen.issueLink"
-            :text='`Do you really want to delete the issue link "${deleteDialogOpen.issueLink.caption} ${deleteDialogOpen.issueLink.issueKey}: ${deleteDialogOpen.issueLink.title}"?`'
             :dialogOpen="true"
             :deleting="deleting"
             @submit="deleteIssueLink(deleteDialogOpen.issueLink.id)"
             @cancel="deleteDialogOpen = null"
-        />
+        >
+            Do you really want to delete the issue link
+            "<i>{{deleteDialogOpen.issueLink.caption}}</i> <b><i>{{deleteDialogOpen.issueLink.issueKey}}</i></b>:
+            <b>{{deleteDialogOpen.issueLink.title}}</b>"?
+        </DeleteDialog>
 
         <ConfirmDialog
             v-if="moveToAnotherProjectDialog"
