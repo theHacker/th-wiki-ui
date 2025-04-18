@@ -43,7 +43,7 @@
                             icon="plus"
                             title="New tag"
                             color="primary"
-                            @click="console.log('Not yet implemented.')"
+                            @click="$router.push({name: 'adminTagNew'})"
                         />
                     </div>
                 </div>

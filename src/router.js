@@ -26,8 +26,18 @@ const router = createRouter({
                 },
                 {
                     path: 'tags',
-                    name: 'adminTags',
-                    component: () => import('./views/admin/AdminTagsView.vue')
+                    children: [
+                        {
+                            path: '',
+                            name: 'adminTags',
+                            component: () => import('./views/admin/AdminTagsView.vue')
+                        },
+                        {
+                            path: 'new',
+                            name: 'adminTagNew',
+                            component: () => import('./views/admin/AdminTagNewView.vue')
+                        }
+                    ]
                 }
             ]
         },
