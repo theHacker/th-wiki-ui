@@ -1,5 +1,14 @@
 <template>
     <GridLayout>
+        <DeleteDialog
+            v-if="deleteDialogOpen"
+            :text='"Do you really want to delete the tag \"" + deleteDialogOpen.formattedTagTitle + "\"?"'
+            :dialogOpen="true"
+            :deleting="deleting"
+            @submit="deleteTag"
+            @cancel="deleteDialogOpen = null"
+        />
+
         <h1>Tags</h1>
 
         <ErrorMessage v-if="errors.length > 0" :title="errors.length > 1 ? 'Errors' : 'Error'">
@@ -138,7 +147,7 @@
                                             size="small"
                                             fixedWidth
                                             color="danger"
-                                            @click="console.log('Not yet implemented.')"
+                                            @click="deleteDialogOpen = { tagId: tag.id, formattedTagTitle: formatTag(tag) }"
                                         />
                                     </div>
                                 </td>
@@ -164,6 +173,7 @@ import {computed, ref} from "vue";
 import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import TagBadge from "@/components/TagBadge.vue";
+import DeleteDialog from "@/components/DeleteDialog.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 
 const tags = ref([]);
@@ -174,6 +184,9 @@ const errors = ref([]);
 const showColors = ref(false);
 const showDescription = ref(true);
 const denseTable = ref(false);
+
+const deleteDialogOpen = ref(null);
+const deleting = ref(false);
 
 fetchData();
 
@@ -246,6 +259,41 @@ function fetchData() {
         })
         .catch(e => {
             errors.value = handleError(e).genericErrors;
+        });
+}
+
+function formatTag(tag) {
+    if (tag.scope) {
+        return `${tag.scope}::${tag.title}`;
+    } else {
+        return tag.title;
+    }
+}
+
+function deleteTag() {
+    deleting.value = true;
+    errors.value = [];
+
+    axios
+        .graphql(
+            `
+                mutation DeleteTag($tagId: ID!) {
+                    deleteTag(id: $tagId) {
+                        id
+                    }
+                }
+            `,
+            { tagId: deleteDialogOpen.value.tagId }
+        )
+        .then(() => {
+            fetchData();
+        })
+        .catch(e => {
+            errors.value = handleError(e).genericErrors;
+        })
+        .finally(() => {
+            deleteDialogOpen.value = null;
+            deleting.value = false;
         });
 }
 </script>
