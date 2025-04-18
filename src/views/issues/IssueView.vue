@@ -279,7 +279,10 @@
                         <div v-if="linksTabState === LinksTabStates.Table">
                             <template v-for="linkGroup in linkGroups" :key="linkGroup.caption">
                                 <h2 class="fs-5">
-                                    <i :class="`fas fa-${linkGroup.icon} text-${linkGroup.iconColor}`" />
+                                    <i
+                                        :class="`fas fa-${linkGroup.icon}`"
+                                        v-bind="parseColor(linkGroup.iconColor, false)"
+                                    />
                                     This issue {{ linkGroup.caption }}
                                 </h2>
                                 <table class="table table-responsive table-sm table-hover align-middle mb-5 linkGroup">
@@ -301,8 +304,9 @@
                                         >
                                             <td>
                                                 <i
-                                                    :class="`fas fa-${link.issueType.icon} text-${link.issueType.iconColor}`"
+                                                    :class="`fas fa-${link.issueType.icon}`"
                                                     :title="link.issueType.title"
+                                                    v-bind="parseColor(link.issueType.iconColor, false)"
                                                 />
                                             </td>
                                             <td>
@@ -318,14 +322,16 @@
                                             </td>
                                             <td>
                                                 <i
-                                                    :class="`fas fa-${link.issuePriority.icon} text-${link.issuePriority.iconColor}`"
+                                                    :class="`fas fa-${link.issuePriority.icon}`"
                                                     :title="link.issuePriority.title"
+                                                    v-bind="parseColor(link.issuePriority.iconColor, false)"
                                                 />
                                             </td>
                                             <td>
                                                 <i
-                                                    :class="`fas fa-${link.issueStatus.icon} text-${link.issueStatus.iconColor}`"
+                                                    :class="`fas fa-${link.issueStatus.icon}`"
                                                     :title="link.issueStatus.title"
+                                                    v-bind="parseColor(link.issueStatus.iconColor, false)"
                                                 />
                                             </td>
                                             <td>
@@ -405,8 +411,9 @@
 
                                     <div class="icon-link">
                                         <i
-                                            :class="`fas fa-${issue.issueType.icon} text-${issue.issueType.iconColor}`"
+                                            :class="`fas fa-${issue.issueType.icon}`"
                                             :title="issue.issueType.title"
+                                            v-bind="parseColor(issue.issueType.iconColor, false)"
                                         />
                                         {{ issue.issueType.title }}
                                     </div>
@@ -417,8 +424,9 @@
 
                                     <div class="icon-link">
                                         <i
-                                            :class="`fas fa-${issue.issueStatus.icon} text-${issue.issueStatus.iconColor}`"
+                                            :class="`fas fa-${issue.issueStatus.icon}`"
                                             :title="issue.issueStatus.title"
+                                            v-bind="parseColor(issue.issueStatus.iconColor, false)"
                                         />
                                         <span :title="issue.issueStatus.description">
                                             {{ issue.issueStatus.title }}
@@ -431,8 +439,9 @@
 
                                     <div class="icon-link">
                                         <i
-                                            :class="`fas fa-${issue.issuePriority.icon} text-${issue.issuePriority.iconColor}`"
+                                            :class="`fas fa-${issue.issuePriority.icon}`"
                                             :title="issue.issuePriority.title"
+                                            v-bind="parseColor(issue.issuePriority.iconColor, false)"
                                         />
                                         {{ issue.issuePriority.title }}
                                     </div>
@@ -528,6 +537,7 @@ import {isOverdue} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import ProjectSelect from "@/components/general/ProjectSelect.vue";
+import {parseColor} from "@/helper/color.js";
 
 const route = useRoute();
 const router = useRouter();

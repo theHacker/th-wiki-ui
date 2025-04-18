@@ -293,8 +293,9 @@
                             <span class="icon-link">
                                 <span :class="{'d-inline': showIcons, 'd-none': !showIcons }">
                                     <i
-                                        :class="`fas fa-${issue.issueType.icon} text-${issue.issueType.iconColor}`"
+                                        :class="`fas fa-${issue.issueType.icon}`"
                                         :title="issue.issueType.title"
+                                        v-bind="parseColor(issue.issueType.iconColor)"
                                     />
                                 </span>
                                 <span :class="{'d-inline': !showIcons, 'd-none': showIcons }">
@@ -326,8 +327,9 @@
                                 <span :class="{'d-inline': showIcons, 'd-none': !showIcons }">
                                     <i
                                         v-if="issue.issuePriority.showIconInList"
-                                        :class="`fas fa-${issue.issuePriority.icon} text-${issue.issuePriority.iconColor}`"
+                                        :class="`fas fa-${issue.issuePriority.icon}`"
                                         :title="issue.issuePriority.title"
+                                        v-bind="parseColor(issue.issuePriority.iconColor)"
                                     />
                                 </span>
                                 <span :class="{'d-inline': !showIcons, 'd-none': showIcons }">
@@ -339,8 +341,9 @@
                             <span class="icon-link">
                                 <span :class="{'d-inline': showIcons, 'd-none': !showIcons }">
                                     <i
-                                        :class="`fas fa-${issue.issueStatus.icon} text-${issue.issueStatus.iconColor}`"
+                                        :class="`fas fa-${issue.issueStatus.icon}`"
                                         :title="`${issue.issueStatus.title} (${issue.progress}%)`"
+                                        v-bind="parseColor(issue.issueStatus.iconColor)"
                                     />
                                 </span>
                                 <span :class="{'d-inline': !showIcons, 'd-none': showIcons }">
@@ -383,12 +386,13 @@ import SearchInput from "@/components/SearchInput.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import {ref, watch} from "vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
-import {isOverdue, getDueColor} from "@/views/issues/issue-functions.js";
+import {getDueColor, isOverdue} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import ProjectSelect from "@/components/general/ProjectSelect.vue";
-import {executeQuery, quickSearchToQuery, buildSortFunctions, defaultSortFunctionKey} from "./issue-search.js";
+import {buildSortFunctions, defaultSortFunctionKey, executeQuery, quickSearchToQuery} from "./issue-search.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
+import {parseColor} from "@/helper/color.js";
 
 const sortFunctions = ref([]);
 
