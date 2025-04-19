@@ -9,12 +9,13 @@
 
             <DeleteDialog
                 v-if="deleteDialogOpen && deleteDialogOpen.entry"
-                :text='"Do you really want to delete the task \"" + deleteDialogOpen.entry.title + "\"?"'
                 :dialog-open="true"
                 :deleting="deleting"
                 @submit="deleteEntry"
                 @cancel="deleteDialogOpen = null"
-            />
+            >
+                Do you really want to delete the task "<b>{{ deleteDialogOpen.entry.title }}</b>"?
+            </DeleteDialog>
 
             <div v-if="entry">
                 <h1>{{ entry.title }}</h1>

@@ -23,6 +23,26 @@ const router = createRouter({
                     path: 'projects',
                     name: 'adminProjects',
                     component: () => import('./views/admin/AdminProjectsView.vue')
+                },
+                {
+                    path: 'tags',
+                    children: [
+                        {
+                            path: '',
+                            name: 'adminTags',
+                            component: () => import('./views/admin/AdminTagsView.vue')
+                        },
+                        {
+                            path: 'new',
+                            name: 'adminTagNew',
+                            component: () => import('./views/admin/AdminTagNewView.vue')
+                        },
+                        {
+                            path: ':tagId([0-9a-f-]+)/edit',
+                            name: 'adminTagEdit',
+                            component: () => import('./views/admin/AdminTagEditView.vue')
+                        }
+                    ]
                 }
             ]
         },

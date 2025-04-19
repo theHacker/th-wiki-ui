@@ -274,6 +274,24 @@ strong {
     }
 }
 
+// Badge Group to allow two-color-parts badges
+.badge-group:has(:nth-child(2)) {
+    $padding-x: calc(var(--#{$prefix}badge-padding-x) / 2); // share Bootstrap's default padding between both parts
+
+    white-space: nowrap; // don't rip apart the two parts
+
+    .badge:nth-child(1) {
+        padding-right: $padding-x;
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+    }
+    .badge:nth-child(2) {
+        padding-left: $padding-x;
+        border-top-left-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+    }
+}
+
 // Button and dropdowns responsive "icon + text":
 // - .btn-text-{breakpoint} = text renders only >={breakpoint}, <{breakpoint} only the icon is shown
 // - .btn-text = text renders always [We don't use that, but rather specify no class and expect that as default]
