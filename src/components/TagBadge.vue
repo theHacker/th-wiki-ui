@@ -1,5 +1,5 @@
 <template>
-    <span class="badge-group" :title="tooltip">
+    <span class="badge-group" :title="tooltip" @click="$emit('click')">
         <span v-if="scope" class="badge rounded-pill" v-bind="scopeAttributes">
             <i v-if="scopeIcon" :class="'fas fa-' + scopeIcon" />
             {{ scope }}
@@ -25,14 +25,7 @@ const props = defineProps({
         required: false
     },
     scopeColor: {
-        validator(value, _props) {
-            // see https://getbootstrap.com/docs/5.3/components/buttons/#variants
-            return [
-                'primary', 'secondary',
-                'success', 'danger', 'warning', 'info',
-                'light', 'dark', 'link'
-            ].includes(value);
-        },
+        type: String,
         required: false
     },
     title: {
@@ -44,20 +37,15 @@ const props = defineProps({
         required: false
     },
     titleColor: {
-        validator(value, _props) {
-            // see https://getbootstrap.com/docs/5.3/components/buttons/#variants
-            return [
-                'primary', 'secondary',
-                'success', 'danger', 'warning', 'info',
-                'light', 'dark', 'link'
-            ].includes(value);
-        },
+        type: String,
         default: 'light'
     },
     tooltip: {
         type: String
     }
 });
+
+defineEmits(['click']);
 
 const scopeAttributes = computed(() => {
     const color = props.scopeColor || props.titleColor;
