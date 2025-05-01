@@ -1,9 +1,9 @@
 <template>
-    <div class="d-inline-flex">
-        <h1 class="mb-0">
+    <div class="d-inline-flex flex-wrap">
+        <h1 class="mb-0" :class="{ 'me-3': tagsSorted.length > 0 }">
             <slot />
         </h1>
-        <div class="ms-3 hstack align-items-start gap-2">
+        <div class="hstack align-items-start gap-2 flex-wrap">
             <TagBadge
                 v-for="(tag, index) in tagsSorted"
                 :key="index"
