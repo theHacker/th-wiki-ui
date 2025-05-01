@@ -5,7 +5,7 @@
         </h1>
         <div class="ms-3 hstack align-items-start gap-2">
             <TagBadge
-                v-for="(tag, index) in tags"
+                v-for="(tag, index) in tagsSorted"
                 :key="index"
                 :scope="tag.scope"
                 :scopeIcon="tag.scopeIcon"
@@ -26,13 +26,19 @@
 
 <script setup>
 import TagBadge from "@/components/TagBadge.vue";
+import {computed} from "vue";
+import {toSortedTags} from "@/helper/sort-tags.js";
 
-defineProps({
+const props = defineProps({
     smallText: {
         type: String
     },
     tags: {
         type: Array
     }
+});
+
+const tagsSorted = computed(() => {
+    return toSortedTags(props.tags);
 });
 </script>

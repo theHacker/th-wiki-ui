@@ -104,6 +104,7 @@
 import {computed} from "vue";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import TagBadge from "@/components/TagBadge.vue";
+import {toSortedTags} from "@/helper/sort-tags.js";
 
 const assignedTagIds = defineModel();
 
@@ -137,17 +138,17 @@ const props = defineProps({
 defineEmits(['submit', 'cancel']);
 
 const assignedGlobalTags = computed(() => {
-    return props.globalTags.filter(tag => assignedTagIds.value.includes(tag.id));
+    return toSortedTags(props.globalTags.filter(tag => assignedTagIds.value.includes(tag.id)));
 });
 const assignedProjectTags = computed(() => {
-    return props.projectTags.filter(tag => assignedTagIds.value.includes(tag.id));
+    return toSortedTags(props.projectTags.filter(tag => assignedTagIds.value.includes(tag.id)));
 });
 
 const assignableGlobalTags = computed(() => {
-    return props.globalTags.filter(tag => !assignedTagIds.value.includes(tag.id));
+    return toSortedTags(props.globalTags.filter(tag => !assignedTagIds.value.includes(tag.id)));
 });
 const assignableProjectTags = computed(() => {
-    return props.projectTags.filter(tag => !assignedTagIds.value.includes(tag.id));
+    return toSortedTags(props.projectTags.filter(tag => !assignedTagIds.value.includes(tag.id)));
 });
 
 function assignTag(tag) {

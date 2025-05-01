@@ -181,6 +181,7 @@ import {handleError} from "@/helper/graphql-error-handling.js";
 import TagBadge from "@/components/TagBadge.vue";
 import DeleteDialog from "@/components/DeleteDialog.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
+import {sortTags} from "@/helper/sort-tags.js";
 
 const tags = ref([]);
 const loading = ref(true);
@@ -221,17 +222,7 @@ const tagsByProject = computed(() => {
     });
 
     for (let group of groups) {
-        group.tags.sort((a, b) => {
-            if (a.scope === '') return -1;
-            if (b.scope === '') return 1;
-
-            let c = a.scope.localeCompare(b.scope);
-            if (c !== 0) {
-                return c;
-            }
-
-            return a.title.localeCompare(b.title);
-        });
+        sortTags(group.tags);
     }
 
     return groups;
