@@ -79,7 +79,9 @@
             </DeleteDialog>
 
             <div v-if="wikiPage && !noPage">
-                <h1>{{ wikiPage.title }}</h1>
+                <BaseHeading>
+                    {{ wikiPage.title }}
+                </BaseHeading>
 
                 <div class="d-flex flex-wrap flex-lg-nowrap mb-4 row-gap-3">
                     <div class="flex-grow-1 me-4">
@@ -391,6 +393,7 @@ import {Tree} from "@/helper/tree.js";
 import BaseDropdownItem from "@/components/BaseDropdownItem.vue";
 import BaseDropdown from "@/components/BaseDropdown.vue";
 import {formatBytes} from "@/helper/format-bytes.js";
+import BaseHeading from "@/components/BaseHeading.vue";
 
 const route = useRoute();
 const router = useRouter();

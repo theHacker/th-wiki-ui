@@ -130,12 +130,9 @@
 
             <div v-if="issue" class="row">
                 <div class="col-12">
-                    <h1 class="mb-0">{{ issue.title }}</h1>
-                    <div class="mb-heading hstack gap-2">
-                        <div>
-                            <small>{{ issue.issueKey }}</small>
-                        </div>
-                    </div>
+                    <BaseHeading :smallText="issue.issueKey">
+                        {{ issue.title }}
+                    </BaseHeading>
 
                     <div class="d-flex flex-wrap flex-lg-nowrap mb-4 row-gap-3">
                         <div class="flex-grow-1 me-4">
@@ -543,6 +540,7 @@ import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import ProjectSelect from "@/components/general/ProjectSelect.vue";
 import {parseColor} from "@/helper/color.js";
+import BaseHeading from "@/components/BaseHeading.vue";
 
 const route = useRoute();
 const router = useRouter();
