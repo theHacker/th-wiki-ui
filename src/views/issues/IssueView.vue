@@ -123,6 +123,17 @@
             </fieldset>
         </ConfirmDialog>
 
+        <TagsDialog
+            v-model="assignedTagIdsInDialog"
+            :dialogOpen="manageTagsDialogOpen"
+            :globalTags="availableGlobalTags"
+            :projectTags="availableProjectTags"
+            :showProjectTags="true"
+            :saving="manageTagsDialogSaving"
+            @submit="updateTags"
+            @cancel="manageTagsDialogOpen = false"
+        />
+
         <div :class="{'container-xl g-0': !fullWidth}">
             <div v-if="!issue" class="mt-4">
                 <LoadingIndicator>Loading issue…</LoadingIndicator>
@@ -130,7 +141,7 @@
 
             <div v-if="issue" class="row">
                 <div class="col-12">
-                    <BaseHeading :smallText="issue.issueKey">
+                    <BaseHeading :smallText="issue.issueKey" :tags="issue.tags">
                         {{ issue.title }}
                     </BaseHeading>
 
@@ -197,6 +208,12 @@
                             </BaseDropdown>
 
                             <BaseDropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
+                                <BaseDropdownItem
+                                    icon="tags"
+                                    title="Manage tags"
+                                    fixedWidth
+                                    @click="openTagsDialog"
+                                />
                                 <BaseDropdownItem
                                     icon="truck-arrow-right"
                                     title="Move to another project"
@@ -541,6 +558,7 @@ import {handleError} from "@/helper/graphql-error-handling.js";
 import ProjectSelect from "@/components/general/ProjectSelect.vue";
 import {parseColor} from "@/helper/color.js";
 import BaseHeading from "@/components/BaseHeading.vue";
+import TagsDialog from "@/components/tags/TagsDialog.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -568,6 +586,12 @@ const movingToAnotherProject = ref(false);
 
 const addIssueLinkDialog = ref(null);
 const linkingIssue = ref(false);
+
+const availableGlobalTags = ref([]);
+const availableProjectTags = ref([]);
+const manageTagsDialogOpen = ref(false);
+const manageTagsDialogSaving = ref(false);
+const assignedTagIdsInDialog = ref([]);
 
 const hideFieldsPanel = computed(() => {
     // Hide the field panel when fullWidth mode is on, and Dependency Graph is visible, so there is more space
@@ -803,6 +827,16 @@ function fetchData(id) {
                                 id
                             }
                         }
+                        tags {
+                            id
+                            scope
+                            scopeIcon
+                            scopeColor
+                            title
+                            titleIcon
+                            titleColor
+                            description
+                        }
                     }
                     projects {
                         id
@@ -830,6 +864,19 @@ function fetchData(id) {
                         }
                         title
                     }
+                    tags {
+                        id
+                        project {
+                            id
+                        }
+                        scope
+                        scopeIcon
+                        scopeColor
+                        title
+                        titleIcon
+                        titleColor
+                        description
+                    }
                 }
             `,
             { issueId: id }
@@ -847,6 +894,9 @@ function fetchData(id) {
                 issueStatuses.value = data.issueStatuses;
                 issueLinkTypes.value = data.issueLinkTypes;
                 allIssues.value = data.issues;
+
+                availableGlobalTags.value = data.tags.filter(it => it.project === null);
+                availableProjectTags.value = data.tags.filter(it => it.project?.id === data.issue.project.id);
 
                 // Synthesize issueKeys (GraphQL API does not offer them (yet))
 
@@ -1110,6 +1160,85 @@ function deleteIssueLink(issueLinkId) {
         .finally(() => {
             deleteDialogOpen.value = null;
             deleting.value = false;
+        });
+}
+
+function openTagsDialog() {
+    assignedTagIdsInDialog.value = issue.value.tags.map(it => it.id);
+    manageTagsDialogOpen.value = true;
+}
+
+function updateTags() {
+    manageTagsDialogSaving.value = true;
+
+    // Calculate changes to be applied
+    //
+    // We use Sets for set operations.
+    // Vue properties are arrays for reactivity, Vue does not work well with Sets.
+
+    const tagIdsActual = new Set(issue.value.tags.map(it => it.id));
+    const tagIdsDesired = new Set(assignedTagIdsInDialog.value);
+
+    const tagIdsToAdd = tagIdsDesired.difference(tagIdsActual);
+    const tagIdsToRemove = tagIdsActual.difference(tagIdsDesired);
+
+    // Shortcut: Nothing to do.
+
+    if (tagIdsToAdd.size === 0 && tagIdsToRemove.size === 0) {
+        manageTagsDialogOpen.value = false;
+        manageTagsDialogSaving.value = false;
+        return;
+    }
+
+    // Execute all add/remove operations at once
+
+    const addQueries = [...tagIdsToAdd].map((tagId, index) => (
+        `
+            addTag${index}: addTagToIssue(input: {
+                issueId: "${issue.value.id}",
+                tagId: "${tagId}"
+            }) {
+                tag {
+                    id
+                }
+            }
+        `
+    ));
+
+    const removeQueries = [...tagIdsToRemove].map((tagId, index) => (
+        `
+            removeTag${index}: removeTagFromIssue(input: {
+                issueId: "${issue.value.id}",
+                tagId: "${tagId}"
+            }) {
+                tag {
+                    id
+                }
+            }
+        `
+    ));
+
+    const query = `
+        mutation UpdateTags {
+            ${addQueries.join('\n')}
+            ${removeQueries.join('\n')}
+        }
+    `;
+
+    axios
+        .graphql(query)
+        .then(_data => {
+            // Refresh issue and get finalized tags (fully loaded).
+            fetchData(issue.value.id);
+        })
+        .catch(e => {
+            const handledErrors = handleError(e);
+
+            errors.value = handledErrors.genericErrors;
+        })
+        .finally(() => {
+            manageTagsDialogOpen.value = false;
+            manageTagsDialogSaving.value = false;
         });
 }
 </script>
