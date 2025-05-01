@@ -78,8 +78,19 @@
                 Do you really want to delete the attachment "<b>{{ deleteDialogOpen.attachment.filename }}</b>"?
             </DeleteDialog>
 
+            <TagsDialog
+                v-model="assignedTagIdsInDialog"
+                :dialogOpen="manageTagsDialogOpen"
+                :globalTags="availableGlobalTags"
+                :saving="manageTagsDialogSaving"
+                @submit="updateTags"
+                @cancel="manageTagsDialogOpen = false"
+            />
+
             <div v-if="wikiPage && !noPage">
-                <h1>{{ wikiPage.title }}</h1>
+                <BaseHeading :tags="wikiPage.tags">
+                    {{ wikiPage.title }}
+                </BaseHeading>
 
                 <div class="d-flex flex-wrap flex-lg-nowrap mb-4 row-gap-3">
                     <div class="flex-grow-1 me-4">
@@ -116,6 +127,12 @@
 
                     <div class="hstack gap-2">
                         <BaseDropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
+                            <BaseDropdownItem
+                                icon="tags"
+                                title="Manage tags"
+                                fixedWidth
+                                @click="openTagsDialog"
+                            />
                             <BaseDropdownItem
                                 icon="arrow-right-long"
                                 title="Move"
@@ -391,6 +408,8 @@ import {Tree} from "@/helper/tree.js";
 import BaseDropdownItem from "@/components/BaseDropdownItem.vue";
 import BaseDropdown from "@/components/BaseDropdown.vue";
 import {formatBytes} from "@/helper/format-bytes.js";
+import BaseHeading from "@/components/BaseHeading.vue";
+import TagsDialog from "@/components/tags/TagsDialog.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -419,6 +438,11 @@ const deleting = ref(false);
 
 const moveDialog = ref(null);
 
+const availableGlobalTags = ref([]);
+const manageTagsDialogOpen = ref(false);
+const manageTagsDialogSaving = ref(false);
+const assignedTagIdsInDialog = ref([]);
+
 watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 
 function fetchData(id) {
@@ -433,7 +457,7 @@ function fetchData(id) {
     axios
         .graphql(
             `
-                query WikiPageAndTree($wikiPageId: ID!) {
+                query WikiPageAndTreeAndTags($wikiPageId: ID!) {
                     wikiPage(id: $wikiPageId) {
                         id
                         title
@@ -454,6 +478,16 @@ function fetchData(id) {
                                 height
                             }
                         }
+                        tags {
+                            id
+                            scope
+                            scopeIcon
+                            scopeColor
+                            title
+                            titleIcon
+                            titleColor
+                            description
+                        }
                     }
                     wikiPages {
                         id
@@ -461,6 +495,16 @@ function fetchData(id) {
                         parent {
                             id
                         }
+                    }
+                    globalTags {
+                        id
+                        scope
+                        scopeIcon
+                        scopeColor
+                        title
+                        titleIcon
+                        titleColor
+                        description
                     }
                 }
             `,
@@ -487,6 +531,8 @@ function fetchData(id) {
                     .map(a => a.id);
 
                 loadAttachmentThumbnails(imageAttachmentIds);
+
+                availableGlobalTags.value = data.globalTags;
             }
         })
         .catch(e => {
@@ -789,6 +835,85 @@ function optionIndent(wikiPage) {
     const indent = nbsp.repeat(5);
 
     return indent.repeat(wikiPage.level - 1);
+}
+
+function openTagsDialog() {
+    assignedTagIdsInDialog.value = wikiPage.value.tags.map(it => it.id);
+    manageTagsDialogOpen.value = true;
+}
+
+function updateTags() {
+    manageTagsDialogSaving.value = true;
+
+    // Calculate changes to be applied
+    //
+    // We use Sets for set operations.
+    // Vue properties are arrays for reactivity, Vue does not work well with Sets.
+
+    const tagIdsActual = new Set(wikiPage.value.tags.map(it => it.id));
+    const tagIdsDesired = new Set(assignedTagIdsInDialog.value);
+
+    const tagIdsToAdd = tagIdsDesired.difference(tagIdsActual);
+    const tagIdsToRemove = tagIdsActual.difference(tagIdsDesired);
+
+    // Shortcut: Nothing to do.
+
+    if (tagIdsToAdd.size === 0 && tagIdsToRemove.size === 0) {
+        manageTagsDialogOpen.value = false;
+        manageTagsDialogSaving.value = false;
+        return;
+    }
+
+    // Execute all add/remove operations at once
+
+    const addQueries = [...tagIdsToAdd].map((tagId, index) => (
+        `
+            addTag${index}: addTagToWikiPage(input: {
+                wikiPageId: "${wikiPage.value.id}",
+                tagId: "${tagId}"
+            }) {
+                tag {
+                    id
+                }
+            }
+        `
+    ));
+
+    const removeQueries = [...tagIdsToRemove].map((tagId, index) => (
+        `
+            removeTag${index}: removeTagFromWikiPage(input: {
+                wikiPageId: "${wikiPage.value.id}",
+                tagId: "${tagId}"
+            }) {
+                tag {
+                    id
+                }
+            }
+        `
+    ));
+
+    const query = `
+        mutation UpdateTags {
+            ${addQueries.join('\n')}
+            ${removeQueries.join('\n')}
+        }
+    `;
+
+    axios
+        .graphql(query)
+        .then(_data => {
+            // Refresh wiki page and get finalized tags (fully loaded).
+            fetchData(wikiPage.value.id);
+        })
+        .catch(e => {
+            const handledErrors = handleError(e);
+
+            errors.value = handledErrors.genericErrors;
+        })
+        .finally(() => {
+            manageTagsDialogOpen.value = false;
+            manageTagsDialogSaving.value = false;
+        });
 }
 </script>
 

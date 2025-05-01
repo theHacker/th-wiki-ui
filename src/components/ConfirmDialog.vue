@@ -1,51 +1,43 @@
 <template>
-    <div
-        class="modal"
-        :class="{show: dialogOpen}"
-        :style="dialogOpen ? 'display: block;' : ''"
+    <BaseDialog
+        :dialogOpen="dialogOpen"
+        :color="color"
+        :title="title"
+        :size="size"
     >
-        <div :class="modalClass">
-            <div class="modal-content">
-                <div class="modal-header" :class="{[`text-bg-${color}`]: true}">
-                    <h1 class="modal-title fs-5">{{ title }}</h1>
+        <template #default>
+            <slot />
+        </template>
+
+        <template #footer>
+            <fieldset :disabled="progressing">
+                <div class="hstack gap-2">
+                    <BaseButton
+                        :icon="submitIcon"
+                        :title="submitTitle"
+                        :color="color"
+                        :disabled="submitDisabled"
+                        :loading="progressing"
+                        @click="$emit('submit')"
+                    />
+                    <BaseButton
+                        :icon="cancelIcon"
+                        :title="cancelTitle"
+                        color="light"
+                        :disabled="cancelDisabled"
+                        @click="$emit('cancel')"
+                    />
                 </div>
-                <div class="modal-body">
-                    <div><slot /></div>
-                </div>
-                <div class="modal-footer">
-                    <fieldset :disabled="progressing">
-                        <div class="hstack gap-2">
-                            <BaseButton
-                                :icon="submitIcon"
-                                :title="submitTitle"
-                                :color="color"
-                                :disabled="submitDisabled"
-                                :loading="progressing"
-                                @click="$emit('submit')"
-                            />
-                            <BaseButton
-                                :icon="cancelIcon"
-                                :title="cancelTitle"
-                                color="light"
-                                :disabled="cancelDisabled"
-                                @click="$emit('cancel')"
-                            />
-                        </div>
-                    </fieldset>
-                </div>
-            </div>
-        </div>
-    </div>
-    <Teleport to="body">
-        <div v-if="dialogOpen" class="modal-backdrop fade" :class="{show: dialogOpen}" />
-    </Teleport>
+            </fieldset>
+        </template>
+    </BaseDialog>
 </template>
 
 <script setup>
 import BaseButton from "@/components/BaseButton.vue";
-import {computed} from "vue";
+import BaseDialog from "@/components/BaseDialog.vue";
 
-const props = defineProps({
+defineProps({
     dialogOpen: {
         type: Boolean,
         default: false
@@ -104,29 +96,4 @@ const props = defineProps({
 });
 
 defineEmits(['submit', 'cancel']);
-
-const modalClass = computed(() => {
-    const classes = {};
-
-    classes['modal-dialog'] = true;
-    classes['modal-dialog-centered'] = true;
-
-    switch (props.size) {
-        case 'small':
-            classes['modal-sm'] = true;
-            break;
-        case 'large':
-            classes['modal-lg'] = true;
-            break;
-        case 'extra-large':
-            classes['modal-xl'] = true;
-            break;
-        case 'normal':
-        default:
-            // no additional class
-            break;
-    }
-
-    return classes;
-});
 </script>
