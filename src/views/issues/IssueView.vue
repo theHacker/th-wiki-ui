@@ -43,10 +43,9 @@
             @submit="moveToProject(issue.id, moveToProjectId)"
             @cancel="moveToAnotherProjectDialog = null"
         >
-            <div v-if="movingProjectDisallowedBecauseOfProjectTags" class="alert alert-info mb-0 hstack gap-2">
-                <i class="fas fa-circle-info" />
-                <span>This issue cannot be moved, because it contains one or more project tags.</span>
-            </div>
+            <BaseAlert v-if="movingProjectDisallowedBecauseOfProjectTags" color="info" icon="circle-info" class="mb-0">
+                This issue cannot be moved, because it contains one or more project tags.
+            </BaseAlert>
             <template v-else>
                 <div>
                     Moving an issue will assign a new issue key.<br />
@@ -565,6 +564,7 @@ import ProjectSelect from "@/components/general/ProjectSelect.vue";
 import {parseColor} from "@/helper/color.js";
 import BaseHeading from "@/components/BaseHeading.vue";
 import TagsDialog from "@/components/tags/TagsDialog.vue";
+import BaseAlert from "@/components/BaseAlert.vue";
 
 const route = useRoute();
 const router = useRouter();
