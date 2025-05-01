@@ -37,35 +37,41 @@
             :progressing="movingToAnotherProject"
             submitIcon="truck-arrow-right"
             submitTitle="Move"
-            :submitDisabled="moveToProjectId === null"
+            :submitDisabled="moveToProjectId === null || movingProjectDisallowedBecauseOfProjectTags"
             cancelIcon="xmark"
             cancelTitle="Cancel"
             @submit="moveToProject(issue.id, moveToProjectId)"
             @cancel="moveToAnotherProjectDialog = null"
         >
-            <div>
-                Moving an issue will assign a new issue key.<br />
-                The current key <b>{{ issue.issueKey }}</b> will be lost.
+            <div v-if="movingProjectDisallowedBecauseOfProjectTags" class="alert alert-info mb-0 hstack gap-2">
+                <i class="fas fa-circle-info" />
+                <span>This issue cannot be moved, because it contains one or more project tags.</span>
             </div>
-            <fieldset
-                :disabled="movingToAnotherProject"
-                class="row my-3 align-items-center"
-            >
-                <div class="col-auto">
-                    <label class="col-form-label">New project</label>
+            <template v-else>
+                <div>
+                    Moving an issue will assign a new issue key.<br />
+                    The current key <b>{{ issue.issueKey }}</b> will be lost.
                 </div>
-                <div class="col-auto">
-                    <ProjectSelect
-                        v-model="moveToProjectId"
-                        :projects="projects"
-                        :disabledOption="project => project.id === issue.project.id"
-                    />
+                <fieldset
+                    :disabled="movingToAnotherProject"
+                    class="row my-3 align-items-center"
+                >
+                    <div class="col-auto">
+                        <label class="col-form-label">New project</label>
+                    </div>
+                    <div class="col-auto">
+                        <ProjectSelect
+                            v-model="moveToProjectId"
+                            :projects="projects"
+                            :disabledOption="project => project.id === issue.project.id"
+                        />
+                    </div>
+                </fieldset>
+                <div v-if="moveToProjectId !== null">
+                    Estimated new issue key will be
+                    <b>{{ projects.find(it => it.id === moveToProjectId).prefix }}-{{ projects.find(it => it.id === moveToProjectId).nextIssueNumber }}</b>.
                 </div>
-            </fieldset>
-            <div v-if="moveToProjectId !== null">
-                Estimated new issue key will be
-                <b>{{ projects.find(it => it.id === moveToProjectId).prefix }}-{{ projects.find(it => it.id === moveToProjectId).nextIssueNumber }}</b>.
-            </div>
+            </template>
         </ConfirmDialog>
 
         <ConfirmDialog
@@ -598,6 +604,15 @@ const hideFieldsPanel = computed(() => {
     return fullWidth.value === true && tabState.value === TabStates.Links && linksTabState.value === LinksTabStates.Graph;
 });
 
+const movingProjectDisallowedBecauseOfProjectTags = computed(() => {
+    if (issue.value === null) {
+        return true;
+    }
+
+    // Has any project tag?
+    return issue.value.tags.some(tag => tag.project !== null);
+});
+
 const linkGroups = computed(() => {
     // Can only be computed, if all needed data is present
     if (issue.value === null || issueLinkTypes.value === null) {
@@ -829,6 +844,9 @@ function fetchData(id) {
                         }
                         tags {
                             id
+                            project {
+                                id
+                            }
                             scope
                             scopeIcon
                             scopeColor
