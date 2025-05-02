@@ -20,7 +20,7 @@
                         <div class="col-12">
                             <label class="form-label">Display</label>
 
-                            <div class="hstack gap-3">
+                            <div class="hstack gap-3 flex-wrap">
                                 <div class="form-check">
                                     <input
                                         v-model="showKeys"
@@ -41,6 +41,28 @@
                                     />
                                     <label class="form-check-label" for="checkboxShowIcons">
                                         Show icons only
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input
+                                        v-model="showTags"
+                                        id="checkboxShowTags"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                    />
+                                    <label class="form-check-label" for="checkboxShowTags">
+                                        Show tags
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input
+                                        v-model="shortenTags"
+                                        id="checkboxShortenTags"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                    />
+                                    <label class="form-check-label" for="checkboxShortenTags">
+                                        Shorten tags
                                     </label>
                                 </div>
                                 <div class="form-check">
@@ -233,6 +255,20 @@
                             @click="showIcons = !showIcons"
                         />
                         <BaseButton
+                            icon="tags"
+                            tooltip="Show tags"
+                            fixedWidth
+                            :active="showTags"
+                            @click="showTags = !showTags"
+                        />
+                        <BaseButton
+                            icon="tag"
+                            tooltip="Shorten tags"
+                            fixedWidth
+                            :active="shortenTags"
+                            @click="shortenTags = !shortenTags"
+                        />
+                        <BaseButton
                             icon="table-cells"
                             tooltip="Dense table"
                             fixedWidth
@@ -307,20 +343,38 @@
                             {{ issue.issueKey }}
                         </td>
                         <td>
-                            <RouterLink
-                                :to="{ name: 'issue', params: { issueId: issue.id } }"
-                                class="title"
-                            >
-                                {{ issue.title }}
-                            </RouterLink>
+                            <div class="hstack align-items-start gap-1 flex-wrap">
+                                <RouterLink
+                                    :to="{ name: 'issue', params: { issueId: issue.id } }"
+                                    class="title"
+                                >
+                                    {{ issue.title }}
+                                </RouterLink>
 
-                            <span
-                                v-if="issue.dueDate"
-                                class="ms-2"
-                                :title="isOverdue(issue) ? `overdue since ${issue.dueDate}` : `due ${issue.dueDate}`"
-                            >
-                                <i class="fas fa-clock" :class="getDueColor(issue)" />
-                            </span>
+                                <span
+                                    v-if="issue.dueDate"
+                                    class="ms-1"
+                                    :title="isOverdue(issue) ? `overdue since ${issue.dueDate}` : `due ${issue.dueDate}`"
+                                >
+                                    <i class="fas fa-clock" :class="getDueColor(issue)" />
+                                </span>
+
+                                <template v-if="showTags && issue.tags.length > 0">
+                                    <TagBadge
+                                        v-for="(tag, index) in issue.tags"
+                                        :key="tag.id"
+                                        :class="{ 'ms-1': index === 0 }"
+                                        :scope="tag.scope"
+                                        :scopeIcon="tag.scopeIcon"
+                                        :scopeColor="tag.scopeColor"
+                                        :title="tag.title"
+                                        :titleIcon="tag.titleIcon"
+                                        :titleColor="tag.titleColor"
+                                        :tooltip="tag.description"
+                                        :shorten="shortenTags"
+                                    />
+                                </template>
+                            </div>
                         </td>
                         <td>
                             <span class="icon-link">
@@ -393,6 +447,8 @@ import ProjectSelect from "@/components/general/ProjectSelect.vue";
 import {buildSortFunctions, defaultSortFunctionKey, executeQuery, quickSearchToQuery} from "./issue-search.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import {parseColor} from "@/helper/color.js";
+import TagBadge from "@/components/TagBadge.vue";
+import {sortTags} from "@/helper/sort-tags.js";
 
 const sortFunctions = ref([]);
 
@@ -415,6 +471,7 @@ const projects = ref(null);
 const issueTypes = ref(null);
 const issuePriorities = ref(null);
 const issueStatuses = ref(null);
+const tags = ref(null);
 
 const issuesResultingFromQuery = ref([]);
 const queryError = ref(null);
@@ -425,6 +482,8 @@ const showFilters = ref(true);
 
 const showKeys = ref(true);
 const showIcons = ref(true);
+const showTags = ref(true);
+const shortenTags = ref(false);
 const denseTable = ref(false);
 
 watch(
@@ -468,6 +527,9 @@ axios
                     creationTime
                     modificationTime
                     doneTime
+                    tags {
+                        id
+                    }
                 }
                 projects {
                     id
@@ -494,6 +556,19 @@ axios
                     iconColor
                     doneStatus
                 }
+                tags {
+                    id
+                    project {
+                        id
+                    }
+                    scope
+                    scopeIcon
+                    scopeColor
+                    title
+                    titleIcon
+                    titleColor
+                    description
+                }
             }
         `
     )
@@ -503,6 +578,7 @@ axios
         issueTypes.value = data.issueTypes;
         issuePriorities.value = data.issuePriorities;
         issueStatuses.value = data.issueStatuses;
+        tags.value = data.tags;
 
         issues.value.forEach(it => {
             // Synthesize issueKeys (GraphQL API does not offer them (yet))
@@ -519,6 +595,12 @@ axios
                 .find(issuePriority => issuePriority.id === it.issuePriority.id);
             it.issueStatus = issueStatuses.value
                 .find(issueStatus => issueStatus.id === it.issueStatus.id);
+
+            const tagIds = it.tags.map(tag => tag.id);
+            it.tags = tags.value
+                .filter(tag => tagIds.includes(tag.id));
+
+            sortTags(it.tags);
         });
 
         sortFunctions.value = buildSortFunctions(issuePriorities.value, issueStatuses.value, issueTypes.value);

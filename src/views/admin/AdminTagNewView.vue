@@ -25,10 +25,10 @@
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import TagEditForm from "@/components/tags/TagEditForm.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
-import {ref} from "vue";
+import {ref, watch} from "vue";
 import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
-import {useRouter} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 
 const tag = ref({
     projectId: null,
@@ -41,11 +41,20 @@ const tag = ref({
     description: ''
 });
 
+const route = useRoute();
 const router = useRouter();
 
 const saving = ref(false);
 const errors = ref([]);
 const fieldErrors = ref({});
+
+watch(
+    () => route.params.projectId,
+    (projectId) => {
+        tag.value.projectId = projectId || null;
+    },
+    { immediate: true }
+);
 
 function save() {
     fieldErrors.value = {};

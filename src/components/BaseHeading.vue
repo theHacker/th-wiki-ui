@@ -3,7 +3,7 @@
         <h1 class="mb-0" :class="{ 'me-3': tagsSorted.length > 0 }">
             <slot />
         </h1>
-        <div class="hstack align-items-start gap-2 flex-wrap">
+        <div class="hstack align-items-start gap-1 flex-wrap">
             <TagBadge
                 v-for="(tag, index) in tagsSorted"
                 :key="index"

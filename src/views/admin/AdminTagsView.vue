@@ -51,6 +51,21 @@
                             />
                         </div>
 
+                        <div class="btn-group">
+                            <BaseButton
+                                icon="maximize"
+                                tooltip="Expand all projects"
+                                fixedWidth
+                                @click="expandAllGroups"
+                            />
+                            <BaseButton
+                                icon="minimize"
+                                tooltip="Collapse all projects"
+                                fixedWidth
+                                @click="collapseAllGroups"
+                            />
+                        </div>
+
                         <div class="ms-auto" />
 
                         <BaseButton
@@ -73,12 +88,12 @@
                     <thead>
                         <tr>
                             <th>Project / Tag</th>
-                            <th>Scope Icon</th>
-                            <th :class="{'d-table-cell': showColors, 'd-none': !showColors }">Scope Color</th>
-                            <th>Title Icon</th>
-                            <th :class="{'d-table-cell': showColors, 'd-none': !showColors }">Title Color</th>
+                            <th class="columnIcon">Scope Icon</th>
+                            <th class="columnColor" :class="{'d-table-cell': showColors, 'd-none': !showColors }">Scope Color</th>
+                            <th class="columnIcon">Title Icon</th>
+                            <th class="columnColor" :class="{'d-table-cell': showColors, 'd-none': !showColors }">Title Color</th>
                             <th :class="{'d-table-cell': showDescription, 'd-none': !showDescription }">Description</th>
-                            <th>Commands</th>
+                            <th class="columnCommands">Commands</th>
                         </tr>
                     </thead>
                     <tbody class="table-group-divider">
@@ -86,8 +101,16 @@
                             v-for="group in tagsByProject"
                             :key="group.project?.id"
                         >
-                            <tr>
-                                <td colspan="9">
+                            <tr
+                                class="cursor-pointer user-select-none"
+                                @click="toggleGroup(group)"
+                            >
+                                <td :colspan="3 + (showColors ? 2 : 0) + (showDescription ? 1 : 0)">
+                                    <i
+                                        class="me-2 fas fa-fw"
+                                        :class="isGroupExpanded(group) ? 'fa-chevron-down' : 'fa-chevron-right'"
+                                    />
+
                                     <span class="icon-link">
                                         <i v-if="group.project !== null" class="fas fa-rocket" />
                                         <i v-else class="fas fa-globe" />
@@ -96,10 +119,25 @@
                                             <span v-if="group.project !== null">{{ group.project.title }}</span>
                                             <i v-else>Global tags</i>
                                         </b>
+
+                                        <small class="ps-1 text-secondary-emphasis">
+                                            {{ group.tags.length }} {{ group.tags.length !== 1 ? 'tags' : 'tag' }}
+                                        </small>
                                     </span>
+                                </td>
+                                <td>
+                                    <BaseButton
+                                        class="btn-text"
+                                        icon="plus"
+                                        :title="group.project !== null ? 'Project tag' : 'Global tag'"
+                                        size="small"
+                                        color="primary"
+                                        @click="$router.push({ name: 'adminTagNew', params: { projectId: group.project?.id } })"
+                                    />
                                 </td>
                             </tr>
                             <tr
+                                v-show="isGroupExpanded(group)"
                                 v-for="tag in group.tags"
                                 :key="tag.id"
                             >
@@ -110,26 +148,26 @@
                                         :title="tag.title" :titleIcon="tag.titleIcon" :titleColor="tag.titleColor"
                                     />
                                 </td>
-                                <td>
+                                <td class="columnIcon">
                                     <code v-if="tag.scopeIcon">{{ tag.scopeIcon }}</code>
                                     <small v-else class="fst-italic text-secondary">– no icon –</small>
                                 </td>
-                                <td :class="{'d-table-cell': showColors, 'd-none': !showColors }">
+                                <td class="columnColor" :class="{'d-table-cell': showColors, 'd-none': !showColors }">
                                     <code v-if="tag.scopeColor">{{ tag.scopeColor }}</code>
                                     <small v-else class="fst-italic text-secondary">– no color –</small>
                                 </td>
-                                <td>
+                                <td class="columnIcon">
                                     <code v-if="tag.titleIcon">{{ tag.titleIcon }}</code>
                                     <small v-else class="fst-italic text-secondary">– no icon –</small>
                                 </td>
-                                <td :class="{'d-table-cell': showColors, 'd-none': !showColors }">
+                                <td class="columnColor" :class="{'d-table-cell': showColors, 'd-none': !showColors }">
                                     <code>{{ tag.titleColor }}</code>
                                 </td>
                                 <td :class="{'d-table-cell': showDescription, 'd-none': !showDescription }">
                                     <span v-if="tag.description">{{ tag.description }}</span>
                                     <small v-else class="fst-italic text-secondary">– no description –</small>
                                 </td>
-                                <td>
+                                <td class="columnCommands">
                                     <div class="hstack gap-1">
                                         <BaseButton
                                             icon="magnifying-glass"
@@ -192,6 +230,8 @@ const showColors = ref(false);
 const showDescription = ref(true);
 const denseTable = ref(false);
 
+const expandedProjectIds = ref([]);
+
 const deleteDialogOpen = ref(null);
 const deleting = ref(false);
 
@@ -253,10 +293,40 @@ function fetchData() {
         .then(data => {
             loading.value = false;
             tags.value = data.tags;
+
+            expandAllGroups();
         })
         .catch(e => {
             errors.value = handleError(e).genericErrors;
         });
+}
+
+function isGroupExpanded(group) {
+    const id = _groupToId(group);
+
+    return expandedProjectIds.value.includes(id);
+}
+
+function toggleGroup(group) {
+    const id = _groupToId(group);
+
+    if (isGroupExpanded(group)) {
+        expandedProjectIds.value = expandedProjectIds.value.filter(it => it !== id);
+    } else {
+        expandedProjectIds.value.push(id);
+    }
+}
+
+function collapseAllGroups() {
+    expandedProjectIds.value = [];
+}
+
+function expandAllGroups() {
+    expandedProjectIds.value = tagsByProject.value.map(group => _groupToId(group));
+}
+
+function _groupToId(group) {
+    return group.project?.id || null;
 }
 
 function deleteTag() {
@@ -290,15 +360,13 @@ function deleteTag() {
 <style lang="scss" scoped>
 .table.tags {
 
-    td:nth-child(2),
-    td:nth-child(4) {
+    .columnColor {
         width: 175px;
     }
-    td:nth-child(3),
-    td:nth-child(5) {
+    .columnTitle {
         width: 125px;
     }
-    td:nth-child(7) {
+    .columnCommands {
         $countButtons: 3;
 
         width: calc($countButtons * 32px + ($countButtons - 1) * 0.25rem);

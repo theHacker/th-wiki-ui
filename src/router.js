@@ -33,7 +33,7 @@ const router = createRouter({
                             component: () => import('./views/admin/AdminTagsView.vue')
                         },
                         {
-                            path: 'new',
+                            path: 'new/:projectId([0-9a-f-]+)?',
                             name: 'adminTagNew',
                             component: () => import('./views/admin/AdminTagNewView.vue')
                         },
