@@ -96,6 +96,10 @@
                                             <span v-if="group.project !== null">{{ group.project.title }}</span>
                                             <i v-else>Global tags</i>
                                         </b>
+
+                                        <small class="ps-1 text-secondary-emphasis">
+                                            {{ group.tags.length }} {{ group.tags.length !== 1 ? 'tags' : 'tag' }}
+                                        </small>
                                     </span>
                                 </td>
                             </tr>
