@@ -47,11 +47,6 @@ const router = createRouter({
             ]
         },
         {
-            path: '/demo',
-            name: 'demo',
-            component: () => import('./views/DemoView.vue')
-        },
-        {
             path: '/issues',
             children: [
                 {
