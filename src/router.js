@@ -47,11 +47,6 @@ const router = createRouter({
             ]
         },
         {
-            path: '/demo',
-            name: 'demo',
-            component: () => import('./views/DemoView.vue')
-        },
-        {
             path: '/issues',
             children: [
                 {
@@ -73,31 +68,6 @@ const router = createRouter({
                     path: ':issueId([0-9a-f-]+)/edit',
                     name: 'issueEdit',
                     component: () => import('./views/issues/IssueEditView.vue')
-                }
-            ]
-        },
-        {
-            path: '/tasks',
-            children: [
-                {
-                    path: '',
-                    name: 'tasks',
-                    component: () => import('./views/tasks/TasksView.vue')
-                },
-                {
-                    path: 'new',
-                    name: 'tasksNew',
-                    component: () => import('./views/tasks/TasksNewView.vue')
-                },
-                {
-                    path: ':entryId([0-9a-f-]+)',
-                    name: 'task',
-                    component: () => import('./views/tasks/TaskView.vue')
-                },
-                {
-                    path: ':entryId([0-9a-f-]+)/edit',
-                    name: 'taskEdit',
-                    component: () => import('./views/tasks/TaskEditView.vue')
                 }
             ]
         },
