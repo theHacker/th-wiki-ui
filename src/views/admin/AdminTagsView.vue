@@ -88,12 +88,12 @@
                     <thead>
                         <tr>
                             <th>Project / Tag</th>
-                            <th>Scope Icon</th>
-                            <th :class="{'d-table-cell': showColors, 'd-none': !showColors }">Scope Color</th>
-                            <th>Title Icon</th>
-                            <th :class="{'d-table-cell': showColors, 'd-none': !showColors }">Title Color</th>
+                            <th class="columnIcon">Scope Icon</th>
+                            <th class="columnColor" :class="{'d-table-cell': showColors, 'd-none': !showColors }">Scope Color</th>
+                            <th class="columnIcon">Title Icon</th>
+                            <th class="columnColor" :class="{'d-table-cell': showColors, 'd-none': !showColors }">Title Color</th>
                             <th :class="{'d-table-cell': showDescription, 'd-none': !showDescription }">Description</th>
-                            <th>Commands</th>
+                            <th class="columnCommands">Commands</th>
                         </tr>
                     </thead>
                     <tbody class="table-group-divider">
@@ -105,7 +105,7 @@
                                 class="cursor-pointer user-select-none"
                                 @click="toggleGroup(group)"
                             >
-                                <td colspan="9">
+                                <td :colspan="3 + (showColors ? 2 : 0) + (showDescription ? 1 : 0)">
                                     <i
                                         class="me-2 fas fa-fw"
                                         :class="isGroupExpanded(group) ? 'fa-chevron-down' : 'fa-chevron-right'"
@@ -125,6 +125,16 @@
                                         </small>
                                     </span>
                                 </td>
+                                <td>
+                                    <BaseButton
+                                        class="btn-text"
+                                        icon="plus"
+                                        :title="group.project !== null ? 'Project tag' : 'Global tag'"
+                                        size="small"
+                                        color="primary"
+                                        @click="$router.push({ name: 'adminTagNew', params: { projectId: group.project?.id } })"
+                                    />
+                                </td>
                             </tr>
                             <tr
                                 v-show="isGroupExpanded(group)"
@@ -138,26 +148,26 @@
                                         :title="tag.title" :titleIcon="tag.titleIcon" :titleColor="tag.titleColor"
                                     />
                                 </td>
-                                <td>
+                                <td class="columnIcon">
                                     <code v-if="tag.scopeIcon">{{ tag.scopeIcon }}</code>
                                     <small v-else class="fst-italic text-secondary">– no icon –</small>
                                 </td>
-                                <td :class="{'d-table-cell': showColors, 'd-none': !showColors }">
+                                <td class="columnColor" :class="{'d-table-cell': showColors, 'd-none': !showColors }">
                                     <code v-if="tag.scopeColor">{{ tag.scopeColor }}</code>
                                     <small v-else class="fst-italic text-secondary">– no color –</small>
                                 </td>
-                                <td>
+                                <td class="columnIcon">
                                     <code v-if="tag.titleIcon">{{ tag.titleIcon }}</code>
                                     <small v-else class="fst-italic text-secondary">– no icon –</small>
                                 </td>
-                                <td :class="{'d-table-cell': showColors, 'd-none': !showColors }">
+                                <td class="columnColor" :class="{'d-table-cell': showColors, 'd-none': !showColors }">
                                     <code>{{ tag.titleColor }}</code>
                                 </td>
                                 <td :class="{'d-table-cell': showDescription, 'd-none': !showDescription }">
                                     <span v-if="tag.description">{{ tag.description }}</span>
                                     <small v-else class="fst-italic text-secondary">– no description –</small>
                                 </td>
-                                <td>
+                                <td class="columnCommands">
                                     <div class="hstack gap-1">
                                         <BaseButton
                                             icon="magnifying-glass"
@@ -350,15 +360,13 @@ function deleteTag() {
 <style lang="scss" scoped>
 .table.tags {
 
-    td:nth-child(2),
-    td:nth-child(4) {
+    .columnColor {
         width: 175px;
     }
-    td:nth-child(3),
-    td:nth-child(5) {
+    .columnTitle {
         width: 125px;
     }
-    td:nth-child(7) {
+    .columnCommands {
         $countButtons: 3;
 
         width: calc($countButtons * 32px + ($countButtons - 1) * 0.25rem);
