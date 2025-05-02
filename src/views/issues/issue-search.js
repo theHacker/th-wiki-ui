@@ -165,7 +165,8 @@ class ExecutingQueryVisitor extends SearchQueryVisitor {
             .filter(it => (
                 it.title.toLowerCase().includes(text) ||
                 it.description.toLowerCase().includes(text) ||
-                it.issueKey.toLowerCase() === text
+                it.issueKey.toLowerCase() === text ||
+                it.issueNumber.toString() === text
             ));
 
         return {
