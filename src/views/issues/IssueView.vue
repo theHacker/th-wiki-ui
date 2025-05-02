@@ -212,7 +212,28 @@
                                 />
                             </BaseDropdown>
 
-                            <BaseDropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
+                            <div class="btn-group d-none d-xxl-block">
+                                <BaseButton
+                                    icon="tags"
+                                    tooltip="Manage tags"
+                                    fixedWidth
+                                    @click="openTagsDialog"
+                                />
+                                <BaseButton
+                                    icon="truck-arrow-right"
+                                    tooltip="Move to another project"
+                                    fixedWidth
+                                    @click="moveToProjectId = null; moveToAnotherProjectDialog = true;"
+                                />
+                                <BaseButton
+                                    icon="diagram-predecessor"
+                                    tooltip="Link to another issue"
+                                    fixedWidth
+                                    @click="addNewIssueLink"
+                                />
+                            </div>
+
+                            <BaseDropdown class="d-block d-xxl-none" buttonClass="btn-text-lg" icon="gears" title="Actions">
                                 <BaseDropdownItem
                                     icon="tags"
                                     title="Manage tags"
