@@ -22,9 +22,6 @@
                         <RouterLink class="nav-link" to="/wiki">Wiki</RouterLink>
                     </li>
                     <li class="nav-item">
-                        <RouterLink class="nav-link" to="/tasks">Tasks</RouterLink>
-                    </li>
-                    <li class="nav-item">
                         <RouterLink class="nav-link" to="/issues">Issues</RouterLink>
                     </li>
                 </ul>
