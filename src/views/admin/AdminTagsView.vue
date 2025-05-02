@@ -51,6 +51,21 @@
                             />
                         </div>
 
+                        <div class="btn-group">
+                            <BaseButton
+                                icon="maximize"
+                                tooltip="Expand all projects"
+                                fixedWidth
+                                @click="expandAllGroups"
+                            />
+                            <BaseButton
+                                icon="minimize"
+                                tooltip="Collapse all projects"
+                                fixedWidth
+                                @click="collapseAllGroups"
+                            />
+                        </div>
+
                         <div class="ms-auto" />
 
                         <BaseButton
@@ -86,8 +101,16 @@
                             v-for="group in tagsByProject"
                             :key="group.project?.id"
                         >
-                            <tr>
+                            <tr
+                                class="cursor-pointer user-select-none"
+                                @click="toggleGroup(group)"
+                            >
                                 <td colspan="9">
+                                    <i
+                                        class="me-2 fas fa-fw"
+                                        :class="isGroupExpanded(group) ? 'fa-chevron-down' : 'fa-chevron-right'"
+                                    />
+
                                     <span class="icon-link">
                                         <i v-if="group.project !== null" class="fas fa-rocket" />
                                         <i v-else class="fas fa-globe" />
@@ -104,6 +127,7 @@
                                 </td>
                             </tr>
                             <tr
+                                v-show="isGroupExpanded(group)"
                                 v-for="tag in group.tags"
                                 :key="tag.id"
                             >
@@ -196,6 +220,8 @@ const showColors = ref(false);
 const showDescription = ref(true);
 const denseTable = ref(false);
 
+const expandedProjectIds = ref([]);
+
 const deleteDialogOpen = ref(null);
 const deleting = ref(false);
 
@@ -257,10 +283,40 @@ function fetchData() {
         .then(data => {
             loading.value = false;
             tags.value = data.tags;
+
+            expandAllGroups();
         })
         .catch(e => {
             errors.value = handleError(e).genericErrors;
         });
+}
+
+function isGroupExpanded(group) {
+    const id = _groupToId(group);
+
+    return expandedProjectIds.value.includes(id);
+}
+
+function toggleGroup(group) {
+    const id = _groupToId(group);
+
+    if (isGroupExpanded(group)) {
+        expandedProjectIds.value = expandedProjectIds.value.filter(it => it !== id);
+    } else {
+        expandedProjectIds.value.push(id);
+    }
+}
+
+function collapseAllGroups() {
+    expandedProjectIds.value = [];
+}
+
+function expandAllGroups() {
+    expandedProjectIds.value = tagsByProject.value.map(group => _groupToId(group));
+}
+
+function _groupToId(group) {
+    return group.project?.id || null;
 }
 
 function deleteTag() {
