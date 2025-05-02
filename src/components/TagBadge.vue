@@ -2,11 +2,11 @@
     <span class="badge-group" :title="tooltip" @click="$emit('click')">
         <span v-if="scope" class="badge rounded-pill" v-bind="scopeAttributes">
             <i v-if="scopeIcon" :class="'fas fa-' + scopeIcon" />
-            {{ scope }}
+            {{ text(scope) }}
         </span>
         <span class="badge rounded-pill" v-bind="titleAttributes">
             <i v-if="titleIcon" :class="'fas fa-' + titleIcon" />
-            {{ title }}
+            {{ text(title) }}
         </span>
     </span>
 </template>
@@ -42,6 +42,10 @@ const props = defineProps({
     },
     tooltip: {
         type: String
+    },
+    shorten: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -56,4 +60,16 @@ const scopeAttributes = computed(() => {
 const titleAttributes = computed(() => {
     return parseColor(props.titleColor, true);
 });
+
+function text(string) {
+    if (props.shorten) {
+        if (string.length > 5) {
+            return string.substring(0, 3) + '…';
+        } else {
+            return string;
+        }
+    } else {
+        return string;
+    }
+}
 </script>

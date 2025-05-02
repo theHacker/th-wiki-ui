@@ -56,6 +56,17 @@
                                 </div>
                                 <div class="form-check">
                                     <input
+                                        v-model="shortenTags"
+                                        id="checkboxShortenTags"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                    />
+                                    <label class="form-check-label" for="checkboxShortenTags">
+                                        Shorten tags
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input
                                         v-model="denseTable"
                                         id="checkboxDenseTable"
                                         class="form-check-input"
@@ -251,6 +262,13 @@
                             @click="showTags = !showTags"
                         />
                         <BaseButton
+                            icon="tag"
+                            tooltip="Shorten tags"
+                            fixedWidth
+                            :active="shortenTags"
+                            @click="shortenTags = !shortenTags"
+                        />
+                        <BaseButton
                             icon="table-cells"
                             tooltip="Dense table"
                             fixedWidth
@@ -353,6 +371,7 @@
                                         :titleIcon="tag.titleIcon"
                                         :titleColor="tag.titleColor"
                                         :tooltip="tag.description"
+                                        :shorten="shortenTags"
                                     />
                                 </template>
                             </div>
@@ -464,6 +483,7 @@ const showFilters = ref(true);
 const showKeys = ref(true);
 const showIcons = ref(true);
 const showTags = ref(true);
+const shortenTags = ref(false);
 const denseTable = ref(false);
 
 watch(
