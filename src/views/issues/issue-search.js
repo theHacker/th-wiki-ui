@@ -80,6 +80,39 @@ class ExecutingQueryVisitor extends SearchQueryVisitor {
                     .filter(it => it.issueStatus.title.toLowerCase() === string);
                 break;
 
+            case 'hastags':
+                if (string === 'true' || string === 'yes' || string === '1') {
+                    matchingIssues = this.allIssues
+                        .filter(it => it.tags.length > 0);
+                } else if (string === 'false' || string === 'no' || string === '0') {
+                    matchingIssues = this.allIssues
+                        .filter(it => it.tags.length === 0);
+                } else {
+                    throw `Unknown value '${string}' for 'hastags:'.`;
+                }
+                break;
+
+            case 'tag':
+                matchingIssues = this.allIssues
+                    .filter(issue => issue.tags
+                        .some(tag => (tag.title.toLowerCase() === string || tag.scope.toLowerCase() === string))
+                    );
+                break;
+
+            case 'tagscope':
+                matchingIssues = this.allIssues
+                    .filter(issue => issue.tags
+                        .some(tag => tag.scope.toLowerCase() === string)
+                    );
+                break;
+
+            case 'tagtitle':
+                matchingIssues = this.allIssues
+                    .filter(issue => issue.tags
+                        .some(tag => tag.title.toLowerCase() === string)
+                    );
+                break;
+
             case 'filter':
                 if (string === 'due') {
                     matchingIssues = this.allIssues.filter(it => it.dueDate);
