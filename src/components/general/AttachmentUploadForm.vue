@@ -67,7 +67,10 @@
 
         <div class="col-12">
             <label class="form-label">Filename</label>
-            <input class="form-control" type="text" v-model="filename" disabled />
+            <input class="form-control" type="text" v-model="model.filename" />
+            <div class="form-text">
+                <small>You can rename a file before upload by editing this field.</small>
+            </div>
         </div>
 
         <div class="col-12">
@@ -124,7 +127,6 @@ defineProps({
 
 defineEmits(['submit', 'cancel']);
 
-const filename = ref('');
 const feedbackMessage = ref(null);
 const clipboardDataDialog = ref(null);
 
@@ -133,7 +135,7 @@ function onFileChange(e) {
         const file = e.target.files[0];
 
         model.value.file = file;
-        filename.value = file.name;
+        model.value.filename = file.name;
         feedbackMessage.value = FeedbackMessage.SelectedFile;
     }
 }
@@ -146,7 +148,7 @@ async function onPaste(e) {
         const file = clipboardData.files.item(0);
 
         model.value.file = file;
-        filename.value = file.name;
+        model.value.filename = file.name;
         feedbackMessage.value = FeedbackMessage.PastedFile;
         return;
     }
@@ -155,7 +157,7 @@ async function onPaste(e) {
     // (It can be the case, there is data from a special application the browser does not recognizes)
     if (clipboardData.items.length === 0) {
         model.value.file = null;
-        filename.value = '';
+        model.value.filename = '';
         feedbackMessage.value = FeedbackMessage.PastedUnsupported;
         return;
     }
@@ -209,7 +211,7 @@ function processClipboardDataDialog() {
     );
 
     model.value.file = file;
-    filename.value = file.name;
+    model.value.filename = file.name;
     feedbackMessage.value = FeedbackMessage.PastedData;
 
     clipboardDataDialog.value = null;
