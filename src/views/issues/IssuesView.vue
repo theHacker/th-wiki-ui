@@ -343,13 +343,19 @@
                             {{ issue.issueKey }}
                         </td>
                         <td>
-                            <div class="hstack align-items-start gap-1 flex-wrap">
+                            <div class="hstack align-items-center gap-1 flex-wrap">
                                 <RouterLink
                                     :to="{ name: 'issue', params: { issueId: issue.id } }"
                                     class="title"
                                 >
                                     {{ issue.title }}
                                 </RouterLink>
+
+                                <i
+                                    v-if="issue.attachmentsCount > 0"
+                                    class="fas fa-paperclip fa-xs"
+                                    title="has attachments"
+                                />
 
                                 <span
                                     v-if="issue.dueDate"
@@ -527,6 +533,7 @@ axios
                     creationTime
                     modificationTime
                     doneTime
+                    attachmentsCount
                     tags {
                         id
                     }
