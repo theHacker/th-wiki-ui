@@ -644,6 +644,9 @@ async function uploadAttachment() {
             if (data.createAttachment.attachment.imageSize) {
                 loadAttachmentThumbnails([data.createAttachment.attachment.id]);
             }
+
+            // Refresh tree to sync attachment icons
+            wikiPagesTree.value.refreshTree();
         })
         .catch(e => {
             errors.value = handleError(e).genericErrors;
@@ -724,6 +727,9 @@ function deleteAttachment(attachment) {
         .then(data => {
             wikiPage.value.attachments = wikiPage.value.attachments
                 .filter(a => a.id !== data.deleteAttachment.id);
+
+            // Refresh tree to sync attachment icons
+            wikiPagesTree.value.refreshTree();
         })
         .catch(e => {
             errors.value = handleError(e).genericErrors;
