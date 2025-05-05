@@ -221,9 +221,14 @@ import ErrorMessage from "@/components/ErrorMessage.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
 
 const props = defineProps({
+    // provide exactly one of them
     wikiPageId: {
         type: String,
-        required: true
+        required: false
+    },
+    issueId: {
+        type: String,
+        required: false
     }
 });
 
@@ -252,49 +257,88 @@ const uploading = ref(false);
 const deleteDialogOpen = ref(null);
 const deleting = ref(false);
 
-watch(() => props.wikiPageId, fetchData, { immediate: true });
+watch(
+    [
+        () => props.wikiPageId,
+        () => props.issueId
+    ],
+    fetchData,
+    { immediate: true }
+);
 
-function fetchData(wikiPageId) {
+function fetchData() {
     errors.value = [];
     attachments.value = [];
     loading.value = true;
 
     emit('loadingStarted');
 
-    axios
-        .graphql(
-            `
-                query Attachments($wikiPageId: ID!) {
-                    wikiPage(id: $wikiPageId) {
-                        attachments {
-                            id
-                            filename
-                            description
-                            size
-                            mimeType
-                            imageSize {
-                                width
-                                height
-                            }
+    const fields = `
+        attachments {
+            id
+            filename
+            description
+            size
+            mimeType
+            imageSize {
+                width
+                height
+            }
+        }
+    `;
+
+    let loadingPromise;
+    if (props.wikiPageId) {
+        loadingPromise = axios
+            .graphql(
+                `
+                    query Attachments($wikiPageId: ID!) {
+                        wikiPage(id: $wikiPageId) {
+                            ${fields}
                         }
                     }
+                `,
+                { wikiPageId: props.wikiPageId }
+            )
+            .then(async data => {
+                if (data.wikiPage === null) {
+                    errors.value = ["Wiki page does not exist."];
+                    return [];
+                } else {
+                    return data.wikiPage.attachments;
                 }
-            `,
-            { wikiPageId }
-        )
-        .then(async data => {
-            if (data.wikiPage === null) {
-                errors.value = ["Wiki page does not exist."];
-            } else {
-                attachments.value = data.wikiPage.attachments;
+            });
+    } else if (props.issueId) {
+        loadingPromise = axios
+            .graphql(
+                `
+                    query Attachments($issueId: ID!) {
+                        issue(id: $issueId) {
+                            ${fields}
+                        }
+                    }
+                `,
+                { issueId: props.issueId }
+            )
+            .then(async data => {
+                if (data.issue === null) {
+                    errors.value = ["Issue does not exist."];
+                    return [];
+                } else {
+                    return data.issue.attachments;
+                }
+            });
+    }
 
-                const imageAttachmentIds = data.wikiPage.attachments
-                    .filter(a => a.imageSize)
-                    .map(a => a.id);
+    loadingPromise
+        .then(dataAttachments => {
+            attachments.value = dataAttachments;
 
-                loadAttachmentThumbnails(imageAttachmentIds);
-            }
+            const imageAttachmentIds = attachments.value
+                .filter(a => a.imageSize)
+                .map(a => a.id);
 
+            loadAttachmentThumbnails(imageAttachmentIds);
             loading.value = false;
         })
         .catch(e => {
@@ -334,7 +378,7 @@ function loadAttachmentThumbnails(attachmentIds) {
 }
 
 async function uploadAttachment() {
-    if (!props.wikiPageId) return;
+    if (!props.wikiPageId && !props.issueId) return;
 
     errors.value = [];
     uploading.value = true;
@@ -343,7 +387,8 @@ async function uploadAttachment() {
     const dataBase64 = await blobToBase64(file);
 
     const input = {
-        wikiPageId: props.wikiPageId,
+        wikiPageId: props.wikiPageId || null,
+        issueId: props.issueId || null,
         filename: file.name,
         description: addAttachmentModel.value.description,
         dataBase64,
