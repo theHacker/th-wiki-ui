@@ -277,7 +277,7 @@
                                 </td>
                             </tr>
                             <tr v-if="wikiPage.attachments.length === 0">
-                                <td colspan="5" class="text-center">
+                                <td colspan="7" class="text-center">
                                     <i>No attachments.</i>
                                 </td>
                             </tr>
