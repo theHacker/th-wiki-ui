@@ -65,11 +65,19 @@
             </div>
         </div>
 
-        <div class="col-12">
+        <div class="col-12 col-sm-6">
             <label class="form-label">Filename</label>
             <input class="form-control" type="text" v-model="model.filename" />
             <div class="form-text">
                 <small>You can rename a file before upload by editing this field.</small>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6">
+            <label class="form-label">Last modified time</label>
+            <input class="form-control" type="text" :value="model.lastModifiedTime || '– no timestamp –'" disabled />
+            <div class="form-text">
+                <small>Time is in UTC. Timezones are not supported (yet).</small>
             </div>
         </div>
 
@@ -136,6 +144,7 @@ function onFileChange(e) {
 
         model.value.file = file;
         model.value.filename = file.name;
+        model.value.lastModifiedTime = formatDateAsUTCWithoutTimezone(new Date(file.lastModified));
         feedbackMessage.value = FeedbackMessage.SelectedFile;
     }
 }
@@ -149,6 +158,7 @@ async function onPaste(e) {
 
         model.value.file = file;
         model.value.filename = file.name;
+        model.value.lastModifiedTime = formatDateAsUTCWithoutTimezone(new Date(file.lastModified));
         feedbackMessage.value = FeedbackMessage.PastedFile;
         return;
     }
@@ -158,6 +168,7 @@ async function onPaste(e) {
     if (clipboardData.items.length === 0) {
         model.value.file = null;
         model.value.filename = '';
+        model.value.lastModifiedTime = null;
         feedbackMessage.value = FeedbackMessage.PastedUnsupported;
         return;
     }
@@ -199,6 +210,18 @@ function getAsStringPromise(item) {
     });
 }
 
+/**
+ * Formats a `Date` object to a string we can use in the API.
+ *
+ * The API does not support timezones. We send UTC time, that makes it consistent.
+ *
+ * @param {Date} date date to convert
+ * @returns {String} string formatted "yyyy-mm-ddThh:mm:ss" (so, without a trailing 'Z').
+ */
+function formatDateAsUTCWithoutTimezone(date) {
+    return date.toISOString().replace(/Z$/, '');
+}
+
 function processClipboardDataDialog() {
     const stringData = clipboardDataDialog.value.items
         .find(it => it.type === clipboardDataDialog.value.selectedType)
@@ -212,6 +235,7 @@ function processClipboardDataDialog() {
 
     model.value.file = file;
     model.value.filename = file.name;
+    model.value.lastModifiedTime = null;
     feedbackMessage.value = FeedbackMessage.PastedData;
 
     clipboardDataDialog.value = null;

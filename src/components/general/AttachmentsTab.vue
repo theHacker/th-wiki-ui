@@ -251,6 +251,7 @@ const attachmentsThumbnails = ref({});
 const addAttachmentModel = ref({
     file: null,
     filename: '',
+    lastModifiedTime: null,
     description: ''
 });
 const uploading = ref(false);
@@ -391,6 +392,7 @@ async function uploadAttachment() {
         wikiPageId: props.wikiPageId || null,
         issueId: props.issueId || null,
         filename: addAttachmentModel.value.filename,
+        lastModifiedTime: addAttachmentModel.value.lastModifiedTime,
         description: addAttachmentModel.value.description,
         dataBase64,
         mimeType: (file.type !== '') ? file.type : null
