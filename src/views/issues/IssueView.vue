@@ -182,7 +182,9 @@
                                     <TabItem
                                         icon="paperclip"
                                         title="Attachments"
+                                        :badge="!attachmentsLoading && attachmentsCount > 0 ? attachmentsCount.toString() : null"
                                         :active="tabState === TabStates.Attachments"
+                                        :loading="attachmentsLoading"
                                         @click="tabState = TabStates.Attachments"
                                     />
                                 </ul>
@@ -424,8 +426,13 @@
                         />
                     </div>
 
-                    <div v-else-if="tabState === TabStates.Attachments">
-                        <p>TODO</p>
+                    <div v-show="tabState === TabStates.Attachments">
+                        <AttachmentsTab
+                            :issueId="issue.id"
+                            @loadingStarted="attachmentsLoading = true"
+                            @loadingFinished="attachmentsLoading = false"
+                            @attachmentsCountUpdated="count => attachmentsCount = count"
+                        />
                     </div>
                 </div>
 
@@ -586,6 +593,7 @@ import {parseColor} from "@/helper/color.js";
 import BaseHeading from "@/components/BaseHeading.vue";
 import TagsDialog from "@/components/tags/TagsDialog.vue";
 import BaseAlert from "@/components/BaseAlert.vue";
+import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -597,6 +605,8 @@ const allIssues = ref(null); // TODO move to a separate component (and load only
 
 const errors = ref([]);
 const issue = ref(null);
+const attachmentsLoading = ref(false);
+const attachmentsCount = ref(0);
 
 const fullWidth = ref(false);
 const dependencyGraphDepth = ref(1);

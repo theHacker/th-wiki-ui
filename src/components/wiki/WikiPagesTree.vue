@@ -43,7 +43,7 @@
                             <i class="fas fa-file" />
                             <span class="title text-truncate">{{ item.title }}</span>
                             <i
-                                v-if="item.attachments.length > 0"
+                                v-if="item.attachmentsCount > 0"
                                 class="fas fa-paperclip fa-xs" style="margin-left: -2px;"
                                 title="has attachments"
                             />
@@ -139,9 +139,7 @@ function fetchData() {
                     parent {
                         id
                     }
-                    attachments {
-                        id
-                    }
+                    attachmentsCount
                 }
             }
         `)

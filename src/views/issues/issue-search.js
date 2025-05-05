@@ -80,6 +80,18 @@ class ExecutingQueryVisitor extends SearchQueryVisitor {
                     .filter(it => it.issueStatus.title.toLowerCase() === string);
                 break;
 
+            case 'hasattachments':
+                if (string === 'true' || string === 'yes' || string === '1') {
+                    matchingIssues = this.allIssues
+                        .filter(it => it.attachmentsCount > 0);
+                } else if (string === 'false' || string === 'no' || string === '0') {
+                    matchingIssues = this.allIssues
+                        .filter(it => it.attachmentsCount === 0);
+                } else {
+                    throw `Unknown value '${string}' for 'hasattachments:'.`;
+                }
+                break;
+
             case 'hastags':
                 if (string === 'true' || string === 'yes' || string === '1') {
                     matchingIssues = this.allIssues
