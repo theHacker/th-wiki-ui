@@ -67,6 +67,11 @@ const router = createRouter({
                     component: () => import('./views/issues/IssueView.vue')
                 },
                 {
+                    path: `:issueKey([a-z]+-[0-9]+)`,
+                    name: 'issueByIssueKey',
+                    component: () => import('./views/issues/IssueKeyRedirectView.vue')
+                },
+                {
                     path: `:issueId(${uuidRegExp})/edit`,
                     name: 'issueEdit',
                     component: () => import('./views/issues/IssueEditView.vue')
