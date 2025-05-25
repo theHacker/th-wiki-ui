@@ -124,10 +124,7 @@ async function fetchData() {
                 query IssuesForDependencyGraph($issueIds: [ID!]!) {
                     issues(ids: $issueIds) {
                         id
-                        issueNumber # TODO issueKey
-                        project {
-                            prefix
-                        }
+                        issueKey
                         issueType {
                             iconColor
                         }
@@ -147,7 +144,6 @@ async function fetchData() {
         .then(data => {
             const issues = {};
             for (let issue of data.issues) {
-                issue.issueKey = `${issue.project.prefix}-${issue.issueNumber}`;
                 issues[issue.id] = issue;
             }
 

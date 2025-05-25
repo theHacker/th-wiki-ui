@@ -512,10 +512,10 @@ axios
             query Issues {
                 issues {
                     id
-                    issueNumber # TODO issueKey
+                    issueNumber
+                    issueKey
                     project {
                         id
-                        prefix
                     }
                     issueType {
                         id
@@ -588,9 +588,6 @@ axios
         tags.value = data.tags;
 
         issues.value.forEach(it => {
-            // Synthesize issueKeys (GraphQL API does not offer them (yet))
-            it.issueKey = `${it.project.prefix}-${it.issueNumber}`;
-
             // For convenience, add the full objects to the issue
             // (We could let this populate by GraphQL but this would mean more traffic, we prefer doing this here)
 
