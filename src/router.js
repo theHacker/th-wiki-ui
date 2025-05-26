@@ -2,6 +2,8 @@ import {createRouter, createWebHistory} from 'vue-router';
 import HomeView from './views/HomeView.vue';
 import VersionView from './views/VersionView.vue';
 
+const uuidRegExp = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+
 const router = createRouter({
     history: createWebHistory(window.env.BASE_URL || import.meta.env.BASE_URL),
     linkActiveClass: 'active',
@@ -33,12 +35,12 @@ const router = createRouter({
                             component: () => import('./views/admin/AdminTagsView.vue')
                         },
                         {
-                            path: 'new/:projectId([0-9a-f-]+)?',
+                            path: `new/:projectId(${uuidRegExp})?`,
                             name: 'adminTagNew',
                             component: () => import('./views/admin/AdminTagNewView.vue')
                         },
                         {
-                            path: ':tagId([0-9a-f-]+)/edit',
+                            path: `:tagId(${uuidRegExp})/edit`,
                             name: 'adminTagEdit',
                             component: () => import('./views/admin/AdminTagEditView.vue')
                         }
@@ -60,12 +62,17 @@ const router = createRouter({
                     component: () => import('./views/issues/IssueNewView.vue')
                 },
                 {
-                    path: ':issueId([0-9a-f-]+)',
+                    path: `:issueId(${uuidRegExp})`,
                     name: 'issue',
                     component: () => import('./views/issues/IssueView.vue')
                 },
                 {
-                    path: ':issueId([0-9a-f-]+)/edit',
+                    path: `:issueKey([a-z]+-[0-9]+)`,
+                    name: 'issueByIssueKey',
+                    component: () => import('./views/issues/IssueKeyRedirectView.vue')
+                },
+                {
+                    path: `:issueId(${uuidRegExp})/edit`,
                     name: 'issueEdit',
                     component: () => import('./views/issues/IssueEditView.vue')
                 }
@@ -90,12 +97,12 @@ const router = createRouter({
                     component: () => import('./views/wiki/WikiPageNewView.vue')
                 },
                 {
-                    path: ':wikiPageId([0-9a-f-]+)',
+                    path: `:wikiPageId(${uuidRegExp})`,
                     name: 'wikiPage',
                     component: () => import('./views/wiki/WikiPageView.vue')
                 },
                 {
-                    path: ':wikiPageId([0-9a-f-]+)/edit',
+                    path: `:wikiPageId(${uuidRegExp})/edit`,
                     name: 'wikiPageEdit',
                     component: () => import('./views/wiki/WikiPageEditView.vue')
                 }

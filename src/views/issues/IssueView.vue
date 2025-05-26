@@ -575,7 +575,7 @@ import GridLayout from "@/components/layout/GridLayout.vue";
 import {computed, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {getDueColor} from "@/views/issues/issue-functions.js";
-import {highlightMarkdown, renderMarkdown} from "@/markdown";
+import {highlightMarkdown, renderMarkdownAndReplaceIssueLinks} from "@/markdown";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import BaseDropdown from "@/components/BaseDropdown.vue";
 import BaseDropdownItem from "@/components/BaseDropdownItem.vue";
@@ -785,10 +785,9 @@ function fetchData(id) {
                 query Issue($issueId: ID!) {
                     issue(id: $issueId) {
                         id
-                        issueNumber # TODO issueKey
+                        issueKey
                         project {
                             id
-                            prefix
                             title
                             description
                         }
@@ -821,10 +820,7 @@ function fetchData(id) {
                             id
                             issue1 {
                                 id
-                                issueNumber # TODO issueKey
-                                project {
-                                    prefix
-                                }
+                                issueKey
                                 issueType {
                                     title
                                     icon
@@ -846,10 +842,7 @@ function fetchData(id) {
                             }
                             issue2 {
                                 id
-                                issueNumber # TODO issueKey
-                                project {
-                                    prefix
-                                }
+                                issueKey
                                 issueType {
                                     title
                                     icon
@@ -907,10 +900,7 @@ function fetchData(id) {
                     }
                     issues {
                         id
-                        issueNumber
-                        project {
-                            prefix
-                        }
+                        issueKey
                         title
                     }
                     tags {
@@ -936,7 +926,7 @@ function fetchData(id) {
             } else {
                 issue.value = {
                     ...data.issue,
-                    renderedMarkdown: await renderMarkdown(data.issue.description),
+                    renderedMarkdown: await renderMarkdownAndReplaceIssueLinks(data.issue.description),
                     highlightedMarkdown: highlightMarkdown(data.issue.description)
                 };
                 projects.value = data.projects;
@@ -946,17 +936,6 @@ function fetchData(id) {
 
                 availableGlobalTags.value = data.tags.filter(it => it.project === null);
                 availableProjectTags.value = data.tags.filter(it => it.project?.id === data.issue.project.id);
-
-                // Synthesize issueKeys (GraphQL API does not offer them (yet))
-
-                issue.value.issueKey = `${issue.value.project.prefix}-${issue.value.issueNumber}`;
-                issue.value.issueLinks.forEach(it => {
-                    it.issue1.issueKey = `${it.issue1.project.prefix}-${it.issue1.issueNumber}`;
-                    it.issue2.issueKey = `${it.issue2.project.prefix}-${it.issue2.issueNumber}`;
-                })
-                allIssues.value.forEach(it => {
-                    it.issueKey = `${it.project.prefix}-${it.issueNumber}`;
-                });
             }
         })
         .catch(e => {
@@ -1098,10 +1077,7 @@ function linkIssues(issueId, issueLinkType, otherIssueId) {
                             id
                             issue1 {
                                 id
-                                issueNumber # TODO issueKey
-                                project {
-                                    prefix
-                                }
+                                issueKey
                                 issueType {
                                     title
                                     icon
@@ -1123,10 +1099,7 @@ function linkIssues(issueId, issueLinkType, otherIssueId) {
                             }
                             issue2 {
                                 id
-                                issueNumber # TODO issueKey
-                                project {
-                                    prefix
-                                }
+                                issueKey
                                 issueType {
                                     title
                                     icon
@@ -1157,10 +1130,6 @@ function linkIssues(issueId, issueLinkType, otherIssueId) {
         )
         .then(data => {
             const issueLink = data.createIssueLink.issueLink;
-
-            // Synthesize issueKey (GraphQL API does not offer them (yet))
-            issueLink.issue1.issueKey = `${issueLink.issue1.project.prefix}-${issueLink.issue1.issueNumber}`;
-            issueLink.issue2.issueKey = `${issueLink.issue2.project.prefix}-${issueLink.issue2.issueNumber}`;
 
             issue.value.issueLinks.push(issueLink);
         })

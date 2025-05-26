@@ -267,6 +267,15 @@ strong {
     }
 }
 
+// Icon and link: Don't underline Font Awesome icons
+a.issue-link {
+    i[class~=fas] {
+        position: relative;
+        top: -6px;
+        padding-left: 0.125em;
+    }
+}
+
 // Colorized modals don't account for color contrast
 // See https://github.com/twbs/bootstrap/issues/41113
 @each $color, $value in $theme-colors {
