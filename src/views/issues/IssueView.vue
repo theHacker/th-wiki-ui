@@ -575,7 +575,7 @@ import GridLayout from "@/components/layout/GridLayout.vue";
 import {computed, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {getDueColor} from "@/views/issues/issue-functions.js";
-import {highlightMarkdown, renderMarkdown} from "@/markdown";
+import {highlightMarkdown, renderMarkdownAndReplaceIssueLinks} from "@/markdown";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import BaseDropdown from "@/components/BaseDropdown.vue";
 import BaseDropdownItem from "@/components/BaseDropdownItem.vue";
@@ -926,7 +926,7 @@ function fetchData(id) {
             } else {
                 issue.value = {
                     ...data.issue,
-                    renderedMarkdown: await renderMarkdown(data.issue.description),
+                    renderedMarkdown: await renderMarkdownAndReplaceIssueLinks(data.issue.description),
                     highlightedMarkdown: highlightMarkdown(data.issue.description)
                 };
                 projects.value = data.projects;
