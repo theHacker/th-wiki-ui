@@ -572,7 +572,7 @@ const issueLinkTypeIcons = {
 
 <script setup>
 import GridLayout from "@/components/layout/GridLayout.vue";
-import {computed, ref, watch} from "vue";
+import {computed, onMounted, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {getDueColor} from "@/views/issues/issue-functions.js";
 import {highlightMarkdown, renderMarkdownAndReplaceIssueLinks} from "@/markdown";
@@ -595,6 +595,7 @@ import TagsDialog from "@/components/tags/TagsDialog.vue";
 import BaseAlert from "@/components/BaseAlert.vue";
 import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
 import {syncStateToHash} from "@/helper/hash-state.js";
+import UserPreferences from "@/helper/local-storage.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -781,6 +782,14 @@ syncStateToHash([
     { type: 'enum', ref: linksTabState, enumObject: LinksTabStates },
     { type: 'number', ref: dependencyGraphDepth, defaultValue: 1, isValid: (value) => value >= 0 && value <= 10 }
 ]);
+
+onMounted(() => {
+    fullWidth.value = UserPreferences.retrieveBoolean("fullWidth");
+});
+
+watch(fullWidth, () => {
+    UserPreferences.storeBoolean("fullWidth", fullWidth.value);
+});
 
 function fetchData(id) {
     errors.value = [];
