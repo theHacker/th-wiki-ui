@@ -1,6 +1,10 @@
 import {enumSymbolToString, stringToEnumSymbolToString} from "@/helper/enum.js";
 
 const UserPreferencesKeys = {
+    // <AdminTagsView>
+    AdminTagsShowColors: Symbol('AdminTagsShowColors'),
+    AdminTagsShowDescription: Symbol('AdminTagsShowDescription'),
+    AdminTagsDenseTable: Symbol('AdminTagsDenseTable'),
     // <AttachmentsTab>
     AttachmentsView: Symbol('AttachmentsView'),
     // <IssueView>
