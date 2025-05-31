@@ -24,6 +24,8 @@ const UserPreferencesKeys = {
  */
 class UserPreferences {
 
+    static PREFIX = "thWiki:"
+
     /**
      * Stores a string in the local storage of the user's browser.
      *
@@ -34,7 +36,7 @@ class UserPreferences {
         const storage = window.localStorage;
         if (!storage) return;
 
-        storage.setItem(enumSymbolToString(key, UserPreferencesKeys), value);
+        storage.setItem(this.PREFIX + enumSymbolToString(key, UserPreferencesKeys), value);
     }
 
     /**
@@ -70,7 +72,7 @@ class UserPreferences {
         const storage = window.localStorage;
         if (!storage) return defaultValue;
 
-        const value = storage.getItem(enumSymbolToString(key, UserPreferencesKeys));
+        const value = storage.getItem(this.PREFIX + enumSymbolToString(key, UserPreferencesKeys));
         if (value === null) return defaultValue;
 
         return value;
