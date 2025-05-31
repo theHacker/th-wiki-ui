@@ -1,5 +1,6 @@
 import {watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
+import {watchImmediate} from "@vueuse/core";
 
 function enumSymbolToString(symbol, enumObject) {
     if (typeof enumObject !== 'object' || !enumObject) {
@@ -72,7 +73,7 @@ function syncStateToHash(stateConfigs) {
     });
 
     // Hash changed => adapt state
-    watch(() => route.hash, () => {
+    watchImmediate(() => route.hash, () => {
         const decodedStates = (route.hash || '#')
             .replace(/^#/, '')
             .split(':');
