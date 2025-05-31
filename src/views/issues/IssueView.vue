@@ -561,6 +561,15 @@ const LinksTabStates = {
     Graph: Symbol('Graph')
 };
 
+function enumSymbolToString(symbol, enumObject) {
+    return Object.keys(enumObject)
+        .find(key => enumObject[key] === symbol) || null;
+}
+
+function stringToEnumSymbolToString(string, enumObject) {
+    return enumObject[string] || Object.values(enumObject)[0];
+}
+
 const issueLinkTypeIcons = {
     subtask: 'sitemap',
     blocker: 'road-barrier',
@@ -774,6 +783,27 @@ const addIssueLinkSubmitDisabled = computed(() => {
 });
 
 watch(() => route.params.issueId, fetchData, { immediate: true });
+
+watch([tabState, linksTabState, dependencyGraphDepth], () => {
+    const encodedState =
+        enumSymbolToString(tabState.value, TabStates) + ':' +
+        enumSymbolToString(linksTabState.value, LinksTabStates) + ':' +
+        dependencyGraphDepth.value;
+
+    router.replace({
+        hash: '#' + encodedState
+    });
+});
+
+watch(() => route.hash, () => {
+    const decodedState = (route.hash || '#')
+        .replace(/^#/, '')
+        .split(':');
+
+    tabState.value = stringToEnumSymbolToString(decodedState[0], TabStates);
+    linksTabState.value = stringToEnumSymbolToString(decodedState[1], LinksTabStates);
+    dependencyGraphDepth.value = parseInt(decodedState[2]) || 1;
+});
 
 function fetchData(id) {
     errors.value = [];
