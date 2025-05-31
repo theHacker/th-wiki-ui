@@ -32,12 +32,13 @@ function stringToEnumSymbolToString(string, enumObject) {
  * Configuration object for a state to sync to the URL's hash.
  *
  * @typedef {Object} StateConfig
- * @property {'enum'|'number'} type
+ * @property {'enum'|'string'|'number'} type
  * @property {Ref<Symbol | Number>} ref Vue ref to state
  * @property {Object | null} enumObject (for 'enum' type) which enum object to use to serialize/deserialize
  * @property {Number | null} defaultValue (for 'number' type) invalid values are deserialize to this default value
  * @property {ValidFunction} isValid (for 'number' type) checks if a (deserialized!) value is valid.
  *                                   'enum' use the first valid enum value as default.
+ *                                   'string' use an empty string as default.
  */
 
 /**
@@ -59,12 +60,15 @@ function syncStateToHash(stateConfigs) {
                 switch (stateConfig.type) {
                     case 'enum':
                         return enumSymbolToString(stateConfig.ref.value, stateConfig.enumObject)
+                    case 'string':
+                        return stateConfig.ref.value;
                     case 'number':
                         return stateConfig.ref.value.toString();
                     default:
                         throw new Error(`Unsupported type "${stateConfig.type}"`);
                 }
             })
+            .map(s => s.replaceAll('\\', '\\\\').replaceAll(':', '\\:'))
             .join(':');
 
         router.replace({
@@ -76,7 +80,8 @@ function syncStateToHash(stateConfigs) {
     watchImmediate(() => route.hash, () => {
         const decodedStates = (route.hash || '#')
             .replace(/^#/, '')
-            .split(':');
+            .split(/(?<!\\):/)
+            .map(s => s.replaceAll('\\:', ':').replaceAll('\\\\', '\\'));
 
         for (let i = 0; i < stateConfigs.length; i++){
             const stateConfig = stateConfigs[i];
@@ -87,6 +92,9 @@ function syncStateToHash(stateConfigs) {
                     stateConfig.ref.value = decodedState ?
                         stringToEnumSymbolToString(decodedState, stateConfig.enumObject) :
                         Object.values(stateConfig.enumObject)[0];
+                    break;
+                case 'string':
+                    stateConfig.ref.value = decodedState || '';
                     break;
                 case 'number': {
                     const value = parseInt(decodedState);
