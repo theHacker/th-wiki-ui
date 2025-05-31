@@ -784,7 +784,7 @@ syncStateToHash([
 ]);
 
 onMounted(() => {
-    fullWidth.value = UserPreferences.retrieveBoolean("fullWidth");
+    fullWidth.value = UserPreferences.retrieveBoolean("fullWidth", false);
 });
 
 watch(fullWidth, () => {

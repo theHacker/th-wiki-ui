@@ -444,7 +444,7 @@
 import BaseButton from "@/components/BaseButton.vue";
 import SearchInput from "@/components/SearchInput.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
-import {ref, watch} from "vue";
+import {onMounted, ref, watch} from "vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 import {getDueColor, isOverdue} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
@@ -456,6 +456,7 @@ import {parseColor} from "@/helper/color.js";
 import TagBadge from "@/components/TagBadge.vue";
 import {sortTags} from "@/helper/sort-tags.js";
 import {syncStateToHash} from "@/helper/hash-state.js";
+import UserPreferences from "@/helper/local-storage.js";
 
 const sortFunctions = ref([]);
 
@@ -496,6 +497,24 @@ const denseTable = ref(false);
 syncStateToHash([
     { type: 'string', ref: query }
 ]);
+
+onMounted(() => {
+    showFilters.value = UserPreferences.retrieveBoolean("showFilters", true);
+    showKeys.value = UserPreferences.retrieveBoolean("showKeys", true);
+    showIcons.value = UserPreferences.retrieveBoolean("showIcons", true);
+    showTags.value = UserPreferences.retrieveBoolean("showTags", true);
+    shortenTags.value = UserPreferences.retrieveBoolean("shortenTags", false);
+    denseTable.value = UserPreferences.retrieveBoolean("denseTable", false);
+});
+
+watch([showFilters, showKeys, showIcons, showTags, shortenTags, denseTable], () => {
+    UserPreferences.storeBoolean("showFilters", showFilters.value);
+    UserPreferences.storeBoolean("showKeys", showKeys.value);
+    UserPreferences.storeBoolean("showIcons", showIcons.value);
+    UserPreferences.storeBoolean("showTags", showTags.value);
+    UserPreferences.storeBoolean("shortenTags", shortenTags.value);
+    UserPreferences.storeBoolean("denseTable", denseTable.value);
+});
 
 watch(
     [ query, issues ],

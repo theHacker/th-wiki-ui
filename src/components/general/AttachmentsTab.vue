@@ -270,7 +270,7 @@ watch(
 );
 
 onMounted(() => {
-    attachmentsView.value = UserPreferences.retrieveEnum("attachmentsView", AttachmentsView) || AttachmentsView.Table;
+    attachmentsView.value = UserPreferences.retrieveEnum("attachmentsView", AttachmentsView, AttachmentsView.Table);
 });
 
 watch(attachmentsView, () => {

@@ -41,32 +41,38 @@ class UserPreferences {
 
     /**
      * Retrieves a string from the local storage of the user's browser.
-     * Returns `null` when the value is no set (or no local storage is available).
+     * Returns the default value when the value is no set (or no local storage is available).
      *
      * @param {String} key
+     * @param {?String} defaultValue this value will be returned if not value or an invalid value is stored
      * @returns {String | null}
      */
-    static retrieveString(key) {
+    static retrieveString(key, defaultValue) {
         const storage = window.localStorage;
-        if (!storage) return null;
+        if (!storage) return defaultValue;
 
-        return storage.getItem(key);
+        const value = storage.getItem(key);
+        if (value === null) return defaultValue;
+
+        return value;
     }
 
     /**
      * Retrieves a boolean from the local storage of the user's browser.
-     * Returns `null` when the value is no set (or no local storage is available).
+     * Returns the default value when the value is no set (or no local storage is available).
      *
      * @param {String} key
+     * @param {?Boolean} defaultValue this value will be returned if not value or an invalid value is stored
      * @returns {Boolean | null}
      */
-    static retrieveBoolean(key) {
-        const value = this.retrieveString(key);
+    static retrieveBoolean(key, defaultValue) {
+        const value = this.retrieveString(key, null);
+        if (value === null) return defaultValue;
 
         switch (value) {
             case 'true': return true;
             case 'false': return false;
-            default: return null;
+            default: return defaultValue;
         }
     }
 
@@ -74,13 +80,15 @@ class UserPreferences {
      * Retrieves an enum value from the local storage of the user's browser.
      *
      * @param {String} key
+     * @param {?Symbol} defaultValue this value will be returned if not value or an invalid value is stored
      * @param {Object} enumObject
      * @returns {Symbol | null}
      */
-    static retrieveEnum(key, enumObject) {
-        const value = this.retrieveString(key);
+    static retrieveEnum(key, enumObject, defaultValue) {
+        const value = this.retrieveString(key, null);
+        if (value === null) return defaultValue;
 
-        return stringToEnumSymbolToString(value, enumObject);
+        return stringToEnumSymbolToString(value, enumObject) || defaultValue;
     }
 }
 
