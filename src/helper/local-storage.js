@@ -1,5 +1,19 @@
 import {enumSymbolToString, stringToEnumSymbolToString} from "@/helper/enum.js";
 
+const UserPreferencesKeys = {
+    // <AttachmentsTab>
+    AttachmentsView: Symbol('AttachmentsView'),
+    // <IssueView>
+    IssueFullWidth: Symbol('IssueFullWidth'),
+    // <IssuesView>
+    IssuesShowFilters: Symbol('IssuesShowFilters'),
+    IssuesShowKeys: Symbol('IssuesShowKeys'),
+    IssuesShowIcons: Symbol('IssuesShowIcons'),
+    IssuesShowTags: Symbol('IssuesShowTags'),
+    IssuesShortenTags: Symbol('IssuesShortenTags'),
+    IssuesDenseTable: Symbol('IssuesDenseTable'),
+};
+
 /**
  * Holds user preferences in the browser's localStorage.
  */
@@ -8,20 +22,20 @@ class UserPreferences {
     /**
      * Stores a string in the local storage of the user's browser.
      *
-     * @param {String} key
+     * @param {Symbol} key key from UserPreferencesKeys
      * @param {String} value
      */
     static storeString(key, value) {
         const storage = window.localStorage;
         if (!storage) return;
 
-        storage.setItem(key, value);
+        storage.setItem(enumSymbolToString(key, UserPreferencesKeys), value);
     }
 
     /**
      * Stores a boolean in the local storage of the user's browser.
      *
-     * @param {String} key
+     * @param {Symbol} key key from UserPreferencesKeys
      * @param {Boolean} value
      */
     static storeBoolean(key, value) {
@@ -31,7 +45,7 @@ class UserPreferences {
     /**
      * Stores an enum value in the local storage of the user's browser.
      *
-     * @param {String} key
+     * @param {Symbol} key key from UserPreferencesKeys
      * @param {Object} enumObject
      * @param {Symbol} value
      */
@@ -43,7 +57,7 @@ class UserPreferences {
      * Retrieves a string from the local storage of the user's browser.
      * Returns the default value when the value is no set (or no local storage is available).
      *
-     * @param {String} key
+     * @param {Symbol} key key from UserPreferencesKeys
      * @param {?String} defaultValue this value will be returned if not value or an invalid value is stored
      * @returns {String | null}
      */
@@ -51,7 +65,7 @@ class UserPreferences {
         const storage = window.localStorage;
         if (!storage) return defaultValue;
 
-        const value = storage.getItem(key);
+        const value = storage.getItem(enumSymbolToString(key, UserPreferencesKeys));
         if (value === null) return defaultValue;
 
         return value;
@@ -61,7 +75,7 @@ class UserPreferences {
      * Retrieves a boolean from the local storage of the user's browser.
      * Returns the default value when the value is no set (or no local storage is available).
      *
-     * @param {String} key
+     * @param {Symbol} key key from UserPreferencesKeys
      * @param {?Boolean} defaultValue this value will be returned if not value or an invalid value is stored
      * @returns {Boolean | null}
      */
@@ -79,7 +93,7 @@ class UserPreferences {
     /**
      * Retrieves an enum value from the local storage of the user's browser.
      *
-     * @param {String} key
+     * @param {Symbol} key key from UserPreferencesKeys
      * @param {?Symbol} defaultValue this value will be returned if not value or an invalid value is stored
      * @param {Object} enumObject
      * @returns {Symbol | null}
@@ -92,4 +106,4 @@ class UserPreferences {
     }
 }
 
-export default UserPreferences;
+export {UserPreferencesKeys, UserPreferences};

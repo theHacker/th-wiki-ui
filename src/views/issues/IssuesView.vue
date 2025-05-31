@@ -456,7 +456,7 @@ import {parseColor} from "@/helper/color.js";
 import TagBadge from "@/components/TagBadge.vue";
 import {sortTags} from "@/helper/sort-tags.js";
 import {syncStateToHash} from "@/helper/hash-state.js";
-import UserPreferences from "@/helper/local-storage.js";
+import {UserPreferences, UserPreferencesKeys} from "@/helper/local-storage.js";
 
 const sortFunctions = ref([]);
 
@@ -499,21 +499,21 @@ syncStateToHash([
 ]);
 
 onMounted(() => {
-    showFilters.value = UserPreferences.retrieveBoolean("showFilters", true);
-    showKeys.value = UserPreferences.retrieveBoolean("showKeys", true);
-    showIcons.value = UserPreferences.retrieveBoolean("showIcons", true);
-    showTags.value = UserPreferences.retrieveBoolean("showTags", true);
-    shortenTags.value = UserPreferences.retrieveBoolean("shortenTags", false);
-    denseTable.value = UserPreferences.retrieveBoolean("denseTable", false);
+    showFilters.value = UserPreferences.retrieveBoolean(UserPreferencesKeys.IssuesShowFilters, true);
+    showKeys.value = UserPreferences.retrieveBoolean(UserPreferencesKeys.IssuesShowKeys, true);
+    showIcons.value = UserPreferences.retrieveBoolean(UserPreferencesKeys.IssuesShowIcons, true);
+    showTags.value = UserPreferences.retrieveBoolean(UserPreferencesKeys.IssuesShowTags, true);
+    shortenTags.value = UserPreferences.retrieveBoolean(UserPreferencesKeys.IssuesShortenTags, false);
+    denseTable.value = UserPreferences.retrieveBoolean(UserPreferencesKeys.IssuesDenseTable, false);
 });
 
 watch([showFilters, showKeys, showIcons, showTags, shortenTags, denseTable], () => {
-    UserPreferences.storeBoolean("showFilters", showFilters.value);
-    UserPreferences.storeBoolean("showKeys", showKeys.value);
-    UserPreferences.storeBoolean("showIcons", showIcons.value);
-    UserPreferences.storeBoolean("showTags", showTags.value);
-    UserPreferences.storeBoolean("shortenTags", shortenTags.value);
-    UserPreferences.storeBoolean("denseTable", denseTable.value);
+    UserPreferences.storeBoolean(UserPreferencesKeys.IssuesShowFilters, showFilters.value);
+    UserPreferences.storeBoolean(UserPreferencesKeys.IssuesShowKeys, showKeys.value);
+    UserPreferences.storeBoolean(UserPreferencesKeys.IssuesShowIcons, showIcons.value);
+    UserPreferences.storeBoolean(UserPreferencesKeys.IssuesShowTags, showTags.value);
+    UserPreferences.storeBoolean(UserPreferencesKeys.IssuesShortenTags, shortenTags.value);
+    UserPreferences.storeBoolean(UserPreferencesKeys.IssuesDenseTable, denseTable.value);
 });
 
 watch(

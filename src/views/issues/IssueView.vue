@@ -595,7 +595,7 @@ import TagsDialog from "@/components/tags/TagsDialog.vue";
 import BaseAlert from "@/components/BaseAlert.vue";
 import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
 import {syncStateToHash} from "@/helper/hash-state.js";
-import UserPreferences from "@/helper/local-storage.js";
+import {UserPreferencesKeys, UserPreferences} from "@/helper/local-storage.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -784,11 +784,11 @@ syncStateToHash([
 ]);
 
 onMounted(() => {
-    fullWidth.value = UserPreferences.retrieveBoolean("fullWidth", false);
+    fullWidth.value = UserPreferences.retrieveBoolean(UserPreferencesKeys.IssueFullWidth, false);
 });
 
 watch(fullWidth, () => {
-    UserPreferences.storeBoolean("fullWidth", fullWidth.value);
+    UserPreferences.storeBoolean(UserPreferencesKeys.IssueFullWidth, fullWidth.value);
 });
 
 function fetchData(id) {

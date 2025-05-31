@@ -219,7 +219,7 @@ import {handleError} from "@/helper/graphql-error-handling.js";
 import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
-import UserPreferences from "@/helper/local-storage.js";
+import {UserPreferencesKeys, UserPreferences} from "@/helper/local-storage.js";
 
 const props = defineProps({
     // provide exactly one of them
@@ -270,11 +270,11 @@ watch(
 );
 
 onMounted(() => {
-    attachmentsView.value = UserPreferences.retrieveEnum("attachmentsView", AttachmentsView, AttachmentsView.Table);
+    attachmentsView.value = UserPreferences.retrieveEnum(UserPreferencesKeys.AttachmentsView, AttachmentsView, AttachmentsView.Table);
 });
 
 watch(attachmentsView, () => {
-    UserPreferences.storeEnum("attachmentsView", AttachmentsView, attachmentsView.value);
+    UserPreferences.storeEnum(UserPreferencesKeys.AttachmentsView, AttachmentsView, attachmentsView.value);
 });
 
 function fetchData() {
