@@ -561,15 +561,6 @@ const LinksTabStates = {
     Graph: Symbol('Graph')
 };
 
-function enumSymbolToString(symbol, enumObject) {
-    return Object.keys(enumObject)
-        .find(key => enumObject[key] === symbol) || null;
-}
-
-function stringToEnumSymbolToString(string, enumObject) {
-    return enumObject[string] || Object.values(enumObject)[0];
-}
-
 const issueLinkTypeIcons = {
     subtask: 'sitemap',
     blocker: 'road-barrier',
@@ -603,6 +594,7 @@ import BaseHeading from "@/components/BaseHeading.vue";
 import TagsDialog from "@/components/tags/TagsDialog.vue";
 import BaseAlert from "@/components/BaseAlert.vue";
 import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
+import {syncStateToHash} from "@/helper/hash-state.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -784,26 +776,11 @@ const addIssueLinkSubmitDisabled = computed(() => {
 
 watch(() => route.params.issueId, fetchData, { immediate: true });
 
-watch([tabState, linksTabState, dependencyGraphDepth], () => {
-    const encodedState =
-        enumSymbolToString(tabState.value, TabStates) + ':' +
-        enumSymbolToString(linksTabState.value, LinksTabStates) + ':' +
-        dependencyGraphDepth.value;
-
-    router.replace({
-        hash: '#' + encodedState
-    });
-});
-
-watch(() => route.hash, () => {
-    const decodedState = (route.hash || '#')
-        .replace(/^#/, '')
-        .split(':');
-
-    tabState.value = stringToEnumSymbolToString(decodedState[0], TabStates);
-    linksTabState.value = stringToEnumSymbolToString(decodedState[1], LinksTabStates);
-    dependencyGraphDepth.value = parseInt(decodedState[2]) || 1;
-});
+syncStateToHash([
+    { type: 'enum', ref: tabState, enumObject: TabStates },
+    { type: 'enum', ref: linksTabState, enumObject: LinksTabStates },
+    { type: 'number', ref: dependencyGraphDepth, defaultValue: 1, isValid: (value) => value >= 0 && value <= 10 }
+]);
 
 function fetchData(id) {
     errors.value = [];
