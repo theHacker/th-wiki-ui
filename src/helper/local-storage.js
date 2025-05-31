@@ -10,6 +10,7 @@ const UserPreferencesKeys = {
     AttachmentsView: Symbol('AttachmentsView'),
     // <IssueView>
     IssueFullWidth: Symbol('IssueFullWidth'),
+    IssueDependencyGraphDepth: Symbol('IssueDependencyGraphDepth'),
     // <IssuesView>
     IssuesShowFilters: Symbol('IssuesShowFilters'),
     IssuesShowKeys: Symbol('IssuesShowKeys'),
@@ -46,6 +47,16 @@ class UserPreferences {
      * @param {Boolean} value
      */
     static storeBoolean(key, value) {
+        this.storeString(key, value.toString());
+    }
+
+    /**
+     * Stores a number in the local storage of the user's browser.
+     *
+     * @param {Symbol} key key from UserPreferencesKeys
+     * @param {Number} value
+     */
+    static storeNumber(key, value) {
         this.storeString(key, value.toString());
     }
 
@@ -98,6 +109,24 @@ class UserPreferences {
     }
 
     /**
+     * Retrieves a number from the local storage of the user's browser.
+     * Returns the default value when the value is no set (or no local storage is available).
+     *
+     * @param {Symbol} key key from UserPreferencesKeys
+     * @param {?Number} defaultValue this value will be returned if not value or an invalid value is stored
+     * @returns {Number | null}
+     */
+    static retrieveNumber(key, defaultValue) {
+        const value = this.retrieveString(key, null);
+        if (value === null) return defaultValue;
+
+        const number = parseInt(value);
+        if (isNaN(number)) return defaultValue;
+
+        return number;
+    }
+
+    /**
      * Retrieves an enum value from the local storage of the user's browser.
      *
      * @param {Symbol} key key from UserPreferencesKeys
@@ -117,10 +146,11 @@ class UserPreferences {
  * Configuration object for a state to sync to the UserPreferences
  *
  * @typedef {Object} UserPreferencesStateConfig
- * @property {'enum'|'string'|'boolean'} type
+ * @property {'enum'|'string'|'boolean'|'number'} type
  * @property {any} defaultValue a default value to set when there no state saved (or an invalid one)
  * @property {Symbol} key UserPreferences key to store/retrieve the state to/from
  * @property {Object | null} enumObject (for 'enum' type) which enum object to use to serialize/deserialize
+ * @property {ValidFunction} isValid (for 'number' type) checks if a (deserialized!) value is valid
  */
 
 /**
@@ -143,6 +173,12 @@ function refSyncStateToUserPreferences(config) {
             case 'boolean':
                 vueRef.value = UserPreferences.retrieveBoolean(config.key, config.defaultValue);
                 break;
+            case 'number': {
+                const number = UserPreferences.retrieveNumber(config.key, config.defaultValue);
+
+                vueRef.value = (!config.isValid || config.isValid(number)) ? number : config.defaultValue;
+                break;
+            }
             default:
                 throw new Error(`Unsupported type "${config.type}"`);
         }
@@ -158,6 +194,9 @@ function refSyncStateToUserPreferences(config) {
                 break;
             case 'boolean':
                 UserPreferences.storeBoolean(config.key, vueRef.value);
+                break;
+            case 'number':
+                UserPreferences.storeNumber(config.key, vueRef.value);
                 break;
             default:
                 throw new Error(`Unsupported type "${config.type}"`);

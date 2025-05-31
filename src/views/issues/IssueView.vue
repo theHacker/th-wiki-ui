@@ -616,7 +616,12 @@ const fullWidth = refSyncStateToUserPreferences({
     key: UserPreferencesKeys.IssueFullWidth
 });
 
-const dependencyGraphDepth = ref(1);
+const dependencyGraphDepth = refSyncStateToUserPreferences({
+    type: 'number',
+    defaultValue: 1,
+    key: UserPreferencesKeys.IssueDependencyGraphDepth,
+    isValid: (value) => value >= 0 && value <= 10
+});
 
 const tabState = ref(TabStates.Description);
 const linksTabState = ref(LinksTabStates.Table);
@@ -784,8 +789,7 @@ watch(() => route.params.issueId, fetchData, { immediate: true });
 
 syncStateToHash([
     { type: 'enum', ref: tabState, enumObject: TabStates },
-    { type: 'enum', ref: linksTabState, enumObject: LinksTabStates },
-    { type: 'number', ref: dependencyGraphDepth, defaultValue: 1, isValid: (value) => value >= 0 && value <= 10 }
+    { type: 'enum', ref: linksTabState, enumObject: LinksTabStates }
 ]);
 
 function fetchData(id) {
