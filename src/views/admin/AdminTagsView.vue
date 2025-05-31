@@ -175,7 +175,7 @@
                                             size="small"
                                             fixedWidth
                                             color="success"
-                                            @click="console.log('Not yet supported. Will come later when there is global search over wiki pages and issues.')"
+                                            @click="goToUsages(tag)"
                                         />
                                         <BaseButton
                                             icon="pen"
@@ -220,6 +220,9 @@ import TagBadge from "@/components/TagBadge.vue";
 import DeleteDialog from "@/components/DeleteDialog.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import {sortTags} from "@/helper/sort-tags.js";
+import {useRouter} from "vue-router";
+
+const router = useRouter();
 
 const tags = ref([]);
 const loading = ref(true);
@@ -327,6 +330,24 @@ function expandAllGroups() {
 
 function _groupToId(group) {
     return group.project?.id || null;
+}
+
+function goToUsages(tag) {
+    let hash = '#';
+
+    // TODO Escaping is a little brittle: colon-escape duplicated from hash-state.js,
+    //      special chars easily break the string. However, the ANTLR implementation with the
+    //      client-side search function has issues anyway. We will rework, when the server-side
+    //      fulltext search is ready.
+    //      Also, we only go to issues page. The fulltext search will later also display wiki pages
+    //      associated with that tag.
+
+    if (tag.scope) {
+        hash += `tagscope\\:"${tag.scope}" `;
+    }
+    hash += `tagtitle\\:"${tag.title}"`;
+
+    router.push({name: 'issues', hash });
 }
 
 function deleteTag() {

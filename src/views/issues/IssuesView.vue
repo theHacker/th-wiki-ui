@@ -455,6 +455,7 @@ import ErrorMessage from "@/components/ErrorMessage.vue";
 import {parseColor} from "@/helper/color.js";
 import TagBadge from "@/components/TagBadge.vue";
 import {sortTags} from "@/helper/sort-tags.js";
+import {syncStateToHash} from "@/helper/hash-state.js";
 
 const sortFunctions = ref([]);
 
@@ -491,6 +492,10 @@ const showIcons = ref(true);
 const showTags = ref(true);
 const shortenTags = ref(false);
 const denseTable = ref(false);
+
+syncStateToHash([
+    { type: 'string', ref: query }
+]);
 
 watch(
     [ query, issues ],

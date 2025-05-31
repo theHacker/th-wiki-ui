@@ -594,6 +594,7 @@ import BaseHeading from "@/components/BaseHeading.vue";
 import TagsDialog from "@/components/tags/TagsDialog.vue";
 import BaseAlert from "@/components/BaseAlert.vue";
 import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
+import {syncStateToHash} from "@/helper/hash-state.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -774,6 +775,12 @@ const addIssueLinkSubmitDisabled = computed(() => {
 });
 
 watch(() => route.params.issueId, fetchData, { immediate: true });
+
+syncStateToHash([
+    { type: 'enum', ref: tabState, enumObject: TabStates },
+    { type: 'enum', ref: linksTabState, enumObject: LinksTabStates },
+    { type: 'number', ref: dependencyGraphDepth, defaultValue: 1, isValid: (value) => value >= 0 && value <= 10 }
+]);
 
 function fetchData(id) {
     errors.value = [];

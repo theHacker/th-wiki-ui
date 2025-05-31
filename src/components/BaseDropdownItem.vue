@@ -1,6 +1,6 @@
 <template>
     <li>
-        <a class="dropdown-item" :class="{ disabled }" href="#" @click="$emit('click')">
+        <a class="dropdown-item" :class="{ disabled }" href="#" @click.prevent="$emit('click')">
             <span class="icon-link">
                 <i v-if="icon" :class="iconClass" />
                 <span v-if="title">{{ title }}</span>

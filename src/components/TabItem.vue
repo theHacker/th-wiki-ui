@@ -1,5 +1,5 @@
 <template>
-    <li class="nav-item" @click="$emit('click')">
+    <li class="nav-item" @click.prevent="$emit('click')">
         <a href="#" class="nav-link" :class="{ active }">
             <span class="icon-link">
                 <i v-if="loading" class="fas fa-spinner fa-pulse" />

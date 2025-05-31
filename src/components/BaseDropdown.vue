@@ -1,7 +1,7 @@
 <template>
     <div
         class="dropdown"
-        @click="dropdownOpen = !dropdownOpen"
+        @click.prevent="dropdownOpen = !dropdownOpen"
     >
         <button type="button" class="btn dropdown-toggle" :class="buttonClass + ' ' + ('btn-outline-' + color)">
             <span class="icon-link">
