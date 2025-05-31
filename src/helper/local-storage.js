@@ -1,3 +1,5 @@
+import {enumSymbolToString, stringToEnumSymbolToString} from "@/helper/enum.js";
+
 /**
  * Holds user preferences in the browser's localStorage.
  */
@@ -24,6 +26,17 @@ class UserPreferences {
      */
     static storeBoolean(key, value) {
         this.storeString(key, value.toString());
+    }
+
+    /**
+     * Stores an enum value in the local storage of the user's browser.
+     *
+     * @param {String} key
+     * @param {Object} enumObject
+     * @param {Symbol} value
+     */
+    static storeEnum(key, enumObject, value) {
+        this.storeString(key, enumSymbolToString(value, enumObject));
     }
 
     /**
@@ -55,6 +68,19 @@ class UserPreferences {
             case 'false': return false;
             default: return null;
         }
+    }
+
+    /**
+     * Retrieves an enum value from the local storage of the user's browser.
+     *
+     * @param {String} key
+     * @param {Object} enumObject
+     * @returns {Symbol | null}
+     */
+    static retrieveEnum(key, enumObject) {
+        const value = this.retrieveString(key);
+
+        return stringToEnumSymbolToString(value, enumObject);
     }
 }
 

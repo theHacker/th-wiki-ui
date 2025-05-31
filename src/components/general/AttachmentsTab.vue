@@ -208,7 +208,7 @@ const AttachmentsView = {
 </script>
 
 <script setup>
-import {ref, watch} from "vue";
+import {onMounted, ref, watch} from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import DeleteDialog from "@/components/DeleteDialog.vue";
 import AttachmentUploadForm from "@/components/general/AttachmentUploadForm.vue";
@@ -219,6 +219,7 @@ import {handleError} from "@/helper/graphql-error-handling.js";
 import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
+import UserPreferences from "@/helper/local-storage.js";
 
 const props = defineProps({
     // provide exactly one of them
@@ -267,6 +268,14 @@ watch(
     fetchData,
     { immediate: true }
 );
+
+onMounted(() => {
+    attachmentsView.value = UserPreferences.retrieveEnum("attachmentsView", AttachmentsView) || AttachmentsView.Table;
+});
+
+watch(attachmentsView, () => {
+    UserPreferences.storeEnum("attachmentsView", AttachmentsView, attachmentsView.value);
+});
 
 function fetchData() {
     errors.value = [];
