@@ -208,7 +208,7 @@ const AttachmentsView = {
 </script>
 
 <script setup>
-import {onMounted, ref, watch} from "vue";
+import {ref, watch} from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import DeleteDialog from "@/components/DeleteDialog.vue";
 import AttachmentUploadForm from "@/components/general/AttachmentUploadForm.vue";
@@ -219,7 +219,7 @@ import {handleError} from "@/helper/graphql-error-handling.js";
 import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
-import {UserPreferencesKeys, UserPreferences} from "@/helper/local-storage.js";
+import {UserPreferencesKeys, refSyncStateToUserPreferences} from "@/helper/local-storage.js";
 
 const props = defineProps({
     // provide exactly one of them
@@ -246,7 +246,13 @@ const errors = ref([]);
 const attachments = ref([]);
 const loading = ref(true);
 
-const attachmentsView = ref(AttachmentsView.Table);
+const attachmentsView = refSyncStateToUserPreferences({
+    type: 'enum',
+    defaultValue: AttachmentsView.Table,
+    key: UserPreferencesKeys.AttachmentsView,
+    enumObject: AttachmentsView
+});
+
 const attachmentsThumbnails = ref({});
 
 const addAttachmentModel = ref({
@@ -268,14 +274,6 @@ watch(
     fetchData,
     { immediate: true }
 );
-
-onMounted(() => {
-    attachmentsView.value = UserPreferences.retrieveEnum(UserPreferencesKeys.AttachmentsView, AttachmentsView, AttachmentsView.Table);
-});
-
-watch(attachmentsView, () => {
-    UserPreferences.storeEnum(UserPreferencesKeys.AttachmentsView, AttachmentsView, attachmentsView.value);
-});
 
 function fetchData() {
     errors.value = [];

@@ -572,7 +572,7 @@ const issueLinkTypeIcons = {
 
 <script setup>
 import GridLayout from "@/components/layout/GridLayout.vue";
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {getDueColor} from "@/views/issues/issue-functions.js";
 import {highlightMarkdown, renderMarkdownAndReplaceIssueLinks} from "@/markdown";
@@ -595,7 +595,7 @@ import TagsDialog from "@/components/tags/TagsDialog.vue";
 import BaseAlert from "@/components/BaseAlert.vue";
 import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
 import {syncStateToHash} from "@/helper/hash-state.js";
-import {UserPreferencesKeys, UserPreferences} from "@/helper/local-storage.js";
+import {UserPreferencesKeys, refSyncStateToUserPreferences} from "@/helper/local-storage.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -610,7 +610,12 @@ const issue = ref(null);
 const attachmentsLoading = ref(false);
 const attachmentsCount = ref(0);
 
-const fullWidth = ref(false);
+const fullWidth = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: false,
+    key: UserPreferencesKeys.IssueFullWidth
+});
+
 const dependencyGraphDepth = ref(1);
 
 const tabState = ref(TabStates.Description);
@@ -782,14 +787,6 @@ syncStateToHash([
     { type: 'enum', ref: linksTabState, enumObject: LinksTabStates },
     { type: 'number', ref: dependencyGraphDepth, defaultValue: 1, isValid: (value) => value >= 0 && value <= 10 }
 ]);
-
-onMounted(() => {
-    fullWidth.value = UserPreferences.retrieveBoolean(UserPreferencesKeys.IssueFullWidth, false);
-});
-
-watch(fullWidth, () => {
-    UserPreferences.storeBoolean(UserPreferencesKeys.IssueFullWidth, fullWidth.value);
-});
 
 function fetchData(id) {
     errors.value = [];

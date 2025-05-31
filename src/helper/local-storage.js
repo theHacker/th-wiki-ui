@@ -1,4 +1,5 @@
 import {enumSymbolToString, stringToEnumSymbolToString} from "@/helper/enum.js";
+import {onMounted, ref, watch} from "vue";
 
 const UserPreferencesKeys = {
     // <AdminTagsView>
@@ -110,4 +111,58 @@ class UserPreferences {
     }
 }
 
-export {UserPreferencesKeys, UserPreferences};
+/**
+ * Configuration object for a state to sync to the UserPreferences
+ *
+ * @typedef {Object} UserPreferencesStateConfig
+ * @property {'enum'|'string'|'boolean'} type
+ * @property {any} defaultValue a default value to set when there no state saved (or an invalid one)
+ * @property {Symbol} key UserPreferences key to store/retrieve the state to/from
+ * @property {Object | null} enumObject (for 'enum' type) which enum object to use to serialize/deserialize
+ */
+
+/**
+ * Like Vue's ref() function to create a reactive property, but it's also synchronized
+ * to the UserPreferences.
+ *
+ * @param {UserPreferencesStateConfig} config
+ */
+function refSyncStateToUserPreferences(config) {
+    const vueRef = ref(config.defaultValue);
+
+    onMounted(() => {
+        switch (config.type) {
+            case 'enum':
+                vueRef.value = UserPreferences.retrieveEnum(config.key, config.enumObject, config.defaultValue);
+                break;
+            case 'string':
+                vueRef.value = UserPreferences.retrieveString(config.key, config.defaultValue);
+                break;
+            case 'boolean':
+                vueRef.value = UserPreferences.retrieveBoolean(config.key, config.defaultValue);
+                break;
+            default:
+                throw new Error(`Unsupported type "${config.type}"`);
+        }
+    });
+
+    watch(vueRef, () => {
+        switch (config.type) {
+            case 'enum':
+                UserPreferences.storeEnum(config.key, config.enumObject, vueRef.value);
+                break;
+            case 'string':
+                UserPreferences.storeString(config.key, vueRef.value);
+                break;
+            case 'boolean':
+                UserPreferences.storeBoolean(config.key, vueRef.value);
+                break;
+            default:
+                throw new Error(`Unsupported type "${config.type}"`);
+        }
+    });
+
+    return vueRef;
+}
+
+export {UserPreferencesKeys, UserPreferences, refSyncStateToUserPreferences};

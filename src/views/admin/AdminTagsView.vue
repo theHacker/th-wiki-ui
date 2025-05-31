@@ -213,7 +213,7 @@
 import GridLayout from "@/components/layout/GridLayout.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import BaseButton from "@/components/BaseButton.vue";
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, ref} from "vue";
 import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import TagBadge from "@/components/TagBadge.vue";
@@ -221,7 +221,7 @@ import DeleteDialog from "@/components/DeleteDialog.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import {sortTags} from "@/helper/sort-tags.js";
 import {useRouter} from "vue-router";
-import {UserPreferences, UserPreferencesKeys} from "@/helper/local-storage.js";
+import {refSyncStateToUserPreferences, UserPreferencesKeys} from "@/helper/local-storage.js";
 
 const router = useRouter();
 
@@ -230,26 +230,26 @@ const loading = ref(true);
 
 const errors = ref([]);
 
-const showColors = ref(false);
-const showDescription = ref(true);
-const denseTable = ref(false);
+const showColors = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: false,
+    key: UserPreferencesKeys.AdminTagsShowColors
+});
+const showDescription = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: true,
+    key: UserPreferencesKeys.AdminTagsShowDescription
+});
+const denseTable = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: false,
+    key: UserPreferencesKeys.AdminTagsDenseTable
+});
 
 const expandedProjectIds = ref([]);
 
 const deleteDialogOpen = ref(null);
 const deleting = ref(false);
-
-onMounted(() => {
-    showColors.value = UserPreferences.retrieveBoolean(UserPreferencesKeys.AdminTagsShowColors, false);
-    showDescription.value = UserPreferences.retrieveBoolean(UserPreferencesKeys.AdminTagsShowDescription, true);
-    denseTable.value = UserPreferences.retrieveBoolean(UserPreferencesKeys.AdminTagsDenseTable, false);
-});
-
-watch([showColors, showDescription, denseTable], () => {
-    UserPreferences.storeBoolean(UserPreferencesKeys.AdminTagsShowColors, showColors.value);
-    UserPreferences.storeBoolean(UserPreferencesKeys.AdminTagsShowDescription, showDescription.value);
-    UserPreferences.storeBoolean(UserPreferencesKeys.AdminTagsDenseTable, denseTable.value);
-});
 
 fetchData();
 
