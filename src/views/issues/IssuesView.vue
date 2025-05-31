@@ -456,6 +456,7 @@ import {parseColor} from "@/helper/color.js";
 import TagBadge from "@/components/TagBadge.vue";
 import {sortTags} from "@/helper/sort-tags.js";
 import {syncStateToHash} from "@/helper/hash-state.js";
+import {refSyncStateToUserPreferences, UserPreferencesKeys} from "@/helper/local-storage.js";
 
 const sortFunctions = ref([]);
 
@@ -485,13 +486,37 @@ const queryError = ref(null);
 
 const loading = ref(true);
 
-const showFilters = ref(true);
+const showFilters = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: true,
+    key: UserPreferencesKeys.IssuesShowFilters
+});
 
-const showKeys = ref(true);
-const showIcons = ref(true);
-const showTags = ref(true);
-const shortenTags = ref(false);
-const denseTable = ref(false);
+const showKeys = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: true,
+    key: UserPreferencesKeys.IssuesShowKeys
+});
+const showIcons = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: true,
+    key: UserPreferencesKeys.IssuesShowIcons
+});
+const showTags = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: true,
+    key: UserPreferencesKeys.IssuesShowTags
+});
+const shortenTags = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: false,
+    key: UserPreferencesKeys.IssuesShortenTags
+});
+const denseTable = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: false,
+    key: UserPreferencesKeys.IssuesDenseTable
+});
 
 syncStateToHash([
     { type: 'string', ref: query }

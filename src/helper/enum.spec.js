@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {enumSymbolToString, stringToEnumSymbolToString} from './hash-state.js';
+import {enumSymbolToString, stringToEnumSymbolToString} from './enum.js';
 
 describe('Enum<=>string translations', () => {
 

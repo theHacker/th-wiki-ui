@@ -219,6 +219,7 @@ import {handleError} from "@/helper/graphql-error-handling.js";
 import {getIconForMimeType} from "@/helper/mime-type-icons.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
+import {UserPreferencesKeys, refSyncStateToUserPreferences} from "@/helper/local-storage.js";
 
 const props = defineProps({
     // provide exactly one of them
@@ -245,7 +246,13 @@ const errors = ref([]);
 const attachments = ref([]);
 const loading = ref(true);
 
-const attachmentsView = ref(AttachmentsView.Table);
+const attachmentsView = refSyncStateToUserPreferences({
+    type: 'enum',
+    defaultValue: AttachmentsView.Table,
+    key: UserPreferencesKeys.AttachmentsView,
+    enumObject: AttachmentsView
+});
+
 const attachmentsThumbnails = ref({});
 
 const addAttachmentModel = ref({

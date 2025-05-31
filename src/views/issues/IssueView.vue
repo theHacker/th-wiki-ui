@@ -595,6 +595,7 @@ import TagsDialog from "@/components/tags/TagsDialog.vue";
 import BaseAlert from "@/components/BaseAlert.vue";
 import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
 import {syncStateToHash} from "@/helper/hash-state.js";
+import {UserPreferencesKeys, refSyncStateToUserPreferences} from "@/helper/local-storage.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -609,8 +610,18 @@ const issue = ref(null);
 const attachmentsLoading = ref(false);
 const attachmentsCount = ref(0);
 
-const fullWidth = ref(false);
-const dependencyGraphDepth = ref(1);
+const fullWidth = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: false,
+    key: UserPreferencesKeys.IssueFullWidth
+});
+
+const dependencyGraphDepth = refSyncStateToUserPreferences({
+    type: 'number',
+    defaultValue: 1,
+    key: UserPreferencesKeys.IssueDependencyGraphDepth,
+    isValid: (value) => value >= 0 && value <= 10
+});
 
 const tabState = ref(TabStates.Description);
 const linksTabState = ref(LinksTabStates.Table);
@@ -778,8 +789,7 @@ watch(() => route.params.issueId, fetchData, { immediate: true });
 
 syncStateToHash([
     { type: 'enum', ref: tabState, enumObject: TabStates },
-    { type: 'enum', ref: linksTabState, enumObject: LinksTabStates },
-    { type: 'number', ref: dependencyGraphDepth, defaultValue: 1, isValid: (value) => value >= 0 && value <= 10 }
+    { type: 'enum', ref: linksTabState, enumObject: LinksTabStates }
 ]);
 
 function fetchData(id) {

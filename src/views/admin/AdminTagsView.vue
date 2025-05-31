@@ -221,6 +221,7 @@ import DeleteDialog from "@/components/DeleteDialog.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import {sortTags} from "@/helper/sort-tags.js";
 import {useRouter} from "vue-router";
+import {refSyncStateToUserPreferences, UserPreferencesKeys} from "@/helper/local-storage.js";
 
 const router = useRouter();
 
@@ -229,9 +230,21 @@ const loading = ref(true);
 
 const errors = ref([]);
 
-const showColors = ref(false);
-const showDescription = ref(true);
-const denseTable = ref(false);
+const showColors = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: false,
+    key: UserPreferencesKeys.AdminTagsShowColors
+});
+const showDescription = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: true,
+    key: UserPreferencesKeys.AdminTagsShowDescription
+});
+const denseTable = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: false,
+    key: UserPreferencesKeys.AdminTagsDenseTable
+});
 
 const expandedProjectIds = ref([]);
 

@@ -1,23 +1,7 @@
 import {watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {watchImmediate} from "@vueuse/core";
-
-function enumSymbolToString(symbol, enumObject) {
-    if (typeof enumObject !== 'object' || !enumObject) {
-        throw new Error('Illegal enumObject');
-    }
-
-    return Object.keys(enumObject)
-        .find(key => enumObject[key] === symbol) || null;
-}
-
-function stringToEnumSymbolToString(string, enumObject) {
-    if (typeof enumObject !== 'object' || !enumObject) {
-        throw new Error('Illegal enumObject');
-    }
-
-    return enumObject[string] || null;
-}
+import {enumSymbolToString, stringToEnumSymbolToString} from "@/helper/enum.js";
 
 /**
  * Callback function to check if a value is valid.
@@ -109,4 +93,4 @@ function syncStateToHash(stateConfigs) {
     });
 }
 
-export { enumSymbolToString, stringToEnumSymbolToString, syncStateToHash };
+export { syncStateToHash };
