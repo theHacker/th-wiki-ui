@@ -11,7 +11,7 @@ try {
     });
     process.env.VITE_GIT_HASH = gitInfo.hash;
     process.env.VITE_GIT_DIRTY = gitInfo.dirty.toString();
-} catch (e) {
+} catch {
     // ignore, we end up here when running tests on CI (error is "Git executable not found in PATH")
     process.env.VITE_GIT_HASH = '';
     process.env.VITE_GIT_DIRTY = '';

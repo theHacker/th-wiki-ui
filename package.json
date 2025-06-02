@@ -10,8 +10,8 @@
     "test:unit": "vitest",
     "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
     "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --ignore-path .gitignore",
-    "lint:fix": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
@@ -26,13 +26,16 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@eslint/compat": "^1.2.9",
+    "@eslint/js": "^9.28.0",
     "@vitejs/plugin-vue": "^5.2.4",
     "@vue/test-utils": "^2.4.6",
     "cypress": "^14.4.0",
-    "eslint": "^8.57.0",
-    "eslint-plugin-cypress": "^2.15.1",
-    "eslint-plugin-vue": "^9.23.0",
+    "eslint": "^9.28.0",
+    "eslint-plugin-cypress": "^5.0.1",
+    "eslint-plugin-vue": "^10.1.0",
     "git-describe": "^4.1.1",
+    "globals": "^16.2.0",
     "jsdom": "^26.1.0",
     "sass": "^1.89.1",
     "start-server-and-test": "^2.0.12",
