@@ -206,7 +206,7 @@ const TabStates = {
 
 <script setup>
 import axios from "@/axios.js";
-import {ref, watch} from 'vue';
+import {ref, watch, useTemplateRef} from 'vue';
 import {useRoute, useRouter} from "vue-router";
 import {renderMarkdown, highlightMarkdown} from "@/markdown";
 import WikiPagesTree from "@/components/wiki/WikiPagesTree.vue";
@@ -237,7 +237,7 @@ const wikiPage = ref(null);
 const attachmentsLoading = ref(false);
 const attachmentsCount = ref(0);
 
-const wikiPagesTree = ref(null);
+const wikiPagesTree = useTemplateRef('wikiPagesTree');
 const allWikiPagesTree = ref(null);
 
 const tabState = ref(TabStates.Content);

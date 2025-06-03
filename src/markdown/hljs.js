@@ -81,8 +81,6 @@ for (const [languageName, language] of Object.entries(interestingLanguages)) {
 
 // noinspection JSUnusedGlobalSymbols - walkTokens is called by Marked
 const hljsExtension = {
-    useNewRenderer: true, // -> renderer gets token as object (with all/additional properties), instead of fixed parameters
-
     // Overwrite walkTokens. When we encounter a known code block, we highlight it.
     // Note: Usually you want to do that in the renderer, however, Marked.js does not support async renderer functions.
     // See https://github.com/markedjs/marked/issues/458 and https://github.com/markedjs/marked/pull/2474 for details.

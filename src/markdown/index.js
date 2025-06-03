@@ -47,7 +47,6 @@ async function renderMarkdownAndReplaceIssueLinks(markdown) {
     const marked1 = new Marked();
     marked1.use({
         async: true, // -> activate async mode, so we can call Mermaid which only works asynchronous
-        useNewRenderer: true, // -> renderer gets token as object (with all/additional properties), instead of fixed parameters
         renderer: {
             text(token) {
                 for (const project of allProjects) {
@@ -103,7 +102,6 @@ async function renderMarkdownAndReplaceIssueLinks(markdown) {
     marked2.use(hljsExtension);
     marked2.use({
         async: true, // -> activate async mode, so we can call Mermaid which only works asynchronous
-        useNewRenderer: true, // -> renderer gets token as object (with all/additional properties), instead of fixed parameters
         renderer: {
             text(token) {
                 let text = token.text;

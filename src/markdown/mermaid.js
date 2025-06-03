@@ -7,7 +7,6 @@ let mermaidIdCounter = 0;
 // noinspection JSUnusedGlobalSymbols - walkTokens is called by Marked
 const mermaidExtension = {
     async: true, // -> activate async mode, so we can call Mermaid which only works asynchronous
-    useNewRenderer: true, // -> renderer gets token as object (with all/additional properties), instead of fixed parameters
 
     // Overwrite walkTokens. When we encounter a mermaid code block, render it.
     // Note: Usually you want to do that in the renderer, however, Marked.js does not support async renderer functions.
