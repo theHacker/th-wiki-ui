@@ -18,6 +18,9 @@ const UserPreferencesKeys = {
     IssuesShowTags: Symbol('IssuesShowTags'),
     IssuesShortenTags: Symbol('IssuesShortenTags'),
     IssuesDenseTable: Symbol('IssuesDenseTable'),
+    // <WikiPagesTree>
+    WikiPagesTreeShowTags: Symbol('WikiPagesTreeShowTags'),
+    WikiPagesTreeShortenTags: Symbol('WikiPagesTreeShortenTags'),
 };
 
 /**

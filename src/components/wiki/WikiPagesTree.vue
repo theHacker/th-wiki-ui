@@ -28,6 +28,23 @@
                             @click="collapseAllNodes"
                         />
                     </div>
+
+                    <div class="btn-group">
+                        <BaseButton
+                            icon="tags"
+                            tooltip="Show tags"
+                            fixedWidth
+                            :active="showTags"
+                            @click="showTags = !showTags"
+                        />
+                        <BaseButton
+                            icon="tag"
+                            tooltip="Shorten tags"
+                            fixedWidth
+                            :active="shortenTags"
+                            @click="shortenTags = !shortenTags"
+                        />
+                    </div>
                 </div>
 
                 <div v-if="!loading" class="fw-normal fs-7">
@@ -72,6 +89,21 @@
                                 class="fas fa-paperclip fa-xs" style="margin-left: -2px;"
                                 title="has attachments"
                             />
+
+                            <template v-if="showTags && item.tags.length > 0">
+                                <TagBadge
+                                    v-for="tag in item.tags"
+                                    :key="tag.id"
+                                    :scope="tag.scope"
+                                    :scopeIcon="tag.scopeIcon"
+                                    :scopeColor="tag.scopeColor"
+                                    :title="tag.title"
+                                    :titleIcon="tag.titleIcon"
+                                    :titleColor="tag.titleColor"
+                                    :tooltip="tag.description"
+                                    :shorten="shortenTags"
+                                />
+                            </template>
                         </span>
                     </RouterLink>
                 </template>
@@ -88,6 +120,9 @@ import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import TreeView from "@/components/TreeView.vue";
 import {Tree} from "@/helper/tree.js";
 import BaseButton from "@/components/BaseButton.vue";
+import {refSyncStateToUserPreferences, UserPreferencesKeys} from "@/helper/local-storage.js";
+import TagBadge from "@/components/TagBadge.vue";
+import {sortTags} from "@/helper/sort-tags.js";
 
 const emit = defineEmits(['onNodeDragDrop']);
 
@@ -109,6 +144,17 @@ const tree = computed(() => {
 });
 
 const dragDropInProgress = ref(null);
+
+const showTags = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: false,
+    key: UserPreferencesKeys.WikiPagesTreeShowTags
+});
+const shortenTags = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: true,
+    key: UserPreferencesKeys.WikiPagesTreeShortenTags
+});
 
 const filteredWikiPages = computed(() => {
     if (search.value) {
@@ -167,12 +213,36 @@ function fetchData() {
                         id
                     }
                     attachmentsCount
+                    tags {
+                        id
+                    }
+                }
+                tags {
+                    id
+                    scope
+                    scopeIcon
+                    scopeColor
+                    title
+                    titleIcon
+                    titleColor
+                    description
                 }
             }
         `)
         .then(data => {
             loading.value = false;
             wikiPages.value = data.wikiPages;
+
+            wikiPages.value.forEach(it => {
+                // For convenience, add the full objects to the wiki page
+                // (We could let this populate by GraphQL but this would mean more traffic, we prefer doing this here)
+
+                const tagIds = it.tags.map(tag => tag.id);
+                it.tags = data.tags
+                    .filter(tag => tagIds.includes(tag.id));
+
+                sortTags(it.tags);
+            });
         });
 }
 
