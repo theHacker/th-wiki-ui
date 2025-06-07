@@ -1,15 +1,39 @@
 <template>
     <div class="card mh-100">
         <div class="card-header">
-            <div class="hstack gap-2">
-                <SearchInput v-model="search" />
-                <BaseButton
-                    class="btn-text-xxl"
-                    icon="plus"
-                    title="New page"
-                    color="primary"
-                    @click="$router.push({name: 'wikiPageNew'})"
-                />
+            <div class="d-flex flex-wrap row-gap-2 gap-2">
+                <div class="hstack gap-2">
+                    <SearchInput v-model="search" />
+                    <BaseButton
+                        class="btn-text-xxl"
+                        icon="plus"
+                        title="New page"
+                        color="primary"
+                        @click="$router.push({name: 'wikiPageNew'})"
+                    />
+                </div>
+
+                <div class="hstack gap-2 w-100">
+                    <div class="btn-group">
+                        <BaseButton
+                            icon="maximize"
+                            tooltip="Expand all nodes"
+                            fixedWidth
+                            @click="expandAllNodes"
+                        />
+                        <BaseButton
+                            icon="minimize"
+                            tooltip="Collapse all nodes"
+                            fixedWidth
+                            @click="collapseAllNodes"
+                        />
+                    </div>
+                </div>
+
+                <div v-if="!loading" class="fw-normal fs-7">
+                    <b>{{ filteredWikiPages.filter(wp => !wp.grayedOut).length }}</b> {{ filteredWikiPages.filter(wp => !wp.grayedOut).length !== 1 ? 'wiki pages' : 'wiki page'}} filtered.
+                    <b>{{ wikiPages.length }}</b> {{ wikiPages.length !== 1 ? 'wiki pages' : 'wiki page'}} total.
+                </div>
             </div>
         </div>
 
@@ -18,6 +42,7 @@
         </div>
         <div v-if="!loading" class="card-body overflow-x-hidden">
             <TreeView
+                ref="treeView"
                 :items="filteredWikiPages"
                 :idFunction="wp => wp.id"
                 :parentIdFunction="wp => wp.parent?.id || null"
@@ -57,7 +82,7 @@
 
 <script setup>
 import axios from "@/axios.js";
-import {computed, ref} from 'vue';
+import {computed, ref, useTemplateRef} from 'vue';
 import SearchInput from "@/components/SearchInput.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import TreeView from "@/components/TreeView.vue";
@@ -67,6 +92,8 @@ import BaseButton from "@/components/BaseButton.vue";
 const emit = defineEmits(['onNodeDragDrop']);
 
 defineExpose({ refreshTree });
+
+const treeView = useTemplateRef("treeView");
 
 const search = ref('');
 
@@ -180,6 +207,14 @@ function cssItem(item) {
     }
 
     return classes;
+}
+
+function collapseAllNodes() {
+    treeView.value.collapseAllNodes();
+}
+
+function expandAllNodes() {
+    treeView.value.expandAllNodes();
 }
 
 const dragDropFormat = "text/x-thwiki-wikipage-id";
