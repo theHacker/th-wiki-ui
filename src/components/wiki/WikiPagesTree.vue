@@ -185,23 +185,11 @@ watch(
         const idsMatching = new Set(newWikiPagesResultingFromQuery.map(wp => wp.id));
 
         // Pass 2: Find all parents
-        // TODO Would be nice we if had a tree structure already knowing all parents.
 
-        const wikiPagesById = new Map(
-            wikiPages.value.map(item => [item.id, item])
-        );
         const idsParentForMatching = new Set();
 
         idsMatching.forEach(id => {
-            let parentId = id;
-            while (true) {
-                parentId = wikiPagesById.get(parentId)?.parent?.id || null;
-                if (parentId === null) {
-                    break;
-                }
-
-                idsParentForMatching.add(parentId);
-            }
+            tree.value.getAncestors(id).forEach(wp => idsParentForMatching.add(wp.id));
         });
 
         // Decorate/shorten tree
