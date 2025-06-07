@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode // sharing a lot of code between issue-search.js and wiki-search.js
+
 /*
  * Rudimentary client-side search.
  *

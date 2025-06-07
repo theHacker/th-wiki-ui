@@ -3,7 +3,7 @@
         <div class="card-header">
             <div class="d-flex flex-wrap row-gap-2 gap-2">
                 <div class="hstack gap-2">
-                    <SearchInput v-model="search" />
+                    <SearchInput v-model="query" />
                     <BaseButton
                         class="btn-text-xxl"
                         icon="plus"
@@ -48,8 +48,13 @@
                 </div>
 
                 <div v-if="!loading" class="fw-normal fs-7">
-                    <b>{{ filteredWikiPages.filter(wp => !wp.grayedOut).length }}</b> {{ filteredWikiPages.filter(wp => !wp.grayedOut).length !== 1 ? 'wiki pages' : 'wiki page'}} filtered.
-                    <b>{{ wikiPages.length }}</b> {{ wikiPages.length !== 1 ? 'wiki pages' : 'wiki page'}} total.
+                    <div v-if="queryError" class="text-danger">
+                        {{ queryError }}
+                    </div>
+                    <div v-else>
+                        <b>{{ wikiPagesResultingFromQueryNotGrayedOut }}</b> {{ wikiPagesResultingFromQueryNotGrayedOut !== 1 ? 'wiki pages' : 'wiki page'}} filtered.
+                        <b>{{ wikiPages.length }}</b> {{ wikiPages.length !== 1 ? 'wiki pages' : 'wiki page'}} total.
+                    </div>
                 </div>
             </div>
         </div>
@@ -60,7 +65,7 @@
         <div v-if="!loading" class="card-body overflow-x-hidden">
             <TreeView
                 ref="treeView"
-                :items="filteredWikiPages"
+                :items="wikiPagesResultingFromQuery"
                 :idFunction="wp => wp.id"
                 :parentIdFunction="wp => wp.parent?.id || null"
                 :sortFunction="(a, b) => a.title.localeCompare(b.title)"
@@ -114,7 +119,7 @@
 
 <script setup>
 import axios from "@/axios.js";
-import {computed, ref, useTemplateRef} from 'vue';
+import {computed, ref, useTemplateRef, watch} from 'vue';
 import SearchInput from "@/components/SearchInput.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import TreeView from "@/components/TreeView.vue";
@@ -123,6 +128,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import {refSyncStateToUserPreferences, UserPreferencesKeys} from "@/helper/local-storage.js";
 import TagBadge from "@/components/TagBadge.vue";
 import {sortTags} from "@/helper/sort-tags.js";
+import {executeQuery} from "./wiki-search.js";
 
 const emit = defineEmits(['onNodeDragDrop']);
 
@@ -130,7 +136,7 @@ defineExpose({ refreshTree });
 
 const treeView = useTemplateRef("treeView");
 
-const search = ref('');
+const query = ref('');
 
 const wikiPages = ref([]);
 const loading = ref(true);
@@ -156,21 +162,27 @@ const shortenTags = refSyncStateToUserPreferences({
     key: UserPreferencesKeys.WikiPagesTreeShortenTags
 });
 
-const filteredWikiPages = computed(() => {
-    if (search.value) {
-        const lowercase = search.value.toLowerCase();
+const wikiPagesResultingFromQuery = ref([]);
+const queryError = ref(null);
 
-        // Pass 1: Find all matches
+watch(
+    [ query, wikiPages ],
+    () => {
+        // Pass 1: Execute query, map to IDs
 
-        const idsMatching = new Set();
+        let newWikiPagesResultingFromQuery = wikiPagesResultingFromQuery.value
+            .filter(wp => !wp.grayedOut); // only true results, not intermediate ones (important when we keep this value due to a query error)
 
-        wikiPages.value.forEach(page => {
-            const matches = page.title.toLowerCase().includes(lowercase);
+        try {
+            newWikiPagesResultingFromQuery = executeQuery(query.value, wikiPages.value);
+            queryError.value = '';
+        } catch (e) {
+            // We don't change newWikiPagesResultingFromQuery, so the previous result is still displayed,
+            // in addition to the error message.
+            queryError.value = e;
+        }
 
-            if (matches) {
-                idsMatching.add(page.id);
-            }
-        });
+        const idsMatching = new Set(newWikiPagesResultingFromQuery.map(wp => wp.id));
 
         // Pass 2: Find all parents
         // TODO Would be nice we if had a tree structure already knowing all parents.
@@ -194,13 +206,15 @@ const filteredWikiPages = computed(() => {
 
         // Decorate/shorten tree
 
-        return wikiPages.value
+        wikiPagesResultingFromQuery.value = wikiPages.value
             .filter(page => idsMatching.has(page.id) || idsParentForMatching.has(page.id))
             .map(page => ({...page, grayedOut: !idsMatching.has(page.id)}));
-    } else {
-        return wikiPages.value;
     }
-});
+);
+
+const wikiPagesResultingFromQueryNotGrayedOut = computed(() => {
+    return wikiPagesResultingFromQuery.value.filter(wp => !wp.grayedOut).length;
+})
 
 function fetchData() {
     axios
@@ -209,6 +223,7 @@ function fetchData() {
                 wikiPages {
                     id
                     title
+                    content # TODO only until we have server-side search functionality
                     parent {
                         id
                     }
