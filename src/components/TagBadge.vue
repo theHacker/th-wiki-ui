@@ -1,11 +1,11 @@
 <template>
     <span class="badge-group" :title="tooltip" @click="$emit('click')">
         <span v-if="scope" class="badge rounded-pill" v-bind="scopeAttributes">
-            <i v-if="scopeIcon" :class="'fas fa-' + scopeIcon" />
+            <i v-if="scopeIcon" :class="'fas fa-' + scopeIcon" v-bind="scopeAttributes" />
             {{ text(scope) }}
         </span>
         <span class="badge rounded-pill" v-bind="titleAttributes">
-            <i v-if="titleIcon" :class="'fas fa-' + titleIcon" />
+            <i v-if="titleIcon" :class="'fas fa-' + titleIcon" v-bind="titleAttributes" />
             {{ text(title) }}
         </span>
     </span>

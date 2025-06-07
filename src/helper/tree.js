@@ -163,6 +163,94 @@ class Tree {
         return ((node.parentNode === otherNode.parentNode) && (node !== otherNode));
     }
 
+    /**
+     * Returns the parent node of the specified node.
+     *
+     * @param {*} nodeId ID of node
+     * @returns {*|null} the parent node or `null` if the node has no parent
+     */
+    getParent(nodeId) {
+        const node = this._getNodeOrThrow(nodeId);
+
+        // Don't expose the root node
+        if (!node.parentNode || node.parentNode.root) {
+            return null;
+        }
+
+        return node.parentNode;
+    }
+
+    /**
+     * Returns all child nodes of the specified node.
+     *
+     * @param {*} nodeId ID of node
+     * @returns {[*]} all children nodes (never `null`)
+     */
+    getChildren(nodeId) {
+        const node = this._getNodeOrThrow(nodeId);
+
+        return node.childrenNodes;
+    }
+
+    /**
+     * Returns all descendant nodes of the specified node.
+     *
+     * Nodes are returned depth-first, i.e. (A1, A11, A111, A12, A2, A21) not `(A1, A2, A11, A12, A21, A111)`.
+     *
+     * @param {*} nodeId ID of node
+     * @returns {[*]} all descendant nodes (never `null`)
+     */
+    getDescendants(nodeId) {
+        const node = this._getNodeOrThrow(nodeId);
+
+        const descendants = [];
+        for (const childNode of node.childrenNodes) {
+            descendants.push(childNode);
+            descendants.push(...this.getDescendants(childNode.id));
+        }
+
+        return descendants;
+    }
+
+    /**
+     * Returns all ancestor nodes of the specified node.
+     *
+     * Nodes are returned from the specified node towards root.
+     *
+     * @param {*} nodeId ID of node
+     * @returns {[*]} all ancestor nodes (never `null`)
+     */
+    getAncestors(nodeId) {
+        let node = this._getNodeOrThrow(nodeId);
+
+        const ancestors = [];
+        while (node.parentNode && !node.parentNode.root) {
+            ancestors.push(node.parentNode);
+
+            node = node.parentNode;
+        }
+
+        return ancestors;
+    }
+
+    /**
+     * Returns all sibling nodes of the specified node.
+     *
+     * @param {*} nodeId ID of node
+     * @returns {[*]} all sibling nodes (never `null`)
+     */
+    getSiblings(nodeId) {
+        const node = this._getNodeOrThrow(nodeId);
+
+        if (!node.parentNode || node.parentNode.root) {
+            return [];
+        }
+
+        const parent = node.parentNode;
+
+        return parent.childrenNodes.filter(childNode => childNode.id !== nodeId);
+    }
+
     _getNodeOrThrow(nodeId) {
         if (nodeId === null) {
             return this.rootNode;

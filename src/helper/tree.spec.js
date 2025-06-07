@@ -239,7 +239,7 @@ describe('Tree', () => {
         });
     });
 
-    describe('isParent(), isAncestor(), isChild(), isDescendant(), isSibling() functions', () => {
+    describe('relationship functions', () => {
 
         const items = [
             { id: 1, title: "A", parentId: null },
@@ -261,63 +261,127 @@ describe('Tree', () => {
         ];
         const tree = new Tree({items});
 
-        it('general cases', () => {
-            expect(tree.isParent(1, 10)).toBe(true);
-            expect(tree.isParent(1, 100)).toBe(false);
-            expect(tree.isParent(1, 2)).toBe(false);
+        describe('isParent(), isAncestor(), isChild(), isDescendant(), isSibling() functions', () => {
 
-            expect(tree.isAncestor(1, 10)).toBe(true);
-            expect(tree.isAncestor(1, 100)).toBe(true);
-            expect(tree.isAncestor(1, 2)).toBe(false);
-            expect(tree.isAncestor(4, 4221)).toBe(true);
+            it('general cases', () => {
+                expect(tree.isParent(1, 10)).toBe(true);
+                expect(tree.isParent(1, 100)).toBe(false);
+                expect(tree.isParent(1, 2)).toBe(false);
 
-            expect(tree.isChild(421, 42)).toBe(true);
-            expect(tree.isChild(4221, 42)).toBe(false);
-            expect(tree.isChild(2, 42)).toBe(false);
+                expect(tree.isAncestor(1, 10)).toBe(true);
+                expect(tree.isAncestor(1, 100)).toBe(true);
+                expect(tree.isAncestor(1, 2)).toBe(false);
+                expect(tree.isAncestor(4, 4221)).toBe(true);
 
-            expect(tree.isDescendant(421, 42)).toBe(true);
-            expect(tree.isDescendant(4221, 42)).toBe(true);
-            expect(tree.isDescendant(2, 42)).toBe(false);
+                expect(tree.isChild(421, 42)).toBe(true);
+                expect(tree.isChild(4221, 42)).toBe(false);
+                expect(tree.isChild(2, 42)).toBe(false);
 
-            expect(tree.isSibling(1, 2)).toBe(true);
-            expect(tree.isSibling(4220, 4221)).toBe(true);
-            expect(tree.isSibling(41, 10)).toBe(false);
+                expect(tree.isDescendant(421, 42)).toBe(true);
+                expect(tree.isDescendant(4221, 42)).toBe(true);
+                expect(tree.isDescendant(2, 42)).toBe(false);
+
+                expect(tree.isSibling(1, 2)).toBe(true);
+                expect(tree.isSibling(4220, 4221)).toBe(true);
+                expect(tree.isSibling(41, 10)).toBe(false);
+            });
+
+            it('comparing with itself returns false', () => {
+                expect(tree.isParent(42, 42)).toBe(false);
+                expect(tree.isAncestor(42, 42)).toBe(false);
+                expect(tree.isChild(42, 42)).toBe(false);
+                expect(tree.isDescendant(42, 42)).toBe(false);
+                expect(tree.isSibling(42, 42)).toBe(false);
+            });
+
+            it('works comparing with null representing the synthetic root node', () => {
+                expect(tree.isParent(null, 1)).toBe(true);
+                expect(tree.isParent(null, 100)).toBe(false);
+                expect(tree.isParent(1, null)).toBe(false);
+
+                expect(tree.isAncestor(null, 1)).toBe(true);
+                expect(tree.isAncestor(null, 100)).toBe(true);
+                expect(tree.isAncestor(1, null)).toBe(false);
+                expect(tree.isAncestor(null, 4221)).toBe(true);
+
+                expect(tree.isChild(4, null)).toBe(true);
+                expect(tree.isChild(4221, null)).toBe(false);
+                expect(tree.isChild(null, 4)).toBe(false);
+
+                expect(tree.isDescendant(4, null)).toBe(true);
+                expect(tree.isDescendant(4221, null)).toBe(true);
+                expect(tree.isDescendant(null, 4)).toBe(false);
+
+                expect(tree.isSibling(1, null)).toBe(false);
+                expect(tree.isSibling(null, 1)).toBe(false);
+
+                expect(tree.isParent(null, null)).toBe(false);
+                expect(tree.isAncestor(null, null)).toBe(false);
+                expect(tree.isChild(null, null)).toBe(false);
+                expect(tree.isDescendant(null, null)).toBe(false);
+                expect(tree.isSibling(null, null)).toBe(false);
+            });
         });
 
-        it('comparing with itself returns false', () => {
-            expect(tree.isParent(42, 42)).toBe(false);
-            expect(tree.isAncestor(42, 42)).toBe(false);
-            expect(tree.isChild(42, 42)).toBe(false);
-            expect(tree.isDescendant(42, 42)).toBe(false);
-            expect(tree.isSibling(42, 42)).toBe(false);
-        });
+        describe('getParent(), getAncestors(), getChildren(), getDescendants(), getSiblings() functions', () => {
 
-        it('works comparing with null representing the synthetic root node', () => {
-            expect(tree.isParent(null, 1)).toBe(true);
-            expect(tree.isParent(null, 100)).toBe(false);
-            expect(tree.isParent(1, null)).toBe(false);
+            it('general cases', () => {
+                expect(tree.getParent(1)).toBeNull(); // the synthetic root node is never returned
+                expect(tree.getParent(100)).toMatchObject({ id: 10, title: "A1", parentId: 1 });
 
-            expect(tree.isAncestor(null, 1)).toBe(true);
-            expect(tree.isAncestor(null, 100)).toBe(true);
-            expect(tree.isAncestor(1, null)).toBe(false);
-            expect(tree.isAncestor(null, 4221)).toBe(true);
+                expect(tree.getAncestors(4221)).toEqual([
+                    expect.objectContaining({ id: 422, title: "D23", parentId: 42 }),
+                    expect.objectContaining({ id: 42, title: "D2", parentId: 4 }),
+                    expect.objectContaining({ id: 4, title: "D", parentId: null })
+                ]);
+                expect(tree.getAncestors(422)).toEqual([
+                    expect.objectContaining({ id: 42, title: "D2", parentId: 4 }),
+                    expect.objectContaining({ id: 4, title: "D", parentId: null })
+                ]);
+                expect(tree.getAncestors(42)).toEqual([
+                    expect.objectContaining({ id: 4, title: "D", parentId: null })
+                ]);
+                expect(tree.getAncestors(4)).toEqual([]);
 
-            expect(tree.isChild(4, null)).toBe(true);
-            expect(tree.isChild(4221, null)).toBe(false);
-            expect(tree.isChild(null, 4)).toBe(false);
+                expect(tree.getChildren(42)).toEqual([
+                    expect.objectContaining({ id: 420, title: "D21", parentId: 42 }),
+                    expect.objectContaining({ id: 421, title: "D22", parentId: 42 }),
+                    expect.objectContaining({ id: 422, title: "D23", parentId: 42 })
+                ]);
+                expect(tree.getChildren(40)).toEqual([]);
 
-            expect(tree.isDescendant(4, null)).toBe(true);
-            expect(tree.isDescendant(4221, null)).toBe(true);
-            expect(tree.isDescendant(null, 4)).toBe(false);
+                expect(tree.getDescendants(42)).toEqual([
+                    expect.objectContaining({ id: 420, title: "D21", parentId: 42 }),
+                    expect.objectContaining({ id: 421, title: "D22", parentId: 42 }),
+                    expect.objectContaining({ id: 422, title: "D23", parentId: 42 }),
+                    expect.objectContaining({ id: 4220, title: "D231", parentId: 422 }),
+                    expect.objectContaining({ id: 4221, title: "D232", parentId: 422 })
+                ]);
+                expect(tree.getDescendants(4221)).toEqual([]);
 
-            expect(tree.isSibling(1, null)).toBe(false);
-            expect(tree.isSibling(null, 1)).toBe(false);
+                expect(tree.getSiblings(42)).toEqual([
+                    expect.objectContaining({ id: 41, title: "D1", parentId: 4 }),
+                    expect.objectContaining({ id: 40, title: "D3", parentId: 4 })
+                ]);
+                expect(tree.getSiblings(10)).toEqual([]);
+            });
 
-            expect(tree.isParent(null, null)).toBe(false);
-            expect(tree.isAncestor(null, null)).toBe(false);
-            expect(tree.isChild(null, null)).toBe(false);
-            expect(tree.isDescendant(null, null)).toBe(false);
-            expect(tree.isSibling(null, null)).toBe(false);
+            it('works with null representing the synthetic root node', () => {
+                expect(tree.getParent(null)).toBeNull(); // root has no parent (i.e. it's NOT its own parent)
+
+                expect(tree.getAncestors(null)).toEqual([]);
+
+                expect(tree.getChildren(null)).toEqual([
+                    expect.objectContaining({ id: 1, title: "A", parentId: null }),
+                    expect.objectContaining({ id: 2, title: "B", parentId: null }),
+                    expect.objectContaining({ id: 3, title: "C", parentId: null }),
+                    expect.objectContaining({ id: 4, title: "D", parentId: null })
+                ]);
+
+                expect(tree.getDescendants(null)).toEqual(items.map(i => expect.objectContaining(i)));
+
+                expect(tree.getSiblings(null)).toEqual([]); // root has no sibling (i.e. it's NOT its own sibling)
+            });
         });
     });
 

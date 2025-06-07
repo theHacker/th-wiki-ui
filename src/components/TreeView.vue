@@ -45,6 +45,8 @@ const props = defineProps({
     }
 });
 
+defineExpose({ expandAllNodes, collapseAllNodes });
+
 const allIds = computed(() => {
     return props.items
         .map(item => props.idFunction(item));
@@ -124,6 +126,14 @@ function expandCollapseNode(item) {
     } else {
         expandedIds.value.add(id);
     }
+}
+
+function collapseAllNodes() {
+    expandedIds.value.clear();
+}
+
+function expandAllNodes() {
+    allIds.value.forEach(id => expandedIds.value.add(id));
 }
 </script>
 
