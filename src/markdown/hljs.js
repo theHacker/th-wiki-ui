@@ -3,6 +3,7 @@ import hljs from 'highlight.js/lib/core';
 import apache from 'highlight.js/lib/languages/apache';
 import bash from 'highlight.js/lib/languages/bash';
 import c from 'highlight.js/lib/languages/c';
+import cpp from 'highlight.js/lib/languages/cpp';
 import css from 'highlight.js/lib/languages/css';
 import diff from 'highlight.js/lib/languages/diff';
 import dns from 'highlight.js/lib/languages/dns';
@@ -47,6 +48,7 @@ const interestingLanguages = {
     'apache': apache,
     'bash': bash,
     'c': c,
+    'cpp': cpp,
     'css': css,
     'diff': diff,
     'dns': dns,
