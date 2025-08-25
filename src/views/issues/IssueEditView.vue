@@ -37,10 +37,15 @@ import ErrorMessage from "@/components/ErrorMessage.vue";
 import IssueEditForm from "@/components/issues/IssueEditForm.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 import {computed, ref, watch} from "vue";
+import {useHead} from "@unhead/vue";
 import {useRoute, useRouter} from "vue-router";
 import axios from "@/axios.js";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import {handleError} from "@/helper/graphql-error-handling.js";
+
+useHead({
+    title: 'Edit issue'
+});
 
 const route = useRoute();
 const router = useRouter();

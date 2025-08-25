@@ -32,10 +32,15 @@ import ErrorMessage from "@/components/ErrorMessage.vue";
 import TagEditForm from "@/components/tags/TagEditForm.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 import {ref, watch} from "vue";
+import {useHead} from "@unhead/vue";
 import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import {useRoute, useRouter} from "vue-router";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
+
+useHead({
+    title: 'Edit tag'
+});
 
 const tag = ref(null);
 

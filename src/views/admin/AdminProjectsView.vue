@@ -107,12 +107,17 @@
 
 <script setup>
 import {ref} from "vue";
+import {useHead} from "@unhead/vue";
 import BaseButton from "@/components/BaseButton.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import axios from "@/axios.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import GridLayout from "@/components/layout/GridLayout.vue";
+
+useHead({
+    title: 'Projects'
+});
 
 const projects = ref([]);
 const loading = ref(true);

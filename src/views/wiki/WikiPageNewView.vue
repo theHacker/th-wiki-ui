@@ -24,11 +24,16 @@
 <script setup>
 import axios from "@/axios.js";
 import {ref} from 'vue';
+import {useHead} from "@unhead/vue";
 import {useRouter} from "vue-router";
 import WikiPageEditForm from "@/components/wiki/WikiPageEditForm.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 import {handleError} from "@/helper/graphql-error-handling.js";
+
+useHead({
+    title: 'New wiki page'
+});
 
 const router = useRouter();
 

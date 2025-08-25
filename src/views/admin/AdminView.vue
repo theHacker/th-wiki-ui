@@ -18,7 +18,12 @@
 </template>
 
 <script setup>
+import {useHead} from "@unhead/vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
+
+useHead({
+    title: 'Administration'
+});
 
 const tiles = [
     { title: 'Projects', icon: 'rocket', linkTo: '/projects' },

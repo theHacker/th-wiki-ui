@@ -37,9 +37,14 @@ import IssueEditForm from "@/components/issues/IssueEditForm.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import {computed, ref} from "vue";
+import {useHead} from "@unhead/vue";
 import {useRouter} from "vue-router";
 import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
+
+useHead({
+    title: 'New issue'
+});
 
 const router = useRouter();
 

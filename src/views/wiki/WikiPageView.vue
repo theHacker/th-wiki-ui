@@ -206,7 +206,8 @@ const TabStates = {
 
 <script setup>
 import axios from "@/axios.js";
-import {ref, watch, useTemplateRef} from 'vue';
+import {ref, watch, useTemplateRef, computed} from 'vue';
+import {useHead} from "@unhead/vue";
 import {useRoute, useRouter} from "vue-router";
 import {renderMarkdown, highlightMarkdown} from "@/markdown";
 import WikiPagesTree from "@/components/wiki/WikiPagesTree.vue";
@@ -251,6 +252,10 @@ const availableGlobalTags = ref([]);
 const manageTagsDialogOpen = ref(false);
 const manageTagsDialogSaving = ref(false);
 const assignedTagIdsInDialog = ref([]);
+
+useHead({
+    title: computed(() => wikiPage.value?.title || 'Wiki')
+});
 
 watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 

@@ -573,6 +573,7 @@ const issueLinkTypeIcons = {
 <script setup>
 import GridLayout from "@/components/layout/GridLayout.vue";
 import {computed, ref, watch} from "vue";
+import {useHead} from "@unhead/vue";
 import {useRoute, useRouter} from "vue-router";
 import {getDueColor} from "@/views/issues/issue-functions.js";
 import {highlightMarkdown, renderMarkdownAndReplaceIssueLinks} from "@/markdown";
@@ -783,6 +784,16 @@ const addIssueLinkSubmitDisabled = computed(() => {
     // All clear
 
     return false;
+});
+
+useHead({
+    title: computed(() => {
+        if (issue.value) {
+            return `${issue.value.issueKey}: ${issue.value.title}`;
+        } else {
+            return 'Issues';
+        }
+    })
 });
 
 watch(() => route.params.issueId, fetchData, { immediate: true });

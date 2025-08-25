@@ -441,6 +441,7 @@
 </template>
 
 <script setup>
+import {useHead} from "@unhead/vue";
 import BaseButton from "@/components/BaseButton.vue";
 import SearchInput from "@/components/SearchInput.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
@@ -457,6 +458,10 @@ import TagBadge from "@/components/TagBadge.vue";
 import {sortTags} from "@/helper/sort-tags.js";
 import {syncStateToHash} from "@/helper/hash-state.js";
 import {refSyncStateToUserPreferences, UserPreferencesKeys} from "@/helper/local-storage.js";
+
+useHead({
+    title: 'Issues'
+});
 
 const sortFunctions = ref([]);
 
