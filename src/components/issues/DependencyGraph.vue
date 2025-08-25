@@ -8,7 +8,7 @@
 <script setup>
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import {computedAsync} from "@vueuse/core";
-import {renderMarkdown} from "@/markdown";
+import MarkdownRenderer from "@/markdown/rendering.js";
 import {onMounted, ref, watch} from "vue";
 import axios from "@/axios.js";
 
@@ -49,6 +49,8 @@ onMounted(() => {
             issueLinkTypes.value = data.issueLinkTypes;
         });
 });
+
+const markdownRenderer = MarkdownRenderer.withAxios(axios);
 
 async function fetchData() {
     involvedIssues.value = null;
@@ -299,7 +301,7 @@ const dependencyGraphSvg = computedAsync(async () => {
     }
 
     const dependencyGraphMarkdown = '```mermaid\n' + dependencyGraphMermaid + '\n```';
-    return await renderMarkdown(dependencyGraphMarkdown);
+    return await markdownRenderer.render(dependencyGraphMarkdown);
 });
 </script>
 

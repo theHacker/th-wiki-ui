@@ -66,7 +66,8 @@ const ButtonStates = {
 import {ref} from "vue";
 import {computedAsync} from "@vueuse/core";
 import BaseButton from "@/components/BaseButton.vue";
-import {renderMarkdown} from "@/markdown";
+import MarkdownRenderer from "@/markdown/rendering.js";
+import axios from "@/axios.js";
 
 const model = defineModel();
 
@@ -87,9 +88,11 @@ defineProps({
 
 const buttonState = ref(ButtonStates.Text);
 
+const markdownRenderer = MarkdownRenderer.withAxios(axios);
+
 const preview = computedAsync(async () => {
     if (buttonState.value === ButtonStates.Preview) {
-        return await renderMarkdown(model.value);
+        return await markdownRenderer.render(model.value);
     } else {
         return null; // don't render on every change when preview is not visible
     }

@@ -576,7 +576,7 @@ import {computed, ref, watch} from "vue";
 import {useHead} from "@unhead/vue";
 import {useRoute, useRouter} from "vue-router";
 import {getDueColor} from "@/views/issues/issue-functions.js";
-import {highlightMarkdown, renderMarkdownAndReplaceIssueLinks} from "@/markdown";
+import MarkdownRenderer from "@/markdown/rendering.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import BaseDropdown from "@/components/BaseDropdown.vue";
 import BaseDropdownItem from "@/components/BaseDropdownItem.vue";
@@ -803,6 +803,8 @@ syncStateToHash([
     { type: 'enum', ref: linksTabState, enumObject: LinksTabStates }
 ]);
 
+const markdownRenderer = MarkdownRenderer.withAxios(axios);
+
 function fetchData(id) {
     errors.value = [];
     issue.value = null;
@@ -954,8 +956,8 @@ function fetchData(id) {
             } else {
                 issue.value = {
                     ...data.issue,
-                    renderedMarkdown: await renderMarkdownAndReplaceIssueLinks(data.issue.description),
-                    highlightedMarkdown: highlightMarkdown(data.issue.description)
+                    renderedMarkdown: await markdownRenderer.renderWithIssueLinks(data.issue.description),
+                    highlightedMarkdown: markdownRenderer.highlightMarkdown(data.issue.description)
                 };
                 projects.value = data.projects;
                 issueStatuses.value = data.issueStatuses;
