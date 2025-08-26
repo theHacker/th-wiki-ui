@@ -325,7 +325,7 @@ function fetchData(id) {
             } else {
                 wikiPage.value = {
                     ...data.wikiPage,
-                    renderedMarkdown: await markdownRenderer.render(data.wikiPage.content),
+                    renderedMarkdown: await markdownRenderer.renderWithIssueLinks(data.wikiPage.content),
                     highlightedMarkdown: markdownRenderer.highlightMarkdown(data.wikiPage.content)
                 };
                 allWikiPagesTree.value = new Tree({
