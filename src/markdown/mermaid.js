@@ -16,10 +16,22 @@ const mermaidExtension = {
             const langString = (token.lang || '').match(/^\S*/)?.[0];
             if (langString === 'mermaid') {
                 const svgId = 'mermaid-' + Date.now() + '-' + (++mermaidIdCounter);
-                const renderResult = await mermaid.render(svgId, token.text);
-                const {svg} = renderResult;
+                try {
+                    const renderResult = await mermaid.render(svgId, token.text);
+                    const {svg} = renderResult;
 
-                token.mermaidSvg = svg;
+                    token.mermaidSvg = svg;
+                } catch (e) {
+                    token.mermaidSvg = `
+                        <div class="card bg-danger-subtle text-danger-emphasis mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-bug pe-1"></i>
+                                Mermaid could not render
+                            </div>
+                            <pre class="card-body bg-transparent mb-0">${e}</pre>
+                        </div>
+                    `;
+                }
             }
         }
     },
