@@ -186,5 +186,39 @@ describe('MarkdownRenderer', () => {
                 expect(issuesSupplier).toHaveBeenCalledWith(['FOO-1', 'FOO-43']);
             });
         });
+
+        it("does not replace issue keys within code ticks", async () => {
+            const allProjectsSupplier = () => Promise.resolve([
+                { prefix: "FOO" },
+            ]);
+            const issuesSupplier = () => Promise.resolve([
+                {
+                    id: "76c0a474-96f9-464b-aa2b-636a7445a0a2",
+                    issueKey: 'FOO-1234',
+                    title: 'Any issue',
+                    issueType: { title: 'Feature' },
+                    issuePriority: { title: 'High' },
+                    issueStatus: { title: 'Open' }
+                },
+            ]);
+
+            const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
+            const markdown = trimIndent`
+                - Should be replaced: FOO-1234
+                - Should **not** be replaced: \`FOO-1234\`
+                
+                Outside of list items, analog FOO-1234 vs. \`FOO-1234\`.
+            `;
+            const expectedHtml = trimIndent`
+                <ul>
+                <li>Should be replaced: <a href="/issues/76c0a474-96f9-464b-aa2b-636a7445a0a2" class="issue-link" title="FOO-1234&#10;Any issue&#10;&#10;Type: Feature&#10;Priority: High&#10;Status: Open"><span>FOO-1234</span><i class="fas fa-square-up-right fa-sm"></i></a></li>
+                <li>Should <strong>not</strong> be replaced: <code>FOO-1234</code></li>
+                </ul>
+                <p>Outside of list items, analog <a href="/issues/76c0a474-96f9-464b-aa2b-636a7445a0a2" class="issue-link" title="FOO-1234&#10;Any issue&#10;&#10;Type: Feature&#10;Priority: High&#10;Status: Open"><span>FOO-1234</span><i class="fas fa-square-up-right fa-sm"></i></a> vs. <code>FOO-1234</code>.</p>
+                
+            `;
+
+            expect(await renderer.renderWithIssueLinks(markdown)).toEqual(expectedHtml);
+        });
     });
 });
