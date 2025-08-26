@@ -542,6 +542,7 @@ function updateTags() {
         .then(_data => {
             // Refresh wiki page and get finalized tags (fully loaded).
             fetchData(wikiPage.value.id);
+            wikiPagesTree.value.refreshTree();
         })
         .catch(e => {
             const handledErrors = handleError(e);
