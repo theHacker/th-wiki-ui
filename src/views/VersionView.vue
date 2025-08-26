@@ -53,8 +53,13 @@
 <script setup>
 import axios from "@/axios.js";
 import {ref} from "vue";
+import {useHead} from "@unhead/vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
+
+useHead({
+    title: 'Version'
+});
 
 const version = ref({
     api: null,

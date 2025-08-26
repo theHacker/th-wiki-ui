@@ -220,8 +220,13 @@ import TagBadge from "@/components/TagBadge.vue";
 import DeleteDialog from "@/components/DeleteDialog.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import {sortTags} from "@/helper/sort-tags.js";
+import {useHead} from "@unhead/vue";
 import {useRouter} from "vue-router";
 import {refSyncStateToUserPreferences, UserPreferencesKeys} from "@/helper/local-storage.js";
+
+useHead({
+    title: 'Tags'
+});
 
 const router = useRouter();
 

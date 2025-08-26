@@ -573,9 +573,10 @@ const issueLinkTypeIcons = {
 <script setup>
 import GridLayout from "@/components/layout/GridLayout.vue";
 import {computed, ref, watch} from "vue";
+import {useHead} from "@unhead/vue";
 import {useRoute, useRouter} from "vue-router";
 import {getDueColor} from "@/views/issues/issue-functions.js";
-import {highlightMarkdown, renderMarkdownAndReplaceIssueLinks} from "@/markdown";
+import MarkdownRenderer from "@/markdown/rendering.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import BaseDropdown from "@/components/BaseDropdown.vue";
 import BaseDropdownItem from "@/components/BaseDropdownItem.vue";
@@ -785,12 +786,24 @@ const addIssueLinkSubmitDisabled = computed(() => {
     return false;
 });
 
+useHead({
+    title: computed(() => {
+        if (issue.value) {
+            return `${issue.value.issueKey}: ${issue.value.title}`;
+        } else {
+            return 'Issues';
+        }
+    })
+});
+
 watch(() => route.params.issueId, fetchData, { immediate: true });
 
 syncStateToHash([
     { type: 'enum', ref: tabState, enumObject: TabStates },
     { type: 'enum', ref: linksTabState, enumObject: LinksTabStates }
 ]);
+
+const markdownRenderer = MarkdownRenderer.withAxios(axios);
 
 function fetchData(id) {
     errors.value = [];
@@ -943,8 +956,8 @@ function fetchData(id) {
             } else {
                 issue.value = {
                     ...data.issue,
-                    renderedMarkdown: await renderMarkdownAndReplaceIssueLinks(data.issue.description),
-                    highlightedMarkdown: highlightMarkdown(data.issue.description)
+                    renderedMarkdown: await markdownRenderer.renderWithIssueLinks(data.issue.description),
+                    highlightedMarkdown: markdownRenderer.highlightMarkdown(data.issue.description)
                 };
                 projects.value = data.projects;
                 issueStatuses.value = data.issueStatuses;

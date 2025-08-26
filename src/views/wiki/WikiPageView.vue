@@ -206,9 +206,10 @@ const TabStates = {
 
 <script setup>
 import axios from "@/axios.js";
-import {ref, watch, useTemplateRef} from 'vue';
+import {ref, watch, useTemplateRef, computed} from 'vue';
+import {useHead} from "@unhead/vue";
 import {useRoute, useRouter} from "vue-router";
-import {renderMarkdown, highlightMarkdown} from "@/markdown";
+import MarkdownRenderer from "@/markdown/rendering.js";
 import WikiPagesTree from "@/components/wiki/WikiPagesTree.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import TabItem from "@/components/TabItem.vue";
@@ -252,11 +253,17 @@ const manageTagsDialogOpen = ref(false);
 const manageTagsDialogSaving = ref(false);
 const assignedTagIdsInDialog = ref([]);
 
+useHead({
+    title: computed(() => wikiPage.value?.title || 'Wiki')
+});
+
 watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 
 syncStateToHash([
     { type: 'enum', ref: tabState, enumObject: TabStates }
 ]);
+
+const markdownRenderer = MarkdownRenderer.withAxios(axios);
 
 function fetchData(id) {
     errors.value = [];
@@ -318,8 +325,8 @@ function fetchData(id) {
             } else {
                 wikiPage.value = {
                     ...data.wikiPage,
-                    renderedMarkdown: await renderMarkdown(data.wikiPage.content),
-                    highlightedMarkdown: highlightMarkdown(data.wikiPage.content)
+                    renderedMarkdown: await markdownRenderer.renderWithIssueLinks(data.wikiPage.content),
+                    highlightedMarkdown: markdownRenderer.highlightMarkdown(data.wikiPage.content)
                 };
                 allWikiPagesTree.value = new Tree({
                     items: data.wikiPages,
@@ -535,6 +542,7 @@ function updateTags() {
         .then(_data => {
             // Refresh wiki page and get finalized tags (fully loaded).
             fetchData(wikiPage.value.id);
+            wikiPagesTree.value.refreshTree();
         })
         .catch(e => {
             const handledErrors = handleError(e);

@@ -8,4 +8,9 @@
 
 <script setup>
 import GridLayout from "@/components/layout/GridLayout.vue";
+import {useHead} from "@unhead/vue";
+
+useHead({
+    title: 'Home'
+});
 </script>
