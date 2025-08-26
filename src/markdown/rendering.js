@@ -131,7 +131,22 @@ class MarkdownRenderer {
         marked2.use({
             async: true, // -> activate async mode, so we can call Mermaid which only works asynchronous
             renderer: {
+                link({href, title, tokens}) {
+                    this._insideALink = true;
+                    const text = this.constructor.prototype.link.call(this, {href, title, tokens});
+                    this._insideALink = false;
+
+                    return text;
+                },
                 text(token) {
+                    if (this._insideALink) {
+                        return token.text;
+                    }
+
+                    if (token.tokens) {
+                        return this.parser.parseInline(token.tokens);
+                    }
+
                     let text = token.text;
                     let replaced = false;
                     const NL = "&#10;";

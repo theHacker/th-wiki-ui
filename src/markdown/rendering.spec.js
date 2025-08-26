@@ -1,4 +1,4 @@
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import MarkdownRenderer from './rendering.js';
 
 /**
@@ -78,6 +78,113 @@ describe('MarkdownRenderer', () => {
             `;
 
             expect(await renderer.renderWithIssueLinks(markdown)).toEqual(expectedHtml);
+        });
+
+        describe("does not replace issue keys within links", () => {
+
+            const allProjectsSupplier = () => Promise.resolve([
+                { prefix: "THWIKI" },
+            ]);
+            const issuesSupplier = () => Promise.resolve([
+                {
+                    id: "3dc6e51f-4502-4bfd-bca7-eab5930a8da4",
+                    issueKey: 'THWIKI-29',
+                    title: '"Jump to source"-like function in the tree"',
+                    issueType: { title: 'Feature' },
+                    issuePriority: { title: 'Low' },
+                    issueStatus: { title: 'Open' }
+                },
+                {
+                    id: "b91a9fd9-e852-4be4-b6c9-c20b52221a71",
+                    issueKey: 'THWIKI-160',
+                    title: 'Show tags in the wiki navigation tree',
+                    issueType: { title: 'Feature' },
+                    issuePriority: { title: 'Normal' },
+                    issueStatus: { title: 'Open' }
+                },
+            ]);
+
+            it("works", async () => {
+                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
+                const markdown = trimIndent`
+                    Possible buttons
+                    - "Jump to source" (see [THWIKI-29](/issues/3dc6e51f-4502-4bfd-bca7-eab5930a8da4))
+                    - "Expand all"
+                    - "Collapse all"
+                    - "Show tags" (see THWIKI-160)
+                    
+                    Toolbar optic, see ButtonGroup in the Markdown "Content" text field
+                `;
+                const expectedHtml = trimIndent`
+                    <p>Possible buttons</p>
+                    <ul>
+                    <li>&quot;Jump to source&quot; (see <a href="/issues/3dc6e51f-4502-4bfd-bca7-eab5930a8da4">THWIKI-29</a>)</li>
+                    <li>&quot;Expand all&quot;</li>
+                    <li>&quot;Collapse all&quot;</li>
+                    <li>"Show tags" (see <a href="/issues/b91a9fd9-e852-4be4-b6c9-c20b52221a71" class="issue-link" title="THWIKI-160&#10;Show tags in the wiki navigation tree&#10;&#10;Type: Feature&#10;Priority: Normal&#10;Status: Open"><span>THWIKI-160</span><i class="fas fa-square-up-right fa-sm"></i></a>)</li>
+                    </ul>
+                    <p>Toolbar optic, see ButtonGroup in the Markdown &quot;Content&quot; text field</p>
+                    
+                `;
+
+                expect(await renderer.renderWithIssueLinks(markdown)).toEqual(expectedHtml);
+            });
+
+            it("parses other inline code correctly", async () => {
+                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
+                const markdown = trimIndent`
+                    Possible buttons
+                    - "Jump to source" (see [issue \`THWIKI-29\` **important**](/issues/3dc6e51f-4502-4bfd-bca7-eab5930a8da4))
+                    - "Expand all"
+                    - "Collapse all"
+                    - "Show tags" (see THWIKI-160)
+                    
+                    Toolbar optic, see ButtonGroup in the Markdown "Content" text field
+                `;
+                const expectedHtml = trimIndent`
+                    <p>Possible buttons</p>
+                    <ul>
+                    <li>&quot;Jump to source&quot; (see <a href="/issues/3dc6e51f-4502-4bfd-bca7-eab5930a8da4">issue <code>THWIKI-29</code> <strong>important</strong></a>)</li>
+                    <li>&quot;Expand all&quot;</li>
+                    <li>&quot;Collapse all&quot;</li>
+                    <li>"Show tags" (see <a href="/issues/b91a9fd9-e852-4be4-b6c9-c20b52221a71" class="issue-link" title="THWIKI-160&#10;Show tags in the wiki navigation tree&#10;&#10;Type: Feature&#10;Priority: Normal&#10;Status: Open"><span>THWIKI-160</span><i class="fas fa-square-up-right fa-sm"></i></a>)</li>
+                    </ul>
+                    <p>Toolbar optic, see ButtonGroup in the Markdown &quot;Content&quot; text field</p>
+                    
+                `;
+
+                expect(await renderer.renderWithIssueLinks(markdown)).toEqual(expectedHtml);
+            });
+
+            it("still looks up issue keys in links, only does not render", async () => {
+                const allProjectsSupplier = () => Promise.resolve([
+                    { prefix: "FOO" },
+                ]);
+                const issuesSupplier = vi.fn(() => Promise.resolve([
+                    {
+                        id: "00000000-0000-0000-0000-000000000000",
+                        issueKey: 'FOO-43',
+                        title: 'Does not matter',
+                        issueType: { title: 'Feature' },
+                        issuePriority: { title: 'Normal' },
+                        issueStatus: { title: 'Open' }
+                    },
+                ]));
+
+                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
+                const markdown = trimIndent`
+                    FOO is a project, so FOO-1 will be looked up.
+                    \`FOO-42\` is code, and [FOO-43](https://th-wiki.org/) is a link.
+                `;
+                const expectedHtml = trimIndent`
+                    <p>FOO is a project, so FOO-1 will be looked up.
+                    <code>FOO-42</code> is code, and <a href="https://th-wiki.org/">FOO-43</a> is a link.</p>
+                    
+                `;
+
+                expect(await renderer.renderWithIssueLinks(markdown)).toEqual(expectedHtml);
+                expect(issuesSupplier).toHaveBeenCalledWith(['FOO-1', 'FOO-43']);
+            });
         });
     });
 });
