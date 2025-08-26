@@ -80,6 +80,33 @@ describe('MarkdownRenderer', () => {
             expect(await renderer.renderWithIssueLinks(markdown)).toEqual(expectedHtml);
         });
 
+        it('correctly escapes everything, so the tooltip does not break', async () => {
+            const allProjectsSupplier = () => Promise.resolve([
+                { prefix: "FOO" }
+            ]);
+            const issuesSupplier = () => Promise.resolve([
+                {
+                    id: "00001111-2222-3333-4444-555566667777",
+                    issueKey: 'FOO-42',
+                    title: 'This "Issue" has \'bad\' content <|> ;-)',
+                    issueType: { title: '"Layer 8" problem' },
+                    issuePriority: { title: '<<<Lowest&Lower' },
+                    issueStatus: { title: '<testing>' },
+                },
+            ]);
+
+            const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
+            const markdown = trimIndent`
+                Let FOO-42 not break everything.
+            `;
+            const expectedHtml = trimIndent`
+                <p>Let <a href="/issues/00001111-2222-3333-4444-555566667777" class="issue-link" title="FOO-42&#10;This &quot;Issue&quot; has &#39;bad&#39; content &lt;|&gt; ;-)&#10;&#10;Type: &quot;Layer 8&quot; problem&#10;Priority: &lt;&lt;&lt;Lowest&amp;Lower&#10;Status: &lt;testing&gt;"><span>FOO-42</span><i class="fas fa-square-up-right fa-sm"></i></a> not break everything.</p>
+                
+            `;
+
+            expect(await renderer.renderWithIssueLinks(markdown)).toEqual(expectedHtml);
+        });
+
         describe("does not replace issue keys within links", () => {
 
             const allProjectsSupplier = () => Promise.resolve([

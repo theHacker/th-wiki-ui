@@ -74,6 +74,22 @@ class MarkdownRenderer {
     }
 
     /**
+     * Escapes special characters for usage in an HTML attribute (`&`, `"`, `'`, `<`, `>`).
+     *
+     * @param {string} str input string
+     * @returns {string} escaped string
+     * @private
+     */
+    static _escapeHtmlAttribute(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    /**
      * Renders markdown, finds all valid issue keys in the text,
      * and replaces it each with a link and tooltip.
      *
@@ -154,14 +170,15 @@ class MarkdownRenderer {
                     for (const [issueKey, issue] of issues) {
                         const regExp = new RegExp(`\\b${issueKey}\\b`, "g"); // Use "\b" to not cut a number, e.g. "FOO-4" will not be replaced, when there is "FOO-42"
 
+                        const e = MarkdownRenderer._escapeHtmlAttribute;
                         text = text.replaceAll(regExp, () => {
                             const link = '/issues/' + issue.id;
                             const tooltip =
                                 `${issue.issueKey}${NL}` +
-                                `${issue.title}${NL}${NL}` +
-                                `Type: ${issue.issueType.title}${NL}` +
-                                `Priority: ${issue.issuePriority.title}${NL}` +
-                                `Status: ${issue.issueStatus.title}`;
+                                `${e(issue.title)}${NL}${NL}` +
+                                `Type: ${e(issue.issueType.title)}${NL}` +
+                                `Priority: ${e(issue.issuePriority.title)}${NL}` +
+                                `Status: ${e(issue.issueStatus.title)}`;
 
                             replaced = true;
                             return `<a href="${link}" class="issue-link" title="${tooltip}">` +
