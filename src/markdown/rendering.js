@@ -3,6 +3,9 @@ import hljs from 'highlight.js/lib/core';
 import markdown from 'highlight.js/lib/languages/markdown';
 import mermaidExtension from "./mermaid";
 import hljsExtension from "./hljs";
+import {trimIndent} from "@/helper/string.js";
+
+const apiUrl = () => window?.env?.API_URL || import.meta.env.VITE_API_URL;
 
 hljs.registerLanguage('markdown', markdown);
 
@@ -65,12 +68,32 @@ class MarkdownRenderer {
         return new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
     }
 
-    async render(markdown) {
+    /**
+     * Renders Markdown code to HTML, "plain" without any additional features.
+     *
+     * @param {string} markdown Markdown code
+     * @returns {Promise<string>} rendered HTML
+     */
+    async renderPlain(markdown) {
         const marked = new Marked();
         marked.use(mermaidExtension);
         marked.use(hljsExtension);
 
         return marked.parse(markdown); // TODO Warning: We don't have any protection against malicious HTML! See https://marked.js.org/#installation
+    }
+
+    /**
+     * Escapes special characters for usage inside an HTML tag (`&`, `<`, `>`).
+     *
+     * @param {string} str input string
+     * @returns {string} escaped string
+     * @private
+     */
+    static _escapeHtmlText(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
     }
 
     /**
@@ -90,16 +113,22 @@ class MarkdownRenderer {
     }
 
     /**
-     * Renders markdown, finds all valid issue keys in the text,
-     * and replaces it each with a link and tooltip.
+     * Renders markdown "rich" with all our features.
+     *
+     * Finds all valid issue keys in the text, and replaces it each with a link and tooltip.
+     * Images with relative paths are taken from attachments.
      *
      * This function needs two API requests (all project prefixes, found issues),
      * and will parse the markdown twice.
      *
+     * Attachments need to be loaded by the caller. They cannot be loaded by us, because
+     * there is no information in the markdown how to access them (wiki page vs. issue?, which ID?).
+     *
      * @param {string} markdown Markdown
+     * @param {{id: string, filename: string, description: string}[]} [attachments] Attachments for rendering inline images
      * @returns {Promise<string>} Rendered Markdown as HTML code
      */
-    async renderWithIssueLinks(markdown) {
+    async renderRich(markdown, attachments) {
         // First find all project prefixes
 
         const allProjects = await this.allProjectsSupplier();
@@ -188,6 +217,56 @@ class MarkdownRenderer {
                     }
 
                     return replaced ? text : false; // if nothing was replaced, use the default renderer, that converts URL to links for example
+                },
+                image({href, title, text}) {
+                    if (href.includes("/") && !href.startsWith("./")) {
+                        return false;
+                    }
+
+                    // local image from attachments
+
+                    let filename;
+                    if (href.startsWith("./")) {
+                        filename = href.substring(2);
+                    } else {
+                        filename = href;
+                    }
+
+                    const attachment = attachments?.find(a => a.filename === filename);
+                    if (attachment) {
+                        const e = MarkdownRenderer._escapeHtmlAttribute;
+                        const src = `${apiUrl()}/attachments/${attachment.id}`;
+
+                        // No override from Markdown, take strings from the attachment
+                        if (!text && attachment.description) {
+                            text = attachment.description;
+                        }
+
+                        // No title? Then default to alt/description
+                        if (!title && text) {
+                            title = text;
+                        }
+
+                        // Include title attribute only if there is content
+                        let titleAttr = '';
+                        if (title) {
+                            titleAttr = ` title="${e(title)}"`;
+                        }
+
+                        return `<img src="${src}" alt="${e(text)}"${titleAttr} />`;
+                    } else {
+                        const e = MarkdownRenderer._escapeHtmlText;
+
+                        return trimIndent`
+                            <div class="card bg-danger-subtle text-danger-emphasis mb-4">
+                                <div class="card-header">
+                                    <i class="fas fa-bug pe-1"></i>
+                                    Attachment not found
+                                </div>
+                                <p class="card-body bg-transparent mb-0">There is no attachment with filename <code>${e(filename)}</code>.</p>
+                            </div>
+                        `;
+                    }
                 }
             }
         });

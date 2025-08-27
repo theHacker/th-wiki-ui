@@ -297,6 +297,11 @@ function fetchData(id) {
                             titleColor
                             description
                         }
+                        attachments {
+                            id
+                            filename
+                            description
+                        }
                     }
                     wikiPages {
                         id
@@ -325,7 +330,7 @@ function fetchData(id) {
             } else {
                 wikiPage.value = {
                     ...data.wikiPage,
-                    renderedMarkdown: await markdownRenderer.renderWithIssueLinks(data.wikiPage.content),
+                    renderedMarkdown: await markdownRenderer.renderRich(data.wikiPage.content, data.wikiPage.attachments),
                     highlightedMarkdown: markdownRenderer.highlightMarkdown(data.wikiPage.content)
                 };
                 allWikiPagesTree.value = new Tree({

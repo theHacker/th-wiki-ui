@@ -301,7 +301,7 @@ const dependencyGraphSvg = computedAsync(async () => {
     }
 
     const dependencyGraphMarkdown = '```mermaid\n' + dependencyGraphMermaid + '\n```';
-    return await markdownRenderer.render(dependencyGraphMarkdown);
+    return await markdownRenderer.renderPlain(dependencyGraphMarkdown);
 });
 </script>
 

@@ -909,6 +909,11 @@ function fetchData(id) {
                             titleColor
                             description
                         }
+                        attachments {
+                            id
+                            filename
+                            description
+                        }
                     }
                     projects {
                         id
@@ -956,7 +961,7 @@ function fetchData(id) {
             } else {
                 issue.value = {
                     ...data.issue,
-                    renderedMarkdown: await markdownRenderer.renderWithIssueLinks(data.issue.description),
+                    renderedMarkdown: await markdownRenderer.renderRich(data.issue.description, data.issue.attachments),
                     highlightedMarkdown: markdownRenderer.highlightMarkdown(data.issue.description)
                 };
                 projects.value = data.projects;
