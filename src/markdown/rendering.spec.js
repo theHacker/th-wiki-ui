@@ -430,6 +430,30 @@ describe('MarkdownRenderer', () => {
 
                 expect(await renderer.renderRich(markdown, attachments)).toEqual(expectedHtml);
             });
+
+            it('works with spaces in filenames, they are %20 in markdown', async () => {
+                const allProjectsSupplier = () => Promise.resolve([]);
+                const issuesSupplier = () => Promise.resolve([]);
+
+                const attachments = [
+                    {
+                        id: "b981484a-a376-4962-8799-61158b3598d7",
+                        filename: "Screenshot 2025-08-26 14:55:23.png",
+                        description: ""
+                    }
+                ]
+
+                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
+                const markdown = trimIndent`
+                    ![](Screenshot%202025-08-26%2014:55:23.png)
+                `;
+                const expectedHtml = trimIndent`
+                    <p><img src="http://localhost:8080/api/attachments/b981484a-a376-4962-8799-61158b3598d7" alt="" /></p>
+                    
+                `;
+
+                expect(await renderer.renderRich(markdown, attachments)).toEqual(expectedHtml);
+            });
         });
     });
 });

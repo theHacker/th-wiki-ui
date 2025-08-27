@@ -231,6 +231,7 @@ class MarkdownRenderer {
                     } else {
                         filename = href;
                     }
+                    filename = decodeURIComponent(filename);
 
                     const attachment = attachments?.find(a => a.filename === filename);
                     if (attachment) {
