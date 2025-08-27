@@ -26,4 +26,32 @@ function trimIndent(strings, ...values) {
     return lines.map(line => line.slice(minIndent)).join('\n');
 }
 
-export { trimIndent };
+/**
+ * Escapes special characters for usage inside an HTML tag (`&`, `<`, `>`).
+ *
+ * @param {string} str input string
+ * @returns {string} escaped string
+ */
+function escapeHtmlText(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+/**
+ * Escapes special characters for usage in an HTML attribute (`&`, `"`, `'`, `<`, `>`).
+ *
+ * @param {string} str input string
+ * @returns {string} escaped string
+ */
+function escapeHtmlAttribute(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+export { trimIndent, escapeHtmlText, escapeHtmlAttribute };

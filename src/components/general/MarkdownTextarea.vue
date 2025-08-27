@@ -88,7 +88,8 @@ defineProps({
 
 const buttonState = ref(ButtonStates.Text);
 
-const markdownRenderer = MarkdownRenderer.withAxios(axios);
+const markdownRenderer = new MarkdownRenderer();
+markdownRenderer.enableIssueLookupByAxios(axios);
 
 const preview = computedAsync(async () => {
     if (buttonState.value === ButtonStates.Preview) {

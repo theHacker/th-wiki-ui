@@ -45,7 +45,7 @@ const props = defineProps({
     }
 });
 
-defineExpose({ expandAllNodes, collapseAllNodes });
+defineExpose({ expandNode, collapseNode, toggleNode, expandAllNodes, collapseAllNodes });
 
 const allIds = computed(() => {
     return props.items
@@ -121,6 +121,22 @@ function isNodeVisible(item) {
 
 function expandCollapseNode(item) {
     const id = props.idFunction(item);
+    if (expandedIds.value.has(id)) {
+        expandedIds.value.delete(id);
+    } else {
+        expandedIds.value.add(id);
+    }
+}
+
+function expandNode(id) {
+    expandedIds.value.add(id);
+}
+
+function collapseNode(id) {
+    expandedIds.value.delete(id);
+}
+
+function toggleNode(id) {
     if (expandedIds.value.has(id)) {
         expandedIds.value.delete(id);
     } else {

@@ -803,8 +803,6 @@ syncStateToHash([
     { type: 'enum', ref: linksTabState, enumObject: LinksTabStates }
 ]);
 
-const markdownRenderer = MarkdownRenderer.withAxios(axios);
-
 function fetchData(id) {
     errors.value = [];
     issue.value = null;
@@ -959,9 +957,13 @@ function fetchData(id) {
             if (data.issue === null) {
                 errors.value = ["Issue does not exist."];
             } else {
+                const markdownRenderer = new MarkdownRenderer();
+                markdownRenderer.enableIssueLookupByAxios(axios);
+                markdownRenderer.enableAttachmentByGetRequest(data.issue.attachments);
+
                 issue.value = {
                     ...data.issue,
-                    renderedMarkdown: await markdownRenderer.renderRich(data.issue.description, data.issue.attachments),
+                    renderedMarkdown: await markdownRenderer.renderRich(data.issue.description),
                     highlightedMarkdown: markdownRenderer.highlightMarkdown(data.issue.description)
                 };
                 projects.value = data.projects;

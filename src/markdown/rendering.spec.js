@@ -1,6 +1,7 @@
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 import MarkdownRenderer from './rendering.js';
 import {trimIndent} from "@/helper/string.js";
+import {createAttachmentsImageResolver, createBlobImageResolver} from "@/markdown/images.js";
 
 describe('MarkdownRenderer', () => {
 
@@ -13,7 +14,7 @@ describe('MarkdownRenderer', () => {
     describe('renderPlain()', () => {
 
         it('renders Markdown', async () => {
-            const renderer = new MarkdownRenderer(null, null);
+            const renderer = new MarkdownRenderer();
             const markdown = trimIndent`
                 # Hello Markdown
 
@@ -232,7 +233,7 @@ describe('MarkdownRenderer', () => {
 
         describe('images from attachments', () => {
 
-            it('images are replaced', async () => {
+            it('replaces images', async () => {
                 const allProjectsSupplier = () => Promise.resolve([]);
                 const issuesSupplier = () => Promise.resolve([]);
 
@@ -252,9 +253,10 @@ describe('MarkdownRenderer', () => {
                         filename: "image3.png",
                         description: "unused image"
                     },
-                ]
+                ];
+                const imageResolver = createAttachmentsImageResolver(attachments);
 
-                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
+                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier, imageResolver);
                 const markdown = trimIndent`
                     Should be replaced:
                     ![Image 1](image1.png)
@@ -280,7 +282,7 @@ describe('MarkdownRenderer', () => {
                     
                 `;
 
-                expect(await renderer.renderRich(markdown, attachments)).toEqual(expectedHtml);
+                expect(await renderer.renderRich(markdown)).toEqual(expectedHtml);
             });
 
             it('allows overriding title and description/alt by markdown, title defaults to alt, empty title is omitted', async () => {
@@ -298,9 +300,10 @@ describe('MarkdownRenderer', () => {
                         filename: "no-description.gif",
                         description: ""
                     }
-                ]
+                ];
+                const imageResolver = createAttachmentsImageResolver(attachments);
 
-                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
+                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier, imageResolver);
                 const markdown = trimIndent`
                     Override all
                     ![My description](foo.webp "My title")
@@ -349,7 +352,7 @@ describe('MarkdownRenderer', () => {
                     
                 `;
 
-                expect(await renderer.renderRich(markdown, attachments)).toEqual(expectedHtml);
+                expect(await renderer.renderRich(markdown)).toEqual(expectedHtml);
             });
 
             it('correctly escapes', async () => {
@@ -362,9 +365,10 @@ describe('MarkdownRenderer', () => {
                         filename: "my-image.gif",
                         description: "'Dangerous' <|> \"Description\" & &amp;"
                     }
-                ]
+                ];
+                const imageResolver = createAttachmentsImageResolver(attachments);
 
-                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
+                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier, imageResolver);
                 const markdown = trimIndent`
                     From attachment
                     ![](my-image.gif)
@@ -380,10 +384,10 @@ describe('MarkdownRenderer', () => {
                     
                 `;
 
-                expect(await renderer.renderRich(markdown, attachments)).toEqual(expectedHtml);
+                expect(await renderer.renderRich(markdown)).toEqual(expectedHtml);
             });
 
-            it('display error boxes for attachments not found', async () => {
+            it('displays error boxes for attachments not found', async () => {
                 const allProjectsSupplier = () => Promise.resolve([]);
                 const issuesSupplier = () => Promise.resolve([]);
 
@@ -393,9 +397,10 @@ describe('MarkdownRenderer', () => {
                         filename: "foooooo.png",
                         description: ""
                     }
-                ]
+                ];
+                const imageResolver = createAttachmentsImageResolver(attachments);
 
-                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
+                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier, imageResolver);
                 const markdown = trimIndent`
                     Not found
                     ![](not-found.gif)
@@ -428,7 +433,7 @@ describe('MarkdownRenderer', () => {
                     
                 `;
 
-                expect(await renderer.renderRich(markdown, attachments)).toEqual(expectedHtml);
+                expect(await renderer.renderRich(markdown)).toEqual(expectedHtml);
             });
 
             it('works with spaces in filenames, they are %20 in markdown', async () => {
@@ -441,9 +446,10 @@ describe('MarkdownRenderer', () => {
                         filename: "Screenshot 2025-08-26 14:55:23.png",
                         description: ""
                     }
-                ]
+                ];
+                const imageResolver = createAttachmentsImageResolver(attachments);
 
-                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
+                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier, imageResolver);
                 const markdown = trimIndent`
                     ![](Screenshot%202025-08-26%2014:55:23.png)
                 `;
@@ -452,8 +458,190 @@ describe('MarkdownRenderer', () => {
                     
                 `;
 
-                expect(await renderer.renderRich(markdown, attachments)).toEqual(expectedHtml);
+                expect(await renderer.renderRich(markdown)).toEqual(expectedHtml);
             });
+        });
+
+        describe('images from blob URLs', () => {
+
+            it('replaces images', async () => {
+                const allProjectsSupplier = () => Promise.resolve([]);
+                const issuesSupplier = () => Promise.resolve([]);
+
+                const attachments = [
+                    {
+                        path: "/foo/bar/image1.png",
+                        url: "blob:http://localhost:5173/0f6127a7-79a7-4e5e-aa6a-4452d2583579"
+                    },
+                    {
+                        path: "/foo/bar/image2.jpeg",
+                        url: "blob:http://localhost:5173/f8778276-9536-4576-9df5-b9af44484ce9"
+                    },
+                    {
+                        path: "/foo/bar/unused-image.png",
+                        url: "blob:http://localhost:5173/db66b60a-a2f4-4388-b571-974a73664c5d"
+                    },
+                ];
+                const imageResolver = createBlobImageResolver("/foo/bar/my-markdown.md", attachments);
+
+                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier, imageResolver);
+                const markdown = trimIndent`
+                    Should be replaced:
+                    ![Image 1](image1.png)
+
+                    Should also be replaced:
+                    ![Image 2](./image2.jpeg)
+
+                    Should not be replaced:
+                    ![Image 3](https://example.com/image3.png)
+
+                    Should also not be replaced:
+                    ![Image 4](/api/imaginary-future-api-from-thwiki/random.png?s=640x480)
+                `;
+                const expectedHtml = trimIndent`
+                    <p>Should be replaced:
+                    <img src="blob:http://localhost:5173/0f6127a7-79a7-4e5e-aa6a-4452d2583579" alt="Image 1" title="Image 1" /></p>
+                    <p>Should also be replaced:
+                    <img src="blob:http://localhost:5173/f8778276-9536-4576-9df5-b9af44484ce9" alt="Image 2" title="Image 2" /></p>
+                    <p>Should not be replaced:
+                    <img src="https://example.com/image3.png" alt="Image 3"></p>
+                    <p>Should also not be replaced:
+                    <img src="/api/imaginary-future-api-from-thwiki/random.png?s=640x480" alt="Image 4"></p>
+
+                `;
+
+                expect(await renderer.renderRich(markdown)).toEqual(expectedHtml);
+            });
+
+            it('does NOT fully support resolving images between directories', async () => {
+                const allProjectsSupplier = () => Promise.resolve([]);
+                const issuesSupplier = () => Promise.resolve([]);
+
+                const attachments = [
+                    {
+                        path: "/root.png",
+                        url: "blob:http://localhost:5173/0f6127a7-79a7-4e5e-aa6a-4452d2583579"
+                    },
+                    {
+                        path: "/sub/image.jpeg",
+                        url: "blob:http://localhost:5173/f8778276-9536-4576-9df5-b9af44484ce9"
+                    },
+                    {
+                        path: "/sub/sub2/image.gif",
+                        url: "blob:http://localhost:5173/db66b60a-a2f4-4388-b571-974a73664c5d"
+                    },
+                ];
+                const imageResolver = createBlobImageResolver("/sub/content.md", attachments);
+
+                const renderer = new MarkdownRenderer(allProjectsSupplier, issuesSupplier, imageResolver);
+                const markdown = trimIndent`
+                    Should be replaced:
+                    ![Same directory](image.jpeg)
+
+                    NOT replaced despite existing:
+                    ![Parent directory](./../root.png)
+                    
+                    NOT replaced despite existing (technically not a relative path in our implementation):
+                    ![Parent directory](../root.png)
+
+                    Replaced because it's just a string replacement:
+                    ![Child directory](./sub2/image.gif)
+                `;
+                const expectedHtml = trimIndent`
+                    <p>Should be replaced:
+                    <img src="blob:http://localhost:5173/f8778276-9536-4576-9df5-b9af44484ce9" alt="Same directory" title="Same directory" /></p>
+                    <p>NOT replaced despite existing:
+                    <div class="card bg-danger-subtle text-danger-emphasis mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-bug pe-1"></i>
+                            Image not found
+                        </div>
+                        <p class="card-body bg-transparent mb-0">
+                            There is no image with path: <code>/sub/../root.png</code>.<br />
+                            <code>currentPath = "/sub/content.md"</code>, <code>filename = "../root.png"</code>
+                        </p>
+                    </div></p>
+                    <p>NOT replaced despite existing (technically not a relative path in our implementation):
+                    <img src="../root.png" alt="Parent directory"></p>
+                    <p>Replaced because it&#39;s just a string replacement:
+                    <img src="blob:http://localhost:5173/db66b60a-a2f4-4388-b571-974a73664c5d" alt="Child directory" title="Child directory" /></p>
+
+                `;
+
+                expect(await renderer.renderRich(markdown)).toEqual(expectedHtml);
+            });
+        });
+    });
+
+    describe('extractTitle()', () => {
+
+        it('extracts the h1 heading', () => {
+            const renderer = new MarkdownRenderer(null, null);
+            const markdown = trimIndent`
+                # This is the title
+                ## This is the subtitle
+                
+                Some text
+            `;
+
+            expect(renderer.extractTitle(markdown)).toEqual("This is the title");
+        });
+
+        it('returns the first h1 heading if there is more', () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                # This is the first title
+                ## This is the first subtitle
+                
+                Some text
+                
+                # This is the second title
+                ## This is the second subtitle
+                
+                Some more text
+            `;
+
+            expect(renderer.extractTitle(markdown)).toEqual("This is the first title");
+        });
+
+        it('returns null if there is no h1 heading', () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                ## H2 heading
+                
+                There is no h1 heading.
+            `;
+
+            expect(renderer.extractTitle(markdown)).toBeNull();
+        });
+
+        it("returns the h1 heading even if it's in the middle", () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                sub heading
+                ------------
+                
+                Foo bar text.
+                
+                real h1 heading
+                ====================
+                
+                Txet rab oof.
+                
+                ##### h5 ?!
+            `;
+
+            expect(renderer.extractTitle(markdown)).toEqual("real h1 heading");
+        });
+
+        it("returns rendered HTML", () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                # **This** heading has \`formatting\`. Should **be _parsed_**.
+            `;
+
+            expect(renderer.extractTitle(markdown))
+                .toEqual("<strong>This</strong> heading has <code>formatting</code>. Should <strong>be <em>parsed</em></strong>.");
         });
     });
 });

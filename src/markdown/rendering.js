@@ -3,9 +3,8 @@ import hljs from 'highlight.js/lib/core';
 import markdown from 'highlight.js/lib/languages/markdown';
 import mermaidExtension from "./mermaid";
 import hljsExtension from "./hljs";
-import {trimIndent} from "@/helper/string.js";
-
-const apiUrl = () => window?.env?.API_URL || import.meta.env.VITE_API_URL;
+import {escapeHtmlAttribute} from "@/helper/string.js";
+import {createAttachmentsImageResolver, createBlobImageResolver, imageExtension} from "./images.js";
 
 hljs.registerLanguage('markdown', markdown);
 
@@ -17,17 +16,43 @@ hljs.registerLanguage('markdown', markdown);
 class MarkdownRenderer {
 
     /**
-     * @param {function(): Promise<any[]>} allProjectsSupplier Function to lookup all existing projects
-     * @param {function(issueKeys: string[]): Promise<any[]>} issuesSupplier Function to lookup the issues for the tooltip
-     *                                                                       and whether they exist
+     * Function to lookup all existing projects
+     *
+     * @type {?function(): Promise<any[]>}
      */
-    constructor(allProjectsSupplier, issuesSupplier) {
+    allProjectsSupplier = null;
+
+    /**
+     * Function to lookup the issues for the tooltip and whether they exist
+     *
+     * @type {?function(issueKeys: string[]): Promise<any[]>}
+     */
+    issuesSupplier = null;
+
+    /**
+     * Function to render images with relative paths
+     *
+     * @type {?function(filename: string, href: string, title: string, text: string): string}
+     */
+    imageResolver = null;
+
+
+    constructor(allProjectsSupplier = null, issuesSupplier = null, imageResolver = null) {
         this.allProjectsSupplier = allProjectsSupplier;
         this.issuesSupplier = issuesSupplier;
+        this.imageResolver = imageResolver;
     }
 
-    static withAxios(axios) {
-        const allProjectsSupplier = async () => {
+    // Configuration ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Enables the feature to find all valid issue keys in the text, and replace them each with a link and tooltip.
+     * Issues and projects are looked up by Axios doing GraphQL requests.
+     *
+     * @param {AxiosInstance} axios
+     */
+    enableIssueLookupByAxios(axios) {
+        this.allProjectsSupplier = async () => {
             return await axios
                 .graphql(`
                     query AllProjectsWithPrefixes {
@@ -39,37 +64,64 @@ class MarkdownRenderer {
                 .then(data => data.projects);
         };
 
-        const issuesSupplier = async (issueKeys) => {
+        this.issuesSupplier = async (issueKeys) => {
             return await axios
-                .graphql(
-                    `
-                        query FoundIssues($issueKeys: [String!]!) {
-                            issuesByIssueKey(issueKeys: $issueKeys) {
-                                id
-                                issueKey
+            .graphql(
+                `
+                    query FoundIssues($issueKeys: [String!]!) {
+                        issuesByIssueKey(issueKeys: $issueKeys) {
+                            id
+                            issueKey
+                            title
+                            issueType {
                                 title
-                                issueType {
-                                    title
-                                }
-                                issuePriority {
-                                    title
-                                }
-                                issueStatus {
-                                    title
-                                }
+                            }
+                            issuePriority {
+                                title
+                            }
+                            issueStatus {
+                                title
                             }
                         }
-                    `,
-                    { issueKeys }
-                )
-                .then(data => data.issuesByIssueKey);
+                    }
+                `,
+                { issueKeys }
+            )
+            .then(data => data.issuesByIssueKey);
         };
-
-        return new MarkdownRenderer(allProjectsSupplier, issuesSupplier);
     }
 
     /**
-     * Renders Markdown code to HTML, "plain" without any additional features.
+     * Enables the feature to replace images having relative paths with attachments.
+     * Attachments need to provide `id`, `filename`, and `description`. The images are then
+     * fetched by GET requests by the API.
+     *
+     * @param {{id: string, filename: string, description: string}[]} attachments
+     */
+    enableAttachmentByGetRequest(attachments) {
+        this.imageResolver = createAttachmentsImageResolver(attachments);
+    }
+
+    /**
+     * Enables the feature to replace images having relative paths with attachments from Blobs.
+     * Attachments need to provide `path` and a `url` to a prepared Blob.
+     *
+     * Paths span a filesystem-like directory structure.
+     * We *only* support images in the same directory (for now, this is enough for us).
+     *
+     * @param {string} currentPath
+     * @param {{path: string, url: string}[]} attachments
+     */
+    enableAttachmentByBlobs(currentPath, attachments) {
+        this.imageResolver = createBlobImageResolver(currentPath, attachments);
+    }
+
+    // Render functions ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Renders Markdown code to HTML, "plain" i.e. in a single pass.
+     *
+     * Works with attachments, but not with issue lookup.
      *
      * @param {string} markdown Markdown code
      * @returns {Promise<string>} rendered HTML
@@ -79,56 +131,24 @@ class MarkdownRenderer {
         marked.use(mermaidExtension);
         marked.use(hljsExtension);
 
+        if (this.imageResolver) {
+            marked.use(imageExtension(this.imageResolver));
+        }
+
         return marked.parse(markdown); // TODO Warning: We don't have any protection against malicious HTML! See https://marked.js.org/#installation
-    }
-
-    /**
-     * Escapes special characters for usage inside an HTML tag (`&`, `<`, `>`).
-     *
-     * @param {string} str input string
-     * @returns {string} escaped string
-     * @private
-     */
-    static _escapeHtmlText(str) {
-        return str
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-    }
-
-    /**
-     * Escapes special characters for usage in an HTML attribute (`&`, `"`, `'`, `<`, `>`).
-     *
-     * @param {string} str input string
-     * @returns {string} escaped string
-     * @private
-     */
-    static _escapeHtmlAttribute(str) {
-        return str
-            .replace(/&/g, '&amp;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
     }
 
     /**
      * Renders markdown "rich" with all our features.
      *
-     * Finds all valid issue keys in the text, and replaces it each with a link and tooltip.
-     * Images with relative paths are taken from attachments.
-     *
-     * This function needs two API requests (all project prefixes, found issues),
-     * and will parse the markdown twice.
-     *
-     * Attachments need to be loaded by the caller. They cannot be loaded by us, because
-     * there is no information in the markdown how to access them (wiki page vs. issue?, which ID?).
+     * This function does two passes to collect issue keys first.
+     * Call only, after you set at least allProjectsSupplier and issuesSupplier.
+
      *
      * @param {string} markdown Markdown
-     * @param {{id: string, filename: string, description: string}[]} [attachments] Attachments for rendering inline images
      * @returns {Promise<string>} Rendered Markdown as HTML code
      */
-    async renderRich(markdown, attachments) {
+    async renderRich(markdown) {
         // First find all project prefixes
 
         const allProjects = await this.allProjectsSupplier();
@@ -173,6 +193,11 @@ class MarkdownRenderer {
         const marked2 = new Marked();
         marked2.use(mermaidExtension);
         marked2.use(hljsExtension);
+
+        if (this.imageResolver) {
+            marked2.use(imageExtension(this.imageResolver));
+        }
+
         marked2.use({
             async: true, // -> activate async mode, so we can call Mermaid which only works asynchronous
             renderer: {
@@ -199,7 +224,7 @@ class MarkdownRenderer {
                     for (const [issueKey, issue] of issues) {
                         const regExp = new RegExp(`\\b${issueKey}\\b`, "g"); // Use "\b" to not cut a number, e.g. "FOO-4" will not be replaced, when there is "FOO-42"
 
-                        const e = MarkdownRenderer._escapeHtmlAttribute;
+                        const e = escapeHtmlAttribute;
                         text = text.replaceAll(regExp, () => {
                             const link = '/issues/' + issue.id;
                             const tooltip =
@@ -217,57 +242,6 @@ class MarkdownRenderer {
                     }
 
                     return replaced ? text : false; // if nothing was replaced, use the default renderer, that converts URL to links for example
-                },
-                image({href, title, text}) {
-                    if (href.includes("/") && !href.startsWith("./")) {
-                        return false;
-                    }
-
-                    // local image from attachments
-
-                    let filename;
-                    if (href.startsWith("./")) {
-                        filename = href.substring(2);
-                    } else {
-                        filename = href;
-                    }
-                    filename = decodeURIComponent(filename);
-
-                    const attachment = attachments?.find(a => a.filename === filename);
-                    if (attachment) {
-                        const e = MarkdownRenderer._escapeHtmlAttribute;
-                        const src = `${apiUrl()}/attachments/${attachment.id}`;
-
-                        // No override from Markdown, take strings from the attachment
-                        if (!text && attachment.description) {
-                            text = attachment.description;
-                        }
-
-                        // No title? Then default to alt/description
-                        if (!title && text) {
-                            title = text;
-                        }
-
-                        // Include title attribute only if there is content
-                        let titleAttr = '';
-                        if (title) {
-                            titleAttr = ` title="${e(title)}"`;
-                        }
-
-                        return `<img src="${src}" alt="${e(text)}"${titleAttr} />`;
-                    } else {
-                        const e = MarkdownRenderer._escapeHtmlText;
-
-                        return trimIndent`
-                            <div class="card bg-danger-subtle text-danger-emphasis mb-4">
-                                <div class="card-header">
-                                    <i class="fas fa-bug pe-1"></i>
-                                    Attachment not found
-                                </div>
-                                <p class="card-body bg-transparent mb-0">There is no attachment with filename <code>${e(filename)}</code>.</p>
-                            </div>
-                        `;
-                    }
                 }
             }
         });
@@ -277,6 +251,38 @@ class MarkdownRenderer {
 
     highlightMarkdown(markdown) {
         return hljs.highlight(markdown, { language: 'markdown' }).value;
+    }
+
+    // Other functions /////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Extract's the title (h1 heading) from Markdown code.
+     *
+     * If there is multiple h1 headings, the first is returned.
+     * Returns `null` if there is no h1 heading.
+     *
+     * Returns HTML parsed, in case the heading has inline tags, like e.g. strong or code.
+     *
+     * @param {string} markdown Markdown code
+     * @returns {string | null} h1 heading
+     */
+    extractTitle(markdown) {
+        const marked = new Marked();
+        let title = null;
+
+        marked.parse(markdown);
+        marked.use({
+            renderer: {
+                heading({tokens, depth}) {
+                    if (depth === 1 && title === null) {
+                        title = this.parser.parseInline(tokens);
+                    }
+                }
+            }
+        });
+        marked.parse(markdown);
+
+        return title;
     }
 }
 

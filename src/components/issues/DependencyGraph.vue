@@ -50,7 +50,8 @@ onMounted(() => {
         });
 });
 
-const markdownRenderer = MarkdownRenderer.withAxios(axios);
+const markdownRenderer = new MarkdownRenderer();
+markdownRenderer.enableIssueLookupByAxios(axios);
 
 async function fetchData() {
     involvedIssues.value = null;
