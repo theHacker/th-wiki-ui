@@ -109,6 +109,8 @@ antlr -Dlanguage=JavaScript -no-listener -visitor src/antlr/SearchQuery.g4
 How to Docker
 --------------
 
+### Run the UI
+
 ```shell
 bun run build
 docker build -t th-wiki-ui .
@@ -118,4 +120,12 @@ docker run --rm \
   -e GRAPHQL_API_URL=http://localhost:8080/api/graphql \
   -e BASE_URL=/ \
   th-wiki-ui
+```
+
+### Execute the tests like in CI
+
+```shell
+docker run --rm -it \
+  -v .:/src \
+  oven/bun:1.2.9-alpine /bin/sh -c "cd /src && bun test"
 ```
