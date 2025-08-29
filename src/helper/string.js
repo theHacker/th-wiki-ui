@@ -54,4 +54,14 @@ function escapeHtmlAttribute(str) {
         .replace(/>/g, '&gt;');
 }
 
-export { trimIndent, escapeHtmlText, escapeHtmlAttribute };
+/**
+ * Capitalizes the first letter of a string and lowercases the rest.
+ *
+ * @param {string} str input string
+ * @returns {string} capitalized string
+ */
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+export { trimIndent, escapeHtmlText, escapeHtmlAttribute, capitalize };

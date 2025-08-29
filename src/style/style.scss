@@ -334,6 +334,19 @@ $notAnyGridBreakpoint: '';
     }
 }
 
+.alert {
+    // In our "header": Add a little more space between icon and text
+    .alert-header i {
+        margin-right: 0.25rem;
+    }
+
+    // Having paragraphs and other markdown generated block elements in alerts:
+    // Do not add margin at the end.
+    :last-child {
+        margin-bottom: 0;
+    }
+}
+
 // <GridLayout>
 // Since we are making use of Bootstrap mixins, we can't put this into Vue SFC.
 

@@ -28,6 +28,95 @@ describe('MarkdownRenderer', () => {
 
             expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
         });
+
+        it('supports GFM alerts', async () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                > This is just a quote
+                > over two lines.
+                
+                > [!NOTE]
+                > This is a GFM alert.
+                
+                > [!UNSUPPORTED]
+                > Will still display a box, but with a fixed icon and a distinctive title.
+                
+                > [!IMPORTANT]
+                >
+                > You can have more content.
+                >
+                > A paragraph **and** formatting, and _more_
+                > - like
+                > - a
+                > - list
+
+                All supported types:\\
+                (Taken from GitHub's docs: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts)
+                
+                > [!NOTE]
+                > Useful information that users should know, even when skimming content.
+                
+                > [!TIP]
+                > Helpful advice for doing things better or more easily.
+                
+                > [!IMPORTANT]
+                > Key information users need to know to achieve their goal.
+                
+                > [!WARNING]
+                > Urgent info that needs immediate user attention to avoid problems.
+                
+                > [!CAUTION]
+                > Advises about risks or negative outcomes of certain actions.
+            `;
+            const expectedHtml = trimIndent`
+                <blockquote>
+                <p>This is just a quote
+                over two lines.</p>
+                </blockquote>
+                <div class="alert alert-info">
+                    <p class="alert-header"><i class="fas fa-circle-info"></i> <b>Note</b></p>
+                    <p>This is a GFM alert.</p>
+                </div>
+                <div class="alert alert-secondary">
+                    <p class="alert-header"><i class="fas fa-question"></i> <b>(Unsupported alert type UNSUPPORTED)</b></p>
+                    <p>Will still display a box, but with a fixed icon and a distinctive title.</p>
+                </div>
+                <div class="alert alert-primary">
+                    <p class="alert-header"><i class="fas fa-thumbtack"></i> <b>Important</b></p>
+                    <p>You can have more content.</p>
+                    <p>A paragraph <strong>and</strong> formatting, and <em>more</em></p>
+                    <ul>
+                    <li>like</li>
+                    <li>a</li>
+                    <li>list</li>
+                    </ul>
+                </div>
+                <p>All supported types:<br>(Taken from GitHub&#39;s docs: <a href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts">https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts</a>)</p>
+                <div class="alert alert-info">
+                    <p class="alert-header"><i class="fas fa-circle-info"></i> <b>Note</b></p>
+                    <p>Useful information that users should know, even when skimming content.</p>
+                </div>
+                <div class="alert alert-success">
+                    <p class="alert-header"><i class="fas fa-lightbulb"></i> <b>Tip</b></p>
+                    <p>Helpful advice for doing things better or more easily.</p>
+                </div>
+                <div class="alert alert-primary">
+                    <p class="alert-header"><i class="fas fa-thumbtack"></i> <b>Important</b></p>
+                    <p>Key information users need to know to achieve their goal.</p>
+                </div>
+                <div class="alert alert-warning">
+                    <p class="alert-header"><i class="fas fa-triangle-exclamation"></i> <b>Warning</b></p>
+                    <p>Urgent info that needs immediate user attention to avoid problems.</p>
+                </div>
+                <div class="alert alert-danger">
+                    <p class="alert-header"><i class="fas fa-circle-exclamation"></i> <b>Caution</b></p>
+                    <p>Advises about risks or negative outcomes of certain actions.</p>
+                </div>
+                
+            `;
+
+            expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+        });
     });
 
     describe('renderRich()', () => {

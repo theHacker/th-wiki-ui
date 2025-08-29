@@ -5,6 +5,7 @@ import mermaidExtension from "./mermaid";
 import hljsExtension from "./hljs";
 import {escapeHtmlAttribute} from "@/helper/string.js";
 import {createAttachmentsImageResolver, createBlobImageResolver, imageExtension} from "./images.js";
+import {gfmAlertExtension} from "./gfm-alert.js";
 
 hljs.registerLanguage('markdown', markdown);
 
@@ -130,6 +131,7 @@ class MarkdownRenderer {
         const marked = new Marked();
         marked.use(mermaidExtension);
         marked.use(hljsExtension);
+        marked.use(gfmAlertExtension);
 
         if (this.imageResolver) {
             marked.use(imageExtension(this.imageResolver));
@@ -193,6 +195,7 @@ class MarkdownRenderer {
         const marked2 = new Marked();
         marked2.use(mermaidExtension);
         marked2.use(hljsExtension);
+        marked2.use(gfmAlertExtension);
 
         if (this.imageResolver) {
             marked2.use(imageExtension(this.imageResolver));
