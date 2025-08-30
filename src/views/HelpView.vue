@@ -78,7 +78,7 @@
                 <div class="fs-2">No page selected.</div>
                 <div class="text-secondary">Click on any page in the tree to display it.</div>
             </div>
-            <article v-else v-html="helpPageRenderedMarkdown" />
+            <article v-else v-html="helpPageRenderedMarkdown" class="helpContent" />
         </template>
     </GridLayout>
 </template>
@@ -270,3 +270,14 @@ function showHelpPage(section, helpPage) {
     }
 }
 </script>
+
+<style lang="scss" scoped>
+// Format screenshots nice within our docs.
+// We can't use a <style> tag within the markdown to format,
+// GitHub won't interpret it (but display the HTML code).
+article:deep(img) {
+    max-width: 400px;
+    margin: 0.5rem 0.25rem;
+    border: 1px solid var(--bs-gray-800);
+}
+</style>
