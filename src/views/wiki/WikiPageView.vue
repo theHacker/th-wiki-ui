@@ -263,8 +263,6 @@ syncStateToHash([
     { type: 'enum', ref: tabState, enumObject: TabStates }
 ]);
 
-const markdownRenderer = MarkdownRenderer.withAxios(axios);
-
 function fetchData(id) {
     errors.value = [];
     wikiPage.value = null;
@@ -297,6 +295,11 @@ function fetchData(id) {
                             titleColor
                             description
                         }
+                        attachments {
+                            id
+                            filename
+                            description
+                        }
                     }
                     wikiPages {
                         id
@@ -323,9 +326,13 @@ function fetchData(id) {
             if (data.wikiPage === null) {
                 errors.value = ["Wiki page does not exist."];
             } else {
+                const markdownRenderer = new MarkdownRenderer();
+                markdownRenderer.enableIssueLookupByAxios(axios);
+                markdownRenderer.enableAttachmentByGetRequest(data.wikiPage.attachments);
+
                 wikiPage.value = {
                     ...data.wikiPage,
-                    renderedMarkdown: await markdownRenderer.renderWithIssueLinks(data.wikiPage.content),
+                    renderedMarkdown: await markdownRenderer.renderRich(data.wikiPage.content),
                     highlightedMarkdown: markdownRenderer.highlightMarkdown(data.wikiPage.content)
                 };
                 allWikiPagesTree.value = new Tree({

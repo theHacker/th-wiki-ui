@@ -1,18 +1,26 @@
 
-tH-Wiki
-========
+tH-Wiki UI
+===========
+
+tH-Wiki will provide an easy solution to having my personal wiki, task and issue tracker – all in one.
+YouTrack would fit closest (never tried their Knowledge Base feature, but back then the issue tracker was nice),
+but I do not want proprietary software.
+
+This is the frontend repository `th-wiki-ui`, see the backend repository `th-wiki` for additional
+general documentation about tH-Wiki.
+
 
 Setup
 ------
 
 - Install [Bun](https://bun.sh/):
-  ```shell
+  ```sh
   curl -fsSL https://bun.sh/install | bash
   ```
 - Copy `.env.local.template` to `.env.local` and point it to the API.
 
 
-Useful links
+Useful Links
 -------------
 
 - Configure Vite: https://vitejs.dev/config/
@@ -20,7 +28,7 @@ Useful links
 - Cypress: https://docs.cypress.io/api/
 
 
-Useful commands
+Useful Commands
 ----------------
 
 ### Project Setup
@@ -54,6 +62,9 @@ bun test:unit
 ```
 
 ### Run End-to-End Tests with [Cypress](https://www.cypress.io/)
+
+> [!NOTE]
+> End-to-end tests are not maintained at all, they don't work.
 
 ```sh
 bun test:e2e:dev
@@ -106,15 +117,27 @@ Generating sources:
 antlr -Dlanguage=JavaScript -no-listener -visitor src/antlr/SearchQuery.g4 
 ```
 
+
 How to Docker
 --------------
+
+### Run the UI
 
 ```shell
 bun run build
 docker build -t th-wiki-ui .
 docker run --rm \
   -p 5173:80 \
+  -e API_URL=http://localhost:8080/api \
   -e GRAPHQL_API_URL=http://localhost:8080/api/graphql \
   -e BASE_URL=/ \
   th-wiki-ui
+```
+
+### Execute the Tests like in CI
+
+```shell
+docker run --rm -it \
+  -v .:/src \
+  oven/bun:1.2.9-alpine /bin/sh -c "cd /src && bun test"
 ```

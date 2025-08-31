@@ -88,11 +88,12 @@ defineProps({
 
 const buttonState = ref(ButtonStates.Text);
 
-const markdownRenderer = MarkdownRenderer.withAxios(axios);
+const markdownRenderer = new MarkdownRenderer();
+markdownRenderer.enableIssueLookupByAxios(axios);
 
 const preview = computedAsync(async () => {
     if (buttonState.value === ButtonStates.Preview) {
-        return await markdownRenderer.render(model.value);
+        return await markdownRenderer.renderPlain(model.value);
     } else {
         return null; // don't render on every change when preview is not visible
     }
