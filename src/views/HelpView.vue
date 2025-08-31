@@ -99,7 +99,7 @@ useHead({
 
 const localMdImports = import.meta.glob(
     [
-        '/README.md',
+        '/*.md',
         '/doc/**/*.md'
     ],
     { import: 'default', query: '?raw' }
@@ -163,8 +163,14 @@ axios
             const data = base64ToUtf8String(markdownResource.dataBase64);
 
             const parentPath = path.replace(/(.*)(\/.+?)$/, '$1');
-            const title = markdownRenderer.extractTitle(data) || ('<i>' + path.replace(/.*\/(.+?)$/, '$1') + '</i>');
+            let title = markdownRenderer.extractTitle(data) || ('<i>' + path.replace(/.*\/(.+?)$/, '$1') + '</i>');
             const renderedMarkdown = await markdownRenderer.renderPlain(data);
+
+            // Special case different title.
+            // (We don't support frontmatter on Markdown files)
+            if (path === '/LICENSE.md') {
+                title = 'License';
+            }
 
             helpPagesApi.value.push({id: path, title, path, parentId: parentPath, renderedMarkdown});
 
@@ -215,8 +221,14 @@ Promise.all(
             markdownRenderer.enableAttachmentByBlobs(path, helpResourcesUi.value);
 
             const parentPath = path.replace(/(.*)(\/.+?)$/, '$1');
-            const title = markdownRenderer.extractTitle(data) || ('<i>' + path.replace(/.*\/(.+?)$/, '$1') + '</i>');
+            let title = markdownRenderer.extractTitle(data) || ('<i>' + path.replace(/.*\/(.+?)$/, '$1') + '</i>');
             const renderedMarkdown = await markdownRenderer.renderPlain(data);
+
+            // Special case different title.
+            // (We don't support frontmatter on Markdown files)
+            if (path === '/LICENSE.md') {
+                title = 'License';
+            }
 
             helpPagesUi.value.push({id: path, title, path, parentId: parentPath, renderedMarkdown});
 
