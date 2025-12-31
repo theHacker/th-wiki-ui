@@ -27,6 +27,7 @@ useHead({
 
 const tiles = [
     { title: 'Projects', icon: 'rocket', linkTo: '/projects' },
-    { title: 'Tags', icon: 'tags', linkTo: '/tags' }
+    { title: 'Tags', icon: 'tags', linkTo: '/tags' },
+    { title: 'Backups', icon: 'box-archive', linkTo: '/backups' },
 ];
 </script>

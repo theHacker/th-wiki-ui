@@ -22,6 +22,11 @@ const router = createRouter({
                     component: () => import('./views/admin/AdminView.vue')
                 },
                 {
+                    path: 'backups',
+                    name: 'adminBackups',
+                    component: () => import('./views/admin/AdminBackupsView.vue')
+                },
+                {
                     path: 'projects',
                     name: 'adminProjects',
                     component: () => import('./views/admin/AdminProjectsView.vue')
