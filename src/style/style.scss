@@ -146,6 +146,18 @@ $utilities: map-merge(
                 auto: auto,
                 heading: $headings-margin-bottom
             ))
+        ),
+        "bg-opacity": (
+            css-var: true,
+            class: bg-opacity,
+            values: (
+                5: .05,
+                10: .1,
+                25: .25,
+                50: .5,
+                75: .75,
+                100: 1
+            )
         )
     )
 );
