@@ -426,32 +426,20 @@ article {
 
     // GFM Checkbox task lists
     //
-    // We do a CSS only solution, no magic markdown generation. (GitHub uses special CSS classes)
-    // Since :has() cannot be nested(*), we do not fully support checkboxes and non-checkboxes nested
-    // within the same list.
-    // If a list has any checkbox, we turn off bullet points completely, even if some sub lists
-    // do not have checkboxes.
-    //
-    // (*) To 100% correctly implement we would need a selector
-    //     "ul:has(> li:has(> input[type=checkbox]))"
-    //     = only transform lists when they have a *direct* list item with a checkbox in it.
+    // We do a CSS only solution, no magic markdown generation.
+    // (GitHub uses special CSS classes. But they too use a negative margin to do the actual alignment.)
 
-    // Lists having checkboxes have no bullet points
-    ul:has(input[type=checkbox]) {
-        li {
-            list-style-type: none;
+    li:has(> input[type=checkbox]:first-child) {
+        // Lists having checkboxes have no bullet points
+        list-style-type: none;
 
+        input[type=checkbox] {
             // Auto opt-in into Bootstrap styling
-            // TODO To get Bootstrap paddings we would need to configure Marked to generate the correct markup immediately.
-            input[type=checkbox] {
-                @extend .form-check-input;
-            }
-        }
-    }
+            @extend .form-check-input;
 
-    // Do not intend first level (as they have a checkbox instead of a bullet point)
-    > ul:has(input[type=checkbox]) {
-        padding-left: 0;
+            // Align checkboxes so that all text (preceded with checkbox or bullet point)
+            margin-left: -1.25rem;
+        }
     }
 }
 
