@@ -49,6 +49,11 @@ describe('MarkdownRenderer', () => {
                 > - like
                 > - a
                 > - list
+                
+                > [!NOTE]
+                > Several lines of text
+                > without any newline
+                > before.
 
                 All supported types:\\
                 (Taken from GitHub's docs: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts)
@@ -90,6 +95,12 @@ describe('MarkdownRenderer', () => {
                     <li>a</li>
                     <li>list</li>
                     </ul>
+                </div>
+                <div class="alert alert-info">
+                    <p class="alert-header"><i class="fas fa-circle-info"></i> <b>Note</b></p>
+                    <p>Several lines of text
+                    without any newline
+                    before.</p>
                 </div>
                 <p>All supported types:<br>(Taken from GitHub&#39;s docs: <a href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts">https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts</a>)</p>
                 <div class="alert alert-info">

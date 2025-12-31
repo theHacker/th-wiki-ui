@@ -34,7 +34,7 @@ const gfmAlertExtension = {
                 return false;
             }
 
-            const match = firstToken.text.match(/^\[!(\w+)]\s*\n?(.*)/);
+            const match = firstToken.text.match(/^\[!(\w+)]\s*(?:\n(.*))?$/s);
             if (!match) {
                 return false;
             }
@@ -49,7 +49,7 @@ const gfmAlertExtension = {
 
             // Render tokens. First token is replaced
             let replacedFirstToken = null;
-            if (match[2].trim() !== '') {
+            if (match[2] !== undefined && match[2].trim() !== '') {
                 replacedFirstToken = {
                     type: 'paragraph',
                     raw: match[2],
