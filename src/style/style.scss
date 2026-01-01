@@ -1,4 +1,5 @@
 @use "sass:color";
+@use "sass:math";
 
 // Bootstrap
 //
@@ -403,6 +404,13 @@ $notAnyGridBreakpoint: '';
 
 // <article> (usually we use them for Markdown rendering) will automatically opt-in into Bootstrap's formatting
 article {
+    // Colorize headings to distinguish them easier
+    @for $level from 1 through 6 {
+        h#{$level} {
+            color: color.mix($headings-color-dark, $primary, math.clamp(0%, 25% * ($level - 0.5), 100%));
+        }
+    }
+
     // Bootstrap's blockquote formats like "quote from important guy".
     // We want more a "quote from a mail reply".
     blockquote {
