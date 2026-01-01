@@ -49,6 +49,15 @@ describe('MarkdownRenderer', () => {
                 > - like
                 > - a
                 > - list
+                
+                > [!NOTE]
+                > Several lines of text
+                > without any newline
+                > before.
+                
+                > [!TIP]
+                > Verify **parsing** within the \`first\` paragraph
+                > _also_!
 
                 All supported types:\\
                 (Taken from GitHub's docs: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts)
@@ -91,6 +100,17 @@ describe('MarkdownRenderer', () => {
                     <li>list</li>
                     </ul>
                 </div>
+                <div class="alert alert-info">
+                    <p class="alert-header"><i class="fas fa-circle-info"></i> <b>Note</b></p>
+                    <p>Several lines of text
+                    without any newline
+                    before.</p>
+                </div>
+                <div class="alert alert-success">
+                    <p class="alert-header"><i class="fas fa-lightbulb"></i> <b>Tip</b></p>
+                    <p>Verify <strong>parsing</strong> within the <code>first</code> paragraph
+                    <em>also</em>!</p>
+                </div>
                 <p>All supported types:<br>(Taken from GitHub&#39;s docs: <a href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts">https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts</a>)</p>
                 <div class="alert alert-info">
                     <p class="alert-header"><i class="fas fa-circle-info"></i> <b>Note</b></p>
@@ -112,6 +132,25 @@ describe('MarkdownRenderer', () => {
                     <p class="alert-header"><i class="fas fa-circle-exclamation"></i> <b>Caution</b></p>
                     <p>Advises about risks or negative outcomes of certain actions.</p>
                 </div>
+                
+            `;
+
+            expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+        });
+
+        it('adds Bootstrap "img-fluid" class to images', async () => {
+            const renderer = new MarkdownRenderer();
+            renderer.enableAttachmentByGetRequest([
+                { id: "ffffffff-eeee-4444-dddd-cccccccccccc", filename: "screenshot.png", description: "" }
+            ]);
+
+            const markdown = trimIndent`
+                Images get Bootstrap's \`img-fluid\` class:
+                ![Screenshot](screenshot.png)
+            `;
+            const expectedHtml = trimIndent`
+                <p>Images get Bootstrap&#39;s <code>img-fluid</code> class:
+                <img class="img-fluid" src="http://localhost:8080/api/attachments/ffffffff-eeee-4444-dddd-cccccccccccc" alt="Screenshot" title="Screenshot" /></p>
                 
             `;
 
@@ -357,17 +396,17 @@ describe('MarkdownRenderer', () => {
                     ![Image 3](https://example.com/image3.png)
                     
                     Should also not be replaced:
-                    ![Image 3](/api/imaginary-future-api-from-thwiki/random.png?s=640x480)
+                    ![Image 4](/api/imaginary-future-api-from-thwiki/random.png?s=640x480)
                 `;
                 const expectedHtml = trimIndent`
                     <p>Should be replaced:
-                    <img src="http://localhost:8080/api/attachments/c4efc11d-a1bb-42e5-a74e-ab979c283107" alt="Image 1" title="Image 1" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/c4efc11d-a1bb-42e5-a74e-ab979c283107" alt="Image 1" title="Image 1" /></p>
                     <p>Should also be replaced:
-                    <img src="http://localhost:8080/api/attachments/d735738b-270c-4674-836a-1bf7717fe211" alt="Image 2" title="Image 2" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/d735738b-270c-4674-836a-1bf7717fe211" alt="Image 2" title="Image 2" /></p>
                     <p>Should not be replaced:
-                    <img src="https://example.com/image3.png" alt="Image 3"></p>
+                    <img class="img-fluid" src="https://example.com/image3.png" alt="Image 3" title="Image 3" /></p>
                     <p>Should also not be replaced:
-                    <img src="/api/imaginary-future-api-from-thwiki/random.png?s=640x480" alt="Image 3"></p>
+                    <img class="img-fluid" src="/api/imaginary-future-api-from-thwiki/random.png?s=640x480" alt="Image 4" title="Image 4" /></p>
                     
                 `;
 
@@ -422,22 +461,22 @@ describe('MarkdownRenderer', () => {
                 `;
                 const expectedHtml = trimIndent`
                     <p>Override all
-                    <img src="http://localhost:8080/api/attachments/4349e0c5-f2cb-4990-8f17-c525554794a8" alt="My description" title="My title" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/4349e0c5-f2cb-4990-8f17-c525554794a8" alt="My description" title="My title" /></p>
                     <p>Override title only
-                    <img src="http://localhost:8080/api/attachments/4349e0c5-f2cb-4990-8f17-c525554794a8" alt="Dummy image" title="My title" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/4349e0c5-f2cb-4990-8f17-c525554794a8" alt="Dummy image" title="My title" /></p>
                     <p>Override alt only
-                    <img src="http://localhost:8080/api/attachments/4349e0c5-f2cb-4990-8f17-c525554794a8" alt="My description" title="My description" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/4349e0c5-f2cb-4990-8f17-c525554794a8" alt="My description" title="My description" /></p>
                     <p>Override none
-                    <img src="http://localhost:8080/api/attachments/4349e0c5-f2cb-4990-8f17-c525554794a8" alt="Dummy image" title="Dummy image" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/4349e0c5-f2cb-4990-8f17-c525554794a8" alt="Dummy image" title="Dummy image" /></p>
                     <hr>
                     <p>Override all
-                    <img src="http://localhost:8080/api/attachments/b5657e8b-8e40-4ed3-b4a1-c44b20433580" alt="My description" title="My title" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/b5657e8b-8e40-4ed3-b4a1-c44b20433580" alt="My description" title="My title" /></p>
                     <p>Override title only
-                    <img src="http://localhost:8080/api/attachments/b5657e8b-8e40-4ed3-b4a1-c44b20433580" alt="" title="My title" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/b5657e8b-8e40-4ed3-b4a1-c44b20433580" alt="" title="My title" /></p>
                     <p>Override alt only
-                    <img src="http://localhost:8080/api/attachments/b5657e8b-8e40-4ed3-b4a1-c44b20433580" alt="My description" title="My description" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/b5657e8b-8e40-4ed3-b4a1-c44b20433580" alt="My description" title="My description" /></p>
                     <p>Override none
-                    <img src="http://localhost:8080/api/attachments/b5657e8b-8e40-4ed3-b4a1-c44b20433580" alt="" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/b5657e8b-8e40-4ed3-b4a1-c44b20433580" alt="" /></p>
                     
                 `;
 
@@ -467,9 +506,9 @@ describe('MarkdownRenderer', () => {
                 `;
                 const expectedHtml = trimIndent`
                     <p>From attachment
-                    <img src="http://localhost:8080/api/attachments/111c426d-88de-46bf-a787-ef1c23105f2f" alt="&#39;Dangerous&#39; &lt;|&gt; &quot;Description&quot; &amp; &amp;amp;" title="&#39;Dangerous&#39; &lt;|&gt; &quot;Description&quot; &amp; &amp;amp;" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/111c426d-88de-46bf-a787-ef1c23105f2f" alt="&#39;Dangerous&#39; &lt;|&gt; &quot;Description&quot; &amp; &amp;amp;" title="&#39;Dangerous&#39; &lt;|&gt; &quot;Description&quot; &amp; &amp;amp;" /></p>
                     <p>From markdown
-                    <img src="http://localhost:8080/api/attachments/111c426d-88de-46bf-a787-ef1c23105f2f" alt="My [optional] &amp; &quot;alt&quot; &lt;|&gt; &#39;test&#39;" title="&#39;My&#39; &quot;cool&quot; &amp; &lt;title&gt;" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/111c426d-88de-46bf-a787-ef1c23105f2f" alt="My [optional] &amp; &quot;alt&quot; &lt;|&gt; &#39;test&#39;" title="&#39;My&#39; &quot;cool&quot; &amp; &lt;title&gt;" /></p>
                     
                 `;
 
@@ -510,7 +549,7 @@ describe('MarkdownRenderer', () => {
                         <p class="card-body bg-transparent mb-0">There is no attachment with filename <code>not-found.gif</code>.</p>
                     </div></p>
                     <p>Found
-                    <img src="http://localhost:8080/api/attachments/75cc421b-ac29-4959-b188-9dc2a8ac96cd" alt="" /></p>
+                    <img class="img-fluid" src="http://localhost:8080/api/attachments/75cc421b-ac29-4959-b188-9dc2a8ac96cd" alt="" /></p>
                     <p>Not found
                     <div class="card bg-danger-subtle text-danger-emphasis mb-4">
                         <div class="card-header">
@@ -543,7 +582,7 @@ describe('MarkdownRenderer', () => {
                     ![](Screenshot%202025-08-26%2014:55:23.png)
                 `;
                 const expectedHtml = trimIndent`
-                    <p><img src="http://localhost:8080/api/attachments/b981484a-a376-4962-8799-61158b3598d7" alt="" /></p>
+                    <p><img class="img-fluid" src="http://localhost:8080/api/attachments/b981484a-a376-4962-8799-61158b3598d7" alt="" /></p>
                     
                 `;
 
@@ -589,13 +628,13 @@ describe('MarkdownRenderer', () => {
                 `;
                 const expectedHtml = trimIndent`
                     <p>Should be replaced:
-                    <img src="blob:http://localhost:5173/0f6127a7-79a7-4e5e-aa6a-4452d2583579" alt="Image 1" title="Image 1" /></p>
+                    <img class="img-fluid" src="blob:http://localhost:5173/0f6127a7-79a7-4e5e-aa6a-4452d2583579" alt="Image 1" title="Image 1" /></p>
                     <p>Should also be replaced:
-                    <img src="blob:http://localhost:5173/f8778276-9536-4576-9df5-b9af44484ce9" alt="Image 2" title="Image 2" /></p>
+                    <img class="img-fluid" src="blob:http://localhost:5173/f8778276-9536-4576-9df5-b9af44484ce9" alt="Image 2" title="Image 2" /></p>
                     <p>Should not be replaced:
-                    <img src="https://example.com/image3.png" alt="Image 3"></p>
+                    <img class="img-fluid" src="https://example.com/image3.png" alt="Image 3" title="Image 3" /></p>
                     <p>Should also not be replaced:
-                    <img src="/api/imaginary-future-api-from-thwiki/random.png?s=640x480" alt="Image 4"></p>
+                    <img class="img-fluid" src="/api/imaginary-future-api-from-thwiki/random.png?s=640x480" alt="Image 4" title="Image 4" /></p>
 
                 `;
 
@@ -638,7 +677,7 @@ describe('MarkdownRenderer', () => {
                 `;
                 const expectedHtml = trimIndent`
                     <p>Should be replaced:
-                    <img src="blob:http://localhost:5173/f8778276-9536-4576-9df5-b9af44484ce9" alt="Same directory" title="Same directory" /></p>
+                    <img class="img-fluid" src="blob:http://localhost:5173/f8778276-9536-4576-9df5-b9af44484ce9" alt="Same directory" title="Same directory" /></p>
                     <p>NOT replaced despite existing:
                     <div class="card bg-danger-subtle text-danger-emphasis mb-4">
                         <div class="card-header">
@@ -651,9 +690,9 @@ describe('MarkdownRenderer', () => {
                         </p>
                     </div></p>
                     <p>NOT replaced despite existing (technically not a relative path in our implementation):
-                    <img src="../root.png" alt="Parent directory"></p>
+                    <img class="img-fluid" src="../root.png" alt="Parent directory" title="Parent directory" /></p>
                     <p>Replaced because it&#39;s just a string replacement:
-                    <img src="blob:http://localhost:5173/db66b60a-a2f4-4388-b571-974a73664c5d" alt="Child directory" title="Child directory" /></p>
+                    <img class="img-fluid" src="blob:http://localhost:5173/db66b60a-a2f4-4388-b571-974a73664c5d" alt="Child directory" title="Child directory" /></p>
 
                 `;
 

@@ -8,7 +8,20 @@ const imageExtension = (imageResolver) => ({
     renderer: {
         image({href, title, text}) {
             if (href.includes("/") && !href.startsWith("./")) {
-                return false;
+                const e = escapeHtmlAttribute;
+
+                // No title? Then default to alt/description
+                if (!title && text) {
+                    title = text;
+                }
+
+                // Include title attribute only if there is content
+                let titleAttr = '';
+                if (title) {
+                    titleAttr = ` title="${e(title)}"`;
+                }
+
+                return `<img class="img-fluid" src="${href}" alt="${e(text)}"${titleAttr} />`;
             }
 
             // local image from attachments
@@ -51,7 +64,7 @@ function createAttachmentsImageResolver(attachments) {
                 titleAttr = ` title="${e(title)}"`;
             }
 
-            return `<img src="${src}" alt="${e(text)}"${titleAttr} />`;
+            return `<img class="img-fluid" src="${src}" alt="${e(text)}"${titleAttr} />`;
         } else {
             const e = escapeHtmlText;
 
@@ -104,7 +117,7 @@ function createBlobImageResolver(currentPath, attachments) {
             titleAttr = ` title="${e(title)}"`;
         }
 
-        return `<img src="${attachment.url}" alt="${e(text)}"${titleAttr} />`;
+        return `<img class="img-fluid" src="${attachment.url}" alt="${e(text)}"${titleAttr} />`;
     };
 }
 
