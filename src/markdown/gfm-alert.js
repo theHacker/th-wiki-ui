@@ -29,12 +29,13 @@ const alertTypes = {
 const gfmAlertExtension = {
     renderer: {
         blockquote({ tokens }) {
-            const firstToken = tokens[0];
-            if (firstToken.type !== 'paragraph') {
+            const paragraphToken = tokens[0];
+            if (paragraphToken.type !== 'paragraph' || paragraphToken.tokens[0].type !== 'text') {
                 return false;
             }
 
-            const match = firstToken.text.match(/^\[!(\w+)]\s*(?:\n(.*))?$/s);
+            const regExp = /^\[!(\w+)]\s*\n*(.*)$/s;
+            const match = paragraphToken.text.match(regExp);
             if (!match) {
                 return false;
             }
@@ -47,25 +48,30 @@ const gfmAlertExtension = {
             };
             const header = definedAlertType ? capitalize(alertTypeName) : `(Unsupported alert type ${alertTypeName})`;
 
-            // Render tokens. First token is replaced
-            let replacedFirstToken = null;
-            if (match[2] !== undefined && match[2].trim() !== '') {
-                replacedFirstToken = {
-                    type: 'paragraph',
+            // Render tokens. First token (= paragraph, and its tokens) are changed or deleted
+            let replacedParagraphToken;
+            if (match[2].trim() !== '') {
+                const textToken = paragraphToken.tokens[0];
+
+                replacedParagraphToken = {
+                    ...paragraphToken,
                     raw: match[2],
                     text: match[2],
                     tokens: [
                         {
                             type: 'text',
-                            raw: match[2],
-                            text: match[2]
-                        }
+                            raw: textToken.raw.replace(regExp, '$2'),
+                            text: textToken.text.replace(regExp, '$2')
+                        },
+                        ...paragraphToken.tokens.slice(1)
                     ]
                 };
+            } else {
+                replacedParagraphToken = null;
             }
 
             const replacedTokens = [
-                ...(replacedFirstToken ? [replacedFirstToken] : []),
+                ...(replacedParagraphToken ? [replacedParagraphToken] : []),
                 ...tokens.slice(1)
             ];
             const content = this.parser.parse(replacedTokens)

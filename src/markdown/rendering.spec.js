@@ -54,6 +54,10 @@ describe('MarkdownRenderer', () => {
                 > Several lines of text
                 > without any newline
                 > before.
+                
+                > [!TIP]
+                > Verify **parsing** within the \`first\` paragraph
+                > _also_!
 
                 All supported types:\\
                 (Taken from GitHub's docs: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts)
@@ -101,6 +105,11 @@ describe('MarkdownRenderer', () => {
                     <p>Several lines of text
                     without any newline
                     before.</p>
+                </div>
+                <div class="alert alert-success">
+                    <p class="alert-header"><i class="fas fa-lightbulb"></i> <b>Tip</b></p>
+                    <p>Verify <strong>parsing</strong> within the <code>first</code> paragraph
+                    <em>also</em>!</p>
                 </div>
                 <p>All supported types:<br>(Taken from GitHub&#39;s docs: <a href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts">https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts</a>)</p>
                 <div class="alert alert-info">
