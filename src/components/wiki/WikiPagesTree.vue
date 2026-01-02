@@ -9,7 +9,7 @@
                         icon="plus"
                         title="New page"
                         color="primary"
-                        @click="$router.push({name: 'wikiPageNew'})"
+                        @click="$router.push({name: 'wikiPageNew', query: { parentId: $route.params.wikiPageId }})"
                     />
                 </div>
 
