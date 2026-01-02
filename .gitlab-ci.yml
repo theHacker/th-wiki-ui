@@ -3,7 +3,7 @@ workflow:
     on_new_commit: conservative
 
 default:
-  image: oven/bun:1.2.9-alpine
+  image: oven/bun:1.3.5-alpine
   cache: &global-cache
     key: "$CI_COMMIT_REF_NAME"
     paths:
@@ -19,7 +19,7 @@ stages:
 setup:
   stage: setup
   interruptible: true
-  script: bun i
+  script: bun ci
   cache:
     <<: *global-cache
     policy: push
@@ -27,7 +27,9 @@ setup:
 lint:
   stage: test
   interruptible: true
-  script: bun run lint
+  script:
+    - bun ci
+    - bun run lint
   cache:
     <<: *global-cache
     policy: pull
@@ -35,7 +37,9 @@ lint:
 test:
   stage: test
   interruptible: true
-  script: bun test
+  script:
+    - bun ci
+    - bun test
   cache:
     <<: *global-cache
     policy: pull
@@ -49,7 +53,7 @@ test:
 #  stage: test
 #  interruptible: true
 #  script:
-#    - bun i
+#    - bun ci
 #    - bun test:e2e
 #  cache: []
 #  artifacts:
@@ -61,7 +65,9 @@ build:
   stage: build
   interruptible: true
   before_script: apk add git # install Git for git-describe
-  script: bun run build
+  script:
+    - bun ci
+    - bun run build
   cache:
     <<: *global-cache
     policy: pull
