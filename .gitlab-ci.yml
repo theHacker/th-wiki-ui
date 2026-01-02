@@ -3,7 +3,7 @@ workflow:
     on_new_commit: conservative
 
 default:
-  image: oven/bun:1.2.9-alpine
+  image: oven/bun:1.3.5-alpine
   cache: &global-cache
     key: "$CI_COMMIT_REF_NAME"
     paths:

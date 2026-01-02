@@ -1,2 +1,5 @@
+[install]
+minimumReleaseAge = 1209600 # 2 weeks
+
 [test]
 preload = ["./bun-test-preload.js"]
