@@ -27,7 +27,9 @@ setup:
 lint:
   stage: test
   interruptible: true
-  script: bun run lint
+  script:
+    - bun i
+    - bun run lint
   cache:
     <<: *global-cache
     policy: pull
@@ -35,7 +37,9 @@ lint:
 test:
   stage: test
   interruptible: true
-  script: bun test
+  script:
+    - bun i
+    - bun test
   cache:
     <<: *global-cache
     policy: pull
@@ -61,7 +65,9 @@ build:
   stage: build
   interruptible: true
   before_script: apk add git # install Git for git-describe
-  script: bun run build
+  script:
+    - bun i
+    - bun run build
   cache:
     <<: *global-cache
     policy: pull
