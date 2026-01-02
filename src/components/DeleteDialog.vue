@@ -6,8 +6,10 @@
         :progressing="deleting"
         submitIcon="trash"
         submitTitle="Delete"
+        :submitDisabled="deleteDisabled"
         cancelIcon="xmark"
         cancelTitle="Cancel"
+        :cancelDisabled="cancelDisabled"
         @submit="$emit('submit')"
         @cancel="$emit('cancel')"
     >
@@ -24,6 +26,14 @@ defineProps({
         default: false
     },
     deleting: {
+        type: Boolean,
+        default: false
+    },
+    deleteDisabled: {
+        type: Boolean,
+        default: false
+    },
+    cancelDisabled: {
         type: Boolean,
         default: false
     }

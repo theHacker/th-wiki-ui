@@ -63,10 +63,16 @@
                 v-if="deleteDialogOpen"
                 :dialogOpen="true"
                 :deleting="deleting"
+                :deleteDisabled="attachmentsCount > 0"
                 @submit="deleteWikiPage"
                 @cancel="deleteDialogOpen = false"
             >
-                Do you really want to delete the wiki page "<b>{{ wikiPage.title }}</b>"?
+                <BaseAlert v-if="attachmentsCount > 0" color="info" icon="circle-info" class="mb-0">
+                    This wiki page cannot be deleted, because it contains one or more attachments.
+                </BaseAlert>
+                <div v-else>
+                    Do you really want to delete the wiki page "<b>{{ wikiPage.title }}</b>"?
+                </div>
             </DeleteDialog>
 
             <TagsDialog
@@ -227,6 +233,7 @@ import BaseHeading from "@/components/BaseHeading.vue";
 import TagsDialog from "@/components/tags/TagsDialog.vue";
 import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
 import {syncStateToHash} from "@/helper/hash-state.js";
+import BaseAlert from "@/components/BaseAlert.vue";
 
 const route = useRoute();
 const router = useRouter();
