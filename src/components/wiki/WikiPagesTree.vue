@@ -16,6 +16,15 @@
                 <div class="hstack gap-2 w-100">
                     <div class="btn-group">
                         <BaseButton
+                            icon="crosshairs"
+                            tooltip="Scroll to active node"
+                            :disabled="$route.params.wikiPageId === undefined"
+                            @click="scrollToActiveNode"
+                        />
+                    </div>
+
+                    <div class="btn-group">
+                        <BaseButton
                             icon="maximize"
                             tooltip="Expand all nodes"
                             fixedWidth
@@ -86,6 +95,7 @@
                         <span
                             class="icon-link mw-100 dragAcceptor"
                             :class="cssItem(item)"
+                            :data-wiki-page-id="item.id"
                         >
                             <i class="fas fa-file" />
                             <span class="title text-truncate">{{ item.title }}</span>
@@ -119,7 +129,7 @@
 
 <script setup>
 import axios from "@/axios.js";
-import {computed, ref, useTemplateRef, watch} from 'vue';
+import {computed, nextTick, ref, useTemplateRef, watch} from 'vue';
 import SearchInput from "@/components/SearchInput.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import TreeView from "@/components/TreeView.vue";
@@ -129,12 +139,16 @@ import {refSyncStateToUserPreferences, UserPreferencesKeys} from "@/helper/local
 import TagBadge from "@/components/TagBadge.vue";
 import {sortTags} from "@/helper/sort-tags.js";
 import {executeQuery} from "./wiki-search.js";
+import {useRoute} from "vue-router";
+import {findSibling} from "@/helper/dom.js";
 
 const emit = defineEmits(['onNodeDragDrop']);
 
 defineExpose({ refreshTree });
 
 const treeView = useTemplateRef("treeView");
+
+const route = useRoute();
 
 const query = ref('');
 
@@ -280,6 +294,50 @@ function cssItem(item) {
     }
 
     return classes;
+}
+
+function scrollToActiveNode() {
+    const wikiPageId = route.params.wikiPageId;
+    if (!wikiPageId) {
+        return;
+    }
+
+    const domNode = document.querySelector(`[data-wiki-page-id="${wikiPageId}"]`);
+    if (!domNode) {
+        return;
+    }
+
+    nextTick(() => {
+        const outerElement = domNode.closest('div.card-body');
+        const cardHeaderElement = findSibling(outerElement, 'div.card-header', 'previous');
+
+        // Check if a) already visible, b) off-screen above, or c) off-screen below
+        const outerRect = outerElement.getBoundingClientRect();
+        const nodeRect = domNode.getBoundingClientRect();
+
+        const scrollToNumberNodes = 3; // when outside, scroll so that the node will be at n-th position top/bottom
+        const scrollBehavior = 'smooth';
+
+        if (nodeRect.top < outerRect.top) {
+            // b) off-screen above
+            const scrollToTop = (domNode.offsetTop - cardHeaderElement.clientHeight) - (nodeRect.height * (scrollToNumberNodes - 1));
+
+            outerElement.scrollTo({
+                top: scrollToTop,
+                behavior: scrollBehavior
+            });
+        }
+        else if (nodeRect.bottom > outerRect.bottom) {
+            // c) off-screen below
+            const maxNodes = Math.floor(outerRect.height / nodeRect.height);
+            const scrollToTop = (domNode.offsetTop - cardHeaderElement.clientHeight) - (nodeRect.height * (maxNodes - (scrollToNumberNodes - 1)));
+
+            outerElement.scrollTo({
+                top: scrollToTop,
+                behavior: scrollBehavior
+            });
+        }
+    });
 }
 
 function collapseAllNodes() {
