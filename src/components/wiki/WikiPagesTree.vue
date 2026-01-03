@@ -307,6 +307,10 @@ function scrollToActiveNode() {
         return;
     }
 
+    // Ensure, node is visible in the tree. Expand its parents if needed.
+    treeView.value.expandNode(wikiPageId);
+
+    // nextTick, so expandNode() already has changed the DOM
     nextTick(() => {
         const outerElement = domNode.closest('div.card-body');
         const cardHeaderElement = findSibling(outerElement, 'div.card-header', 'previous');

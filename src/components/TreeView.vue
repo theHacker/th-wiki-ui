@@ -128,8 +128,19 @@ function expandCollapseNode(item) {
     }
 }
 
+/**
+ * Expands the node with a specific ID and all its parent, so the node is expanded for sure.
+ *
+ * @param {string} id Node ID to expand
+ */
 function expandNode(id) {
-    expandedIds.value.add(id);
+    let idToExpand = id;
+    while (idToExpand !== null) {
+        expandedIds.value.add(idToExpand);
+
+        const item = itemsById.value.get(idToExpand);
+        idToExpand = props.parentIdFunction(item);
+    }
 }
 
 function collapseNode(id) {
