@@ -63,10 +63,19 @@
                 v-if="deleteDialogOpen"
                 :dialogOpen="true"
                 :deleting="deleting"
+                :deleteDisabled="(attachmentsCount > 0) || (childrenCount > 0)"
                 @submit="deleteWikiPage"
                 @cancel="deleteDialogOpen = false"
             >
-                Do you really want to delete the wiki page "<b>{{ wikiPage.title }}</b>"?
+                <BaseAlert v-if="attachmentsCount > 0" color="info" icon="circle-info" class="mb-0">
+                    This wiki page cannot be deleted, because it contains one or more attachments.
+                </BaseAlert>
+                <BaseAlert v-else-if="childrenCount > 0" color="info" icon="circle-info" class="mb-0">
+                    This wiki page cannot be deleted, because it's parent for one or more other wiki pages.
+                </BaseAlert>
+                <div v-else>
+                    Do you really want to delete the wiki page "<b>{{ wikiPage.title }}</b>"?
+                </div>
             </DeleteDialog>
 
             <TagsDialog
@@ -227,6 +236,7 @@ import BaseHeading from "@/components/BaseHeading.vue";
 import TagsDialog from "@/components/tags/TagsDialog.vue";
 import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
 import {syncStateToHash} from "@/helper/hash-state.js";
+import BaseAlert from "@/components/BaseAlert.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -252,6 +262,15 @@ const availableGlobalTags = ref([]);
 const manageTagsDialogOpen = ref(false);
 const manageTagsDialogSaving = ref(false);
 const assignedTagIdsInDialog = ref([]);
+
+const childrenCount = computed(() => {
+    if (!allWikiPagesTree.value || !wikiPage.value) {
+        return null;
+    }
+
+    const node = allWikiPagesTree.value.nodesById[wikiPage.value.id];
+    return node.childrenNodes.length;
+});
 
 useHead({
     title: computed(() => wikiPage.value?.title || 'Wiki')

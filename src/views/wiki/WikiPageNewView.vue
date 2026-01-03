@@ -25,7 +25,7 @@
 import axios from "@/axios.js";
 import {ref} from 'vue';
 import {useHead} from "@unhead/vue";
-import {useRouter} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import WikiPageEditForm from "@/components/wiki/WikiPageEditForm.vue";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import GridLayout from "@/components/layout/GridLayout.vue";
@@ -36,6 +36,7 @@ useHead({
 });
 
 const router = useRouter();
+const route = useRoute();
 
 const saving = ref(false);
 const errors = ref([]);
@@ -43,7 +44,7 @@ const fieldErrors = ref({});
 
 const wikiPage = ref({
     title: '',
-    parentId: null,
+    parentId: route.query.parentId || null,
     content: ''
 });
 

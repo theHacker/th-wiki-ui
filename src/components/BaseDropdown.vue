@@ -23,7 +23,8 @@ const dropdownOpen = ref(false);
 defineProps({
     buttonClass: {
         type: String,
-        required: false
+        required: false,
+        default: ''
     },
     icon: {
         type: String,

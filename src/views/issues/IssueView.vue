@@ -10,11 +10,17 @@
             v-if="deleteDialogOpen && deleteDialogOpen.issue"
             :dialogOpen="true"
             :deleting="deleting"
+            :deleteDisabled="attachmentsCount > 0"
             @submit="deleteIssue(deleteDialogOpen.issue.id)"
             @cancel="deleteDialogOpen = null"
         >
-            Do you really want to delete the issue
-            <b><i>{{deleteDialogOpen.issue.issueKey}}</i></b> "<b>{{deleteDialogOpen.issue.title}}</b>"?
+            <BaseAlert v-if="attachmentsCount > 0" color="info" icon="circle-info" class="mb-0">
+                This issue cannot be deleted, because it contains one or more attachments.
+            </BaseAlert>
+            <div v-else>
+                Do you really want to delete the issue
+                <b><i>{{deleteDialogOpen.issue.issueKey}}</i></b> "<b>{{deleteDialogOpen.issue.title}}</b>"?
+            </div>
         </DeleteDialog>
 
         <DeleteDialog
