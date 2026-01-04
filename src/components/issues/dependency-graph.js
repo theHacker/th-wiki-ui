@@ -5,9 +5,17 @@
  * @param {Object.<string, *>} issues issues to plot, key is the issue.id
  * @param {Array<*>} issueLinks issue links to plot
  * @param {Array<*>} issueLinkTypes all issue link types
+ * @param {Boolean} pruneDoneIssues whether to prune issues that are done
  * @returns {string} Mermaid source code
  */
-function generateDependencyGraphMermaid(centeredIssueId, issues, issueLinks, issueLinkTypes) {
+function generateDependencyGraphMermaid(centeredIssueId, issues, issueLinks, issueLinkTypes, pruneDoneIssues) {
+    if (pruneDoneIssues) {
+        const result = pruneDone(centeredIssueId, issues, issueLinks);
+
+        issues = result.issues;
+        issueLinks = result.issueLinks;
+    }
+
     const centeredIssue = issues[centeredIssueId];
 
     let mermaidSource = 'flowchart LR\n';
@@ -76,6 +84,157 @@ function generateDependencyGraphMermaid(centeredIssueId, issues, issueLinks, iss
     }
 
     return mermaidSource;
+}
+
+/**
+ * Prunes all issues that are marked done.
+ * That can result in whole sub-trees pruned.
+ *
+ * @param {string} centeredIssueId centered issue's ID (that issue will never be pruned)
+ * @param {Object.<string, *>} issues issues to plot, key is the issue.id
+ * @param {Array<*>} issueLinks issue links to plot
+ * @returns {{issues: *, issueLinks: *}} pruned versions of input parameters
+ */
+function pruneDone(centeredIssueId, issues, issueLinks) {
+    // Gather edges per node in the graph, i.e. the issueLinks for each issue
+
+    const edges = new Map(); // issueId => Set(issueIds linked)
+    for (const issueId in issues) {
+        edges.set(issueId, new Set());
+    }
+
+    for (let issueLink of issueLinks) {
+        edges.get(issueLink.issue1.id).add(issueLink.issue2.id);
+        edges.get(issueLink.issue2.id).add(issueLink.issue1.id);
+    }
+
+    const graph = {
+        neighbors(n) {
+            return edges.get(n);
+        },
+    };
+
+    // Algorithm:
+    // Let C be the "centered" node.
+    // Find all paths (P_1...P_n) from I to C.
+    // A node X (!= C) can be pruned from the graph if
+    //   - it's done AND
+    //   - in ALL found paths P containing X (with P_x = X) have P_i (i in [1, x[) done.
+    //
+    // The last conditions can be merged as X is on position P_x in the path to:
+    // A node X (!= C) can be pruned from the graph if
+    //   - in ALL found paths P containing X (with P_x = X) have P_i (i in [1, x]) done.
+
+    // Can be useful to enable debug logs for the algorithm
+    function debug(...args) {
+        if (false) { // eslint-disable-line no-constant-condition
+            console.debug(...args);
+        }
+    }
+
+    const issueIdsToKeep = new Set();
+    issueIdsToKeep.add(centeredIssueId); // Never cut the centered issue
+
+    debug("***************** DEBUG *******************");
+
+    const allPathsByIssueId = new Map(); // issueId => array of paths containing this issueId
+    for (const issueId in issues) {
+        allPathsByIssueId.set(issueId, []);
+    }
+
+    for (const issueId in issues) {
+        const paths = findAllPathsInGraph(graph, issueId, centeredIssueId);
+        debug(`Paths from ${issueId} to ${centeredIssueId}: ${JSON.stringify(paths)}`);
+
+        for (const path of paths) {
+            for (const pathNode of path) {
+                allPathsByIssueId.get(pathNode).push(path);
+            }
+        }
+    }
+
+    debug(`allPathsByIssueId = `, allPathsByIssueId);
+
+    for (const issueId in issues) {
+        // Check all paths where (issueId) is part of:
+        // Are ALL the nodes before+including this issueId (except centered node) in ALL these paths done?
+        // If so, this node can be pruned.
+
+        let allPrefixPathsFullyDone = true;
+        outer: for (const path of allPathsByIssueId.get(issueId)) {
+            for (const pathNode of path) {
+                // Ignore centered node, we are finished with this path. All paths lead to centered node as end.
+                if (pathNode === centeredIssueId) {
+                    break;
+                }
+
+                // Found a non-done issue in the path. Then we cannot prune issueId.
+                if (!issues[pathNode].issueStatus.doneStatus) {
+                    allPrefixPathsFullyDone = false;
+                    debug(`Path ${JSON.stringify(path)} contains not-done pathNode ${pathNode}. Cannot prune ${issueId}.`);
+                    break outer;
+                }
+
+                // Reached issueId in the path (and it was done also).
+                // Then this path was fully done up to issueId.
+                if (pathNode === issueId) {
+                    break;
+                }
+            }
+        }
+
+        if (!allPrefixPathsFullyDone) {
+            issueIdsToKeep.add(issueId);
+            debug(`Keeping node ${issueId}`);
+        }
+    }
+
+    debug('RESULT: issueIdsToKeep = ', issueIdsToKeep);
+    debug('RESULT: issueIdsToPrune = ', new Set(Object.keys(issues)).difference(issueIdsToKeep));
+    debug("***************** /DEBUG ******************");
+
+    // Prune nodes and edges
+
+    return {
+        issues: Object.fromEntries(Object.entries(issues).filter(([issueId, _issue]) =>
+            issueIdsToKeep.has(issueId)
+        )),
+        issueLinks: issueLinks.filter(issueLink =>
+            issueIdsToKeep.has(issueLink.issue1.id) && issueIdsToKeep.has(issueLink.issue2.id)
+        )
+    };
+}
+
+/**
+ * Generic DFS (depth-first search) with strings as nodes.
+ * Searches all paths from a start to an end node.
+ *
+ * @param {{neighbors: (node: string) => Set<string>}} graph - graph with edge function
+ * @param {string} start - start node
+ * @param {string} end - end node
+ * @returns {string[][]} all possible paths from start to end
+ */
+export function findAllPathsInGraph(graph, start, end) {
+    const paths = [];
+
+    function dfs(node, path, visited) {
+        if (node === end) {
+            paths.push(path);
+            return;
+        }
+
+        for (const neighbor of graph.neighbors(node)) {
+            if (!visited.has(neighbor)) {
+                visited.add(neighbor);
+                const newPath = [...path, neighbor];
+                dfs(neighbor, newPath, new Set(visited));
+                visited.delete(neighbor);
+            }
+        }
+    }
+
+    dfs(start, [start], new Set([start]))
+    return paths;
 }
 
 function escapeMermaid(str) {

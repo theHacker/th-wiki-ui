@@ -21,6 +21,10 @@ const props = defineProps({
     depth: {
         type: Number,
         default: 1
+    },
+    pruneDoneIssues: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -165,7 +169,8 @@ const dependencyGraphSvg = computedAsync(async () => {
         props.issueId,
         involvedIssues.value,
         involvedIssueLinks.value,
-        issueLinkTypes.value
+        issueLinkTypes.value,
+        props.pruneDoneIssues
     );
 
     const dependencyGraphMarkdown = '```mermaid\n' + dependencyGraphMermaid + '\n```';

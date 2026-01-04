@@ -406,22 +406,39 @@
                         </div>
 
                         <div v-else-if="linksTabState === LinksTabStates.Graph">
-                            <div class="d-flex gap-2">
-                                <label for="rangeDependencyGraphDepth" class="form-label text-nowrap">
-                                    Render dependency graph to depth
-                                </label>
-                                <input
-                                    v-model.number="dependencyGraphDepth"
-                                    id="rangeDependencyGraphDepth"
-                                    type="range"
-                                    class="form-range w-50 w-sm-25"
-                                    min="0"
-                                    max="10"
+                            <div class="hstack gap-2 mb-3">
+                                <BaseButton
+                                    icon="check"
+                                    tooltip="Prune done issues"
+                                    color="success"
+                                    :active="dependencyGraphPruneDoneIssues"
+                                    @click="dependencyGraphPruneDoneIssues = !dependencyGraphPruneDoneIssues"
                                 />
-                                <span>{{ dependencyGraphDepth }}</span>
+
+                                <div class="vr mx-2"></div>
+
+                                <div class="d-flex w-100 gap-2">
+                                    <label for="rangeDependencyGraphDepth" class="form-label text-nowrap m-0 d-none d-sm-inline">
+                                        Render dependency graph to depth
+                                    </label>
+                                    <input
+                                        v-model.number="dependencyGraphDepth"
+                                        id="rangeDependencyGraphDepth"
+                                        type="range"
+                                        class="form-range w-100 w-sm-25"
+                                        min="0"
+                                        max="10"
+                                    />
+                                    <span>{{ dependencyGraphDepth }}</span>
+                                </div>
                             </div>
 
-                            <DependencyGraph :issueId="issue.id" :depth="dependencyGraphDepth" class="mb-5" />
+                            <DependencyGraph
+                                :issueId="issue.id"
+                                :depth="dependencyGraphDepth"
+                                :pruneDoneIssues="dependencyGraphPruneDoneIssues"
+                                class="mb-5"
+                            />
                         </div>
 
                         <BaseButton
@@ -628,6 +645,11 @@ const dependencyGraphDepth = refSyncStateToUserPreferences({
     defaultValue: 1,
     key: UserPreferencesKeys.IssueDependencyGraphDepth,
     isValid: (value) => value >= 0 && value <= 10
+});
+const dependencyGraphPruneDoneIssues = refSyncStateToUserPreferences({
+    type: 'boolean',
+    defaultValue: false,
+    key: UserPreferencesKeys.IssueDependencyGraphPruneDoneIssues
 });
 
 const tabState = ref(TabStates.Description);
