@@ -12,6 +12,7 @@ const UserPreferencesKeys = {
     IssueFullWidth: Symbol('IssueFullWidth'),
     IssueDependencyGraphDepth: Symbol('IssueDependencyGraphDepth'),
     IssueDependencyGraphPruneDoneIssues: Symbol('IssueDependencyGraphPruneDoneIssues'),
+    IssueDependencyGraphLineCurveStyle: Symbol('IssueDependencyGraphLineCurveStyle'),
     // <IssuesView>
     IssuesShowFilters: Symbol('IssuesShowFilters'),
     IssuesShowKeys: Symbol('IssuesShowKeys'),

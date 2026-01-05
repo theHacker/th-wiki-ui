@@ -25,9 +25,14 @@ describe('generateDependencyGraphMermaid()', () => {
             }
         };
 
-        const mermaid = generateDependencyGraphMermaid('just-me', issues, [], issueLinkTypes, false);
+        const mermaid = generateDependencyGraphMermaid('just-me', issues, [], issueLinkTypes, false, 'basis');
 
         expect(mermaid).toEqual(trimIndent`
+            ---
+            config:
+              flowchart:
+                curve: basis
+            ---
             flowchart LR
               FOO-42["<small>FOO-42</small>
             Just a single issue"]
@@ -101,9 +106,14 @@ describe('generateDependencyGraphMermaid()', () => {
             { issue1: { id: 'i3' }, issue2: { id: 'i6' }, issueLinkType: { id: '3' } },
         ];
 
-        const mermaid = generateDependencyGraphMermaid('i1', issues, issueLinks, issueLinkTypes, false);
+        const mermaid = generateDependencyGraphMermaid('i1', issues, issueLinks, issueLinkTypes, false, 'basis');
 
         expect(mermaid).toEqual(trimIndent`
+            ---
+            config:
+              flowchart:
+                curve: basis
+            ---
             flowchart LR
               PRJ-1["<small>PRJ-1</small>
             Centered issue"]
@@ -165,9 +175,14 @@ describe('generateDependencyGraphMermaid()', () => {
                 { issue1: { id: 'center' }, issue2: { id: 'other' }, issueLinkType: { id: '1' } }
             ];
 
-            const mermaid = generateDependencyGraphMermaid('center', issues, issueLinks, issueLinkTypes, true);
+            const mermaid = generateDependencyGraphMermaid('center', issues, issueLinks, issueLinkTypes, true, 'bumpX');
 
             expect(mermaid).toEqual(trimIndent`
+                ---
+                config:
+                  flowchart:
+                    curve: bumpX
+                ---
                 flowchart LR
                   FOO-1000["<small>FOO-1000</small>
                 <s>I am done</s>"]
@@ -207,9 +222,14 @@ describe('generateDependencyGraphMermaid()', () => {
                 { issue1: { id: 'center' }, issue2: { id: 'other' }, issueLinkType: { id: '4' } }
             ];
 
-            const mermaid = generateDependencyGraphMermaid('center', issues, issueLinks, issueLinkTypes, true);
+            const mermaid = generateDependencyGraphMermaid('center', issues, issueLinks, issueLinkTypes, true, 'bumpY');
 
             expect(mermaid).toEqual(trimIndent`
+                ---
+                config:
+                  flowchart:
+                    curve: bumpY
+                ---
                 flowchart LR
                   FOO-1000["<small>FOO-1000</small>
                 <s>I am done</s>"]
@@ -276,7 +296,7 @@ describe('generateDependencyGraphMermaid()', () => {
                 { issue1: { id: '243' }, issue2: { id: '201' }, issueLinkType: { id: '2' } },
             ];
 
-            const mermaid = generateDependencyGraphMermaid('201', issues, issueLinks, issueLinkTypes, true);
+            const mermaid = generateDependencyGraphMermaid('201', issues, issueLinks, issueLinkTypes, true, 'basis');
 
             // Expect:
             // - 202 cut
@@ -286,6 +306,11 @@ describe('generateDependencyGraphMermaid()', () => {
             // - 243 NOT cut, 241 not cut, 242 cut
 
             expect(mermaid).toEqual(trimIndent`
+                ---
+                config:
+                  flowchart:
+                    curve: basis
+                ---
                 flowchart LR
                   ISS-201["<small>ISS-201</small>
                 My Feature"]
@@ -362,9 +387,14 @@ describe('generateDependencyGraphMermaid()', () => {
             it('cycles cannot be pruned when there is a non-done issue in it', () => {
                 const { issues, issueLinks } = setup(false);
 
-                const mermaid = generateDependencyGraphMermaid('201', issues, issueLinks, issueLinkTypes, true);
+                const mermaid = generateDependencyGraphMermaid('201', issues, issueLinks, issueLinkTypes, true, 'basis');
 
                 expect(mermaid).toEqual(trimIndent`
+                    ---
+                    config:
+                      flowchart:
+                        curve: basis
+                    ---
                     flowchart LR
                       C-201["<small>C-201</small>
                     <s>Main</s>"]
@@ -393,9 +423,14 @@ describe('generateDependencyGraphMermaid()', () => {
             it('a cycle containing the centered issue will be cut to the centered issue only', () => {
                 const { issues, issueLinks } = setup(true);
 
-                const mermaid = generateDependencyGraphMermaid('201', issues, issueLinks, issueLinkTypes, true);
+                const mermaid = generateDependencyGraphMermaid('201', issues, issueLinks, issueLinkTypes, true, 'basis');
 
                 expect(mermaid).toEqual(trimIndent`
+                    ---
+                    config:
+                      flowchart:
+                        curve: basis
+                    ---
                     flowchart LR
                       C-201["<small>C-201</small>
                     <s>Main</s>"]
@@ -444,9 +479,14 @@ describe('generateDependencyGraphMermaid()', () => {
             it('cycles cannot be pruned when there is a non-done issue in it', () => {
                 const { issues, issueLinks } = setup(false);
 
-                const mermaid = generateDependencyGraphMermaid('201', issues, issueLinks, issueLinkTypes, true);
+                const mermaid = generateDependencyGraphMermaid('201', issues, issueLinks, issueLinkTypes, true, 'basis');
 
                 expect(mermaid).toEqual(trimIndent`
+                    ---
+                    config:
+                      flowchart:
+                        curve: basis
+                    ---
                     flowchart LR
                       C-201["<small>C-201</small>
                     <s>Main</s>"]
@@ -475,9 +515,14 @@ describe('generateDependencyGraphMermaid()', () => {
             it('a cycle can be cut completely', () => {
                 const { issues, issueLinks } = setup(true);
 
-                const mermaid = generateDependencyGraphMermaid('201', issues, issueLinks, issueLinkTypes, true);
+                const mermaid = generateDependencyGraphMermaid('201', issues, issueLinks, issueLinkTypes, true, 'basis');
 
                 expect(mermaid).toEqual(trimIndent`
+                    ---
+                    config:
+                      flowchart:
+                        curve: basis
+                    ---
                     flowchart LR
                       C-201["<small>C-201</small>
                     <s>Main</s>"]
@@ -485,6 +530,41 @@ describe('generateDependencyGraphMermaid()', () => {
                     
                 `);
             });
+        });
+    });
+
+    describe('different line curve styles', () => {
+
+        it.each([
+            'basis', 'bumpX', 'bumpY', 'cardinal', 'catmullRom', 'linear',
+            'monotoneX', 'monotoneY', 'natural', 'step', 'stepAfter', 'stepBefore'
+        ])('supports "%s" style', lineCurveStyle => {
+
+            const issues = {
+                'just-me': {
+                    id: 'just-me',
+                    issueKey: 'STYLE-666',
+                    issueType: { iconColor: 'success' },
+                    issuePriority: { showIconInList: false, iconColor: 'warning' },
+                    issueStatus: { doneStatus: false },
+                    title: 'Just a single issue'
+                }
+            };
+
+            const mermaid = generateDependencyGraphMermaid('just-me', issues, [], issueLinkTypes, false, lineCurveStyle);
+
+            expect(mermaid).toEqual(trimIndent`
+                ---
+                config:
+                  flowchart:
+                    curve: ${lineCurveStyle}
+                ---
+                flowchart LR
+                  STYLE-666["<small>STYLE-666</small>
+                Just a single issue"]
+                  style STYLE-666 stroke: #00ff00, fill: #0f1f0f
+                
+            `);
         });
     });
 });

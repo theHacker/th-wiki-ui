@@ -417,15 +417,33 @@
 
                                 <div class="vr mx-2"></div>
 
+                                <i class="fas fa-diagram-project" title="Line curve style" />
+                                <select v-model="dependencyGraphLineCurveStyle">
+                                    <option>basis</option>
+                                    <option>bumpX</option>
+                                    <option>bumpY</option>
+                                    <option>cardinal</option>
+                                    <option>catmullRom</option>
+                                    <option>linear</option>
+                                    <option>monotoneX</option>
+                                    <option>monotoneY</option>
+                                    <option>natural</option>
+                                    <option>step</option>
+                                    <option>stepAfter</option>
+                                    <option>stepBefore</option>
+                                </select>
+
+                                <div class="vr mx-2"></div>
+
                                 <div class="d-flex w-100 gap-2">
-                                    <label for="rangeDependencyGraphDepth" class="form-label text-nowrap m-0 d-none d-sm-inline">
+                                    <label for="rangeDependencyGraphDepth" class="form-label text-nowrap m-0 d-none d-md-inline">
                                         Render dependency graph to depth
                                     </label>
                                     <input
                                         v-model.number="dependencyGraphDepth"
                                         id="rangeDependencyGraphDepth"
                                         type="range"
-                                        class="form-range w-100 w-sm-25"
+                                        class="form-range w-100 w-md-25"
                                         min="0"
                                         max="10"
                                     />
@@ -437,6 +455,7 @@
                                 :issueId="issue.id"
                                 :depth="dependencyGraphDepth"
                                 :pruneDoneIssues="dependencyGraphPruneDoneIssues"
+                                :lineCurveStyle="dependencyGraphLineCurveStyle"
                                 class="mb-5"
                             />
                         </div>
@@ -650,6 +669,11 @@ const dependencyGraphPruneDoneIssues = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: false,
     key: UserPreferencesKeys.IssueDependencyGraphPruneDoneIssues
+});
+const dependencyGraphLineCurveStyle = refSyncStateToUserPreferences({
+    type: 'string',
+    defaultValue: 'basis',
+    key: UserPreferencesKeys.IssueDependencyGraphLineCurveStyle
 });
 
 const tabState = ref(TabStates.Description);

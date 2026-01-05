@@ -1,3 +1,5 @@
+import {trimIndent} from "@/helper/string.js";
+
 /**
  * Generates the issue dependency graph in form of source code for a Mermaid chart.
  *
@@ -6,9 +8,13 @@
  * @param {Array<*>} issueLinks issue links to plot
  * @param {Array<*>} issueLinkTypes all issue link types
  * @param {Boolean} pruneDoneIssues whether to prune issues that are done
+ * @param {
+ *   'basis'|'bumpX'|'bumpY'|'cardinal'|'catmullRom'|'linear'|
+ *   'monotoneX'|'monotoneY'|'natural'|'step'|'stepAfter'|'stepBefore'
+ * } lineCurveStyle How to style line curves. See https://mermaid.js.org/syntax/flowchart.html#styling-line-curves
  * @returns {string} Mermaid source code
  */
-function generateDependencyGraphMermaid(centeredIssueId, issues, issueLinks, issueLinkTypes, pruneDoneIssues) {
+function generateDependencyGraphMermaid(centeredIssueId, issues, issueLinks, issueLinkTypes, pruneDoneIssues, lineCurveStyle) {
     if (pruneDoneIssues) {
         const result = pruneDone(centeredIssueId, issues, issueLinks);
 
@@ -18,7 +24,15 @@ function generateDependencyGraphMermaid(centeredIssueId, issues, issueLinks, iss
 
     const centeredIssue = issues[centeredIssueId];
 
-    let mermaidSource = 'flowchart LR\n';
+    let mermaidSource = trimIndent`
+        ---
+        config:
+          flowchart:
+            curve: ${lineCurveStyle}
+        ---
+        flowchart LR
+        
+    `;
 
     const nodes = new Set(); // remember which nodes are already in the Mermaid source
 

@@ -25,6 +25,17 @@ const props = defineProps({
     pruneDoneIssues: {
         type: Boolean,
         default: false
+    },
+    lineCurveStyle: {
+        type: String,
+        default: 'basis',
+        validator(value, _props) {
+            // see https://mermaid.js.org/syntax/flowchart.html#styling-line-curves
+            return [
+                'basis', 'bumpX', 'bumpY', 'cardinal', 'catmullRom', 'linear',
+                'monotoneX', 'monotoneY', 'natural', 'step', 'stepAfter', 'stepBefore'
+            ].includes(value);
+        },
     }
 });
 
@@ -170,7 +181,8 @@ const dependencyGraphSvg = computedAsync(async () => {
         involvedIssues.value,
         involvedIssueLinks.value,
         issueLinkTypes.value,
-        props.pruneDoneIssues
+        props.pruneDoneIssues,
+        props.lineCurveStyle
     );
 
     const dependencyGraphMarkdown = '```mermaid\n' + dependencyGraphMermaid + '\n```';
