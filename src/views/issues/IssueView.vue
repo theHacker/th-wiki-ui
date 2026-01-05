@@ -79,60 +79,14 @@
             </template>
         </ConfirmDialog>
 
-        <ConfirmDialog
-            v-if="addIssueLinkDialog"
-            color="success"
-            title="Link to another issue"
-            size="large"
-            :dialogOpen="true"
-            :progressing="linkingIssue"
-            submitIcon="diagram-predecessor"
-            submitTitle="Link"
-            :submitDisabled="addIssueLinkSubmitDisabled"
-            cancelIcon="xmark"
-            cancelTitle="Cancel"
-            @submit="linkIssues(issue.id, addIssueLinkDialog.issueLinkType, addIssueLinkDialog.otherIssueId)"
-            @cancel="addIssueLinkDialog = null"
-        >
-            <fieldset
-                :disabled="false"
-                class="row g-2 align-items-center"
-            >
-                <div class="col-auto">
-                    This issue
-                </div>
-                <div class="col-auto">
-                    <select
-                        v-model="addIssueLinkDialog.issueLinkType"
-                        class="form-select"
-                    >
-                        <template v-for="issueLinkType in issueLinkTypes" :key="issueLinkType.id">
-                            <option
-                                :value="{ id: issueLinkType.id, inverse: false }"
-                            >{{ issueLinkType.wording }}</option>
-                            <option
-                                v-if="issueLinkType.wordingInverse"
-                                :value="{ id: issueLinkType.id, inverse: true }"
-                            >{{ issueLinkType.wordingInverse }}</option>
-                        </template>
-                    </select>
-                </div>
-                <div class="col-auto">
-                    <select
-                        v-model="addIssueLinkDialog.otherIssueId"
-                        class="form-select"
-                    >
-                        <template v-for="issueInAllIssues in allIssues" :key="issueInAllIssues.id">
-                            <option
-                                :value="issueInAllIssues.id"
-                                :disabled="issueInAllIssues.id === issue.id"
-                            >{{ issueInAllIssues.issueKey }}: {{ issueInAllIssues.title }}</option>
-                        </template>
-                    </select>
-                </div>
-                <div class="col-auto">.</div>
-            </fieldset>
-        </ConfirmDialog>
+        <AddIssueLinkDialog
+            v-if="issue !== null"
+            :dialogOpen="addIssueLinkDialogOpen"
+            :issueId="issue.id"
+            :linkingIssue="linkingIssue"
+            @submit="linkIssues"
+            @cancel="addIssueLinkDialogOpen = false"
+        />
 
         <TagsDialog
             v-model="assignedTagIdsInDialog"
@@ -627,6 +581,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
 import DeleteDialog from "@/components/DeleteDialog.vue";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import AddIssueLinkDialog from "@/components/issues/AddIssueLinkDialog.vue";
 import DependencyGraph from "@/components/issues/DependencyGraph.vue";
 import {isOverdue} from "@/views/issues/issue-functions.js";
 import axios from "@/axios.js";
@@ -646,7 +601,6 @@ const router = useRouter();
 const projects = ref(null);
 const issueStatuses = ref(null);
 const issueLinkTypes = ref(null);
-const allIssues = ref(null); // TODO move to a separate component (and load only on demand)
 
 const errors = ref([]);
 const issue = ref(null);
@@ -686,7 +640,7 @@ const moveToAnotherProjectDialog = ref(false);
 const moveToProjectId = ref(null);
 const movingToAnotherProject = ref(false);
 
-const addIssueLinkDialog = ref(null);
+const addIssueLinkDialogOpen = ref(false);
 const linkingIssue = ref(false);
 
 const availableGlobalTags = ref([]);
@@ -809,33 +763,6 @@ const linkGroups = computed(() => {
     }
 
     return groups;
-});
-
-const addIssueLinkSubmitDisabled = computed(() => {
-    // Option selected?
-
-    if (addIssueLinkDialog.value?.issueLinkType == null) {
-        return true;
-    }
-    if (addIssueLinkDialog.value?.otherIssueId == null) {
-        return true;
-    }
-
-    // Check if selected options would lead to an already existing link
-
-    const existingLinks = issue.value.issueLinks
-        .filter(it =>
-            it.issueLinkType.id === addIssueLinkDialog.value.issueLinkType.id &&
-            (it.issue1.id === addIssueLinkDialog.value.otherIssueId ||
-                it.issue2.id === addIssueLinkDialog.value.otherIssueId)
-        );
-    if (existingLinks.length > 0) {
-        return true;
-    }
-
-    // All clear
-
-    return false;
 });
 
 useHead({
@@ -983,11 +910,6 @@ function fetchData(id) {
                         wording
                         wordingInverse
                     }
-                    issues {
-                        id
-                        issueKey
-                        title
-                    }
                     tags {
                         id
                         project {
@@ -1021,7 +943,6 @@ function fetchData(id) {
                 projects.value = data.projects;
                 issueStatuses.value = data.issueStatuses;
                 issueLinkTypes.value = data.issueLinkTypes;
-                allIssues.value = data.issues;
 
                 availableGlobalTags.value = data.tags.filter(it => it.project === null);
                 availableProjectTags.value = data.tags.filter(it => it.project?.id === data.issue.project.id);
@@ -1100,7 +1021,7 @@ function moveToProject(issueId, newProjectId) {
             movingToAnotherProject.value = false;
             moveToAnotherProjectDialog.value = null;
 
-            // Reload everything, because issue.issueLinks and even allIssues is now stale because of changed issue keys
+            // Reload everything, because issue.issueLinks is now stale because of changed issue keys
             fetchData(data.moveIssue.issue.id);
         })
         .catch(e => {
@@ -1141,21 +1062,12 @@ function addNewIssueLink() {
     linksTabState.value = LinksTabStates.Table;
 
     // Open dialog
-    addIssueLinkDialog.value = {
-        issueLinkType: null,
-        otherIssueId: null
-    };
+    addIssueLinkDialogOpen.value = true;
 }
 
-function linkIssues(issueId, issueLinkType, otherIssueId) {
+function linkIssues(issueLink) {
     errors.value = [];
     linkingIssue.value = true;
-
-    const input = {
-        issue1Id: (issueLinkType.inverse) ? otherIssueId : issueId,
-        issue2Id: (issueLinkType.inverse) ? issueId : otherIssueId,
-        issueLinkTypeId: issueLinkType.id
-    };
 
     axios
         .graphql(
@@ -1215,7 +1127,7 @@ function linkIssues(issueId, issueLinkType, otherIssueId) {
                     }
                 }
             `,
-            { input }
+            { input: issueLink }
         )
         .then(data => {
             const issueLink = data.createIssueLink.issueLink;
@@ -1226,7 +1138,7 @@ function linkIssues(issueId, issueLinkType, otherIssueId) {
             errors.value = handleError(e).genericErrors;
         })
         .finally(() => {
-            addIssueLinkDialog.value = null;
+            addIssueLinkDialogOpen.value = false;
             linkingIssue.value = false;
         });
 }
