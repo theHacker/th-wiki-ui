@@ -2,7 +2,7 @@
     <select v-model="projectId" class="form-select" :disabled="disabled">
         <option v-if="nullOption" :value="null">{{ nullOption }}</option>
         <option
-            v-for="project in projects"
+            v-for="project in projectsSorted"
             :key="project.id"
             :value="project.id"
             :disabled="isOptionDisabled(project)"
@@ -13,6 +13,8 @@
 </template>
 
 <script setup>
+import {computed} from "vue";
+
 const projectId = defineModel();
 
 const props = defineProps({
@@ -32,6 +34,10 @@ const props = defineProps({
         type: Function,
         required: false
     }
+});
+
+const projectsSorted = computed(() => {
+    return props.projects.toSorted((a, b) => a.prefix.localeCompare(b.prefix));
 });
 
 function isOptionDisabled(project) {
