@@ -59,6 +59,74 @@
                 </select>
             </div>
             <div class="col-auto">.</div>
+
+            <div class="col-12">
+                <hr class="mt-3 mb-2"/>
+            </div>
+
+            <div class="col-12">
+                <h5 class="my-1">Quick search</h5>
+            </div>
+
+            <div class="col-10 col-lg order-0">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-hashtag" />
+                    </span>
+                    <input
+                        v-model="quickSearch.issueKeyNumber"
+                        type="text"
+                        class="form-control"
+                        placeholder="issue key or number"
+                    />
+                </div>
+            </div>
+
+            <div class="col-12 col-lg order-2 order-lg-1">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-align-left" />
+                    </span>
+                    <input
+                        v-model="quickSearch.titleOrDescription"
+                        type="text"
+                        class="form-control"
+                        placeholder="title or description"
+                    />
+                </div>
+            </div>
+
+            <div class="col-2 col-lg-auto order-1 order-lg-2">
+                <BaseButton
+                    icon="xmark"
+                    color="danger"
+                    @click="quickSearch.issueKeyNumber = ''; quickSearch.titleOrDescription = '';"
+                />
+            </div>
+
+            <div class="col-12 order-3">
+                <span v-if="!quickSearchActive">
+                    <i>No filter set.</i>
+                </span>
+                <span v-else-if="quickSearchIssuesLimited.length === 0">
+                    <i>No results.</i>
+                </span>
+                <span v-else-if="quickSearchIssuesLimited.length !== quickSearchIssues.length">
+                    Results ({{ quickSearchIssuesLimited.length }} of {{ quickSearchIssues.length }}):
+                </span>
+                <span v-else>
+                    Results ({{ quickSearchIssuesLimited.length }}):
+                </span>
+
+                <ul class="mb-0">
+                    <li v-for="issue in quickSearchIssuesLimited" :key="issue.id">
+                        <a
+                            href="#"
+                            @click.prevent="otherIssueId = issue.id"
+                        >{{ issue.issueKey }}: {{ issue.title }}</a>
+                    </li>
+                </ul>
+            </div>
         </fieldset>
     </ConfirmDialog>
 </template>
@@ -70,6 +138,7 @@ import axios from "@/axios.js";
 import {handleError} from "@/helper/graphql-error-handling.js";
 import ErrorMessage from "@/components/ErrorMessage.vue";
 import LoadingIndicator from "@/components/LoadingIndicator.vue";
+import BaseButton from "@/components/BaseButton.vue";
 
 const props = defineProps({
     dialogOpen: {
@@ -88,8 +157,8 @@ const props = defineProps({
 
 const emit = defineEmits(['submit', 'cancel']);
 
-const issues = ref(null);
-const issueLinkTypes = ref(null);
+const issues = ref([]);
+const issueLinkTypes = ref([]);
 
 const issueToIssueLinksMap = new Map(); // issueId => [issueLink]
 
@@ -98,6 +167,56 @@ const errors = ref([]);
 
 const issueLinkType = ref(null);
 const otherIssueId = ref(null);
+
+const quickSearch = ref({
+    issueKeyNumber: "",
+    titleOrDescription: ""
+})
+
+const quickSearchActive = computed(() => {
+    return quickSearch.value.issueKeyNumber !== '' || quickSearch.value.titleOrDescription !== '';
+});
+
+const quickSearchIssues = computed(() => {
+    if (!quickSearchActive.value) {
+        return [];
+    }
+
+    return issues.value.filter(issue => {
+        if (quickSearch.value.issueKeyNumber !== '') {
+            const number = Number(quickSearch.value.issueKeyNumber);
+
+            // numbers match exact
+            if (Number.isInteger(number)) {
+                if (issue.issueNumber !== number) {
+                    return false;
+                }
+            }
+            // otherwise take as string and search for substring
+            else {
+                if (!issue.issueKey.toLowerCase().includes(quickSearch.value.issueKeyNumber.toLowerCase())) {
+                    return false;
+                }
+            }
+        }
+
+        if (quickSearch.value.titleOrDescription !== '') {
+            if (
+                !issue.title.toLowerCase().includes(quickSearch.value.titleOrDescription.toLowerCase()) &&
+                !issue.description.toLowerCase().includes(quickSearch.value.titleOrDescription.toLowerCase())
+            ) {
+                return false;
+            }
+        }
+
+        return true;
+    });
+});
+
+const maxQuickSearchIssues = 10;
+const quickSearchIssuesLimited = computed(() => {
+    return quickSearchIssues.value.slice(0, maxQuickSearchIssues);
+});
 
 const submitDisabled = computed(() => {
     if (loading.value) {
@@ -141,8 +260,8 @@ function fetchData() {
     loading.value = true;
     errors.value = [];
 
-    issues.value = null;
-    issueLinkTypes.value = null;
+    issues.value = [];
+    issueLinkTypes.value = [];
 
     // Reset form, too
     issueLinkType.value = null;
@@ -160,6 +279,7 @@ function fetchData() {
                         issueNumber
                         issueKey
                         title
+                        description
                         issueLinks {
                             id
                             issue1 {
