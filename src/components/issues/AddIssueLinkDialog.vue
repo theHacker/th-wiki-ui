@@ -154,6 +154,10 @@ function fetchData() {
                 query IssuesAndLinks {
                     issues {
                         id
+                        project {
+                            prefix
+                        }
+                        issueNumber
                         issueKey
                         title
                         issueLinks {
@@ -181,7 +185,26 @@ function fetchData() {
         .then(data => {
             loading.value = false;
 
-            issues.value = data.issues;
+            // Find "our" project, i.e. the project the issue we want to add links to belongs to
+            const projectPrefix = data.issues
+                .find(issue => issue.id === props.issueId)
+                .project
+                .prefix;
+
+            issues.value = data.issues.sort((a, b) => {
+                // Sort issue from "our" project top
+                if (a.project.prefix === projectPrefix && b.project.prefix !== projectPrefix) return -1;
+                if (a.project.prefix !== projectPrefix && b.project.prefix === projectPrefix) return 1;
+
+                // Sort by project...
+                const cmpProjects = a.project.prefix.localeCompare(b.project.prefix);
+                if (cmpProjects !== 0) {
+                    return cmpProjects;
+                }
+
+                // ...then by issue number
+                return a.issueNumber - b.issueNumber;
+            });
             issueLinkTypes.value = data.issueLinkTypes;
 
             // Update the map which issue has what issueLinks
