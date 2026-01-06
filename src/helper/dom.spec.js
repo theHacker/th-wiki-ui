@@ -5,7 +5,7 @@ import {findSibling} from "@/helper/dom.js";
 describe('findSibling()', () => {
 
     const dom = new JSDOM(`
-        <div id="root">
+        <div id="rootNode">
             <span>TOP</span>
             <span>Find me top</span>
             <ul>
@@ -22,7 +22,7 @@ describe('findSibling()', () => {
     const { document } = dom.window;
 
     it('returns null when there is no sibling at all', () => {
-        const root = document.getElementById('root');
+        const root = document.getElementById('rootNode');
 
         expect(findSibling(root, '*')).toBeNull();
     });

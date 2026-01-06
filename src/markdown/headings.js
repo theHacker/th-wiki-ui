@@ -1,4 +1,4 @@
-const headingsExtension = (forbiddenIds) => ({
+const headingsExtension = {
     renderer: {
         heading({tokens, depth}) {
             const parsedText = this.parser.parseInline(tokens);
@@ -25,7 +25,7 @@ const headingsExtension = (forbiddenIds) => ({
 
             // Don't generate duplicates
             if (!this.alreadyGeneratedHeadingIds) {
-                this.alreadyGeneratedHeadingIds = new Set(forbiddenIds);
+                this.alreadyGeneratedHeadingIds = new Set();
             }
 
             let uniqueId = id;
@@ -39,6 +39,6 @@ const headingsExtension = (forbiddenIds) => ({
             return `<h${depth} id="${uniqueId}">${parsedText}</h${depth}>` + '\n';
         }
     }
-});
+};
 
 export {headingsExtension};

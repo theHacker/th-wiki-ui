@@ -323,56 +323,6 @@ describe('MarkdownRenderer', () => {
 
                 expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
             });
-
-            it('skips forbidden ids and instead uses the uniqueness algorithm', async () => {
-                const renderer = new MarkdownRenderer();
-                renderer.enabledHeadingIdGeneration(['dont-use-this', 'or-that']);
-
-                const markdown = trimIndent`
-                    # Normal heading
-                    ## Don't use this!
-                    # or THAT
-                    # That is allowed again :-)
-                `;
-                const expectedHtml = trimIndent`
-                    <h1 id="normal-heading">Normal heading</h1>
-                    <h2 id="dont-use-this-2">Don&#39;t use this!</h2>
-                    <h1 id="or-that-2">or THAT</h1>
-                    <h1 id="that-is-allowed-again">That is allowed again :-)</h1>
-                    
-                `;
-
-                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
-            });
-
-            it('forbidden ids also works with uniqueness clashes', async () => {
-                const renderer = new MarkdownRenderer();
-                renderer.enabledHeadingIdGeneration(['forbidden-4']);
-
-                const markdown = trimIndent`
-                    # Forbidden
-                    First time. OK.
-                    # fOrbidden
-                    That is 2. OK.
-                    # foRbidden
-                    That is 3. OK.
-                    # forBidden
-                    That would be 4. Forbidden. Will get relabeled to 5.
-                `;
-                const expectedHtml = trimIndent`
-                    <h1 id="forbidden">Forbidden</h1>
-                    <p>First time. OK.</p>
-                    <h1 id="forbidden-2">fOrbidden</h1>
-                    <p>That is 2. OK.</p>
-                    <h1 id="forbidden-3">foRbidden</h1>
-                    <p>That is 3. OK.</p>
-                    <h1 id="forbidden-5">forBidden</h1>
-                    <p>That would be 4. Forbidden. Will get relabeled to 5.</p>
-                    
-                `;
-
-                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
-            });
         });
     });
 

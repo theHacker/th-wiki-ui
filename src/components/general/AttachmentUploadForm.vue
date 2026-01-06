@@ -32,9 +32,14 @@
                 </div>
             </div>
             <div class="row">
-                <label for="filename" class="col-sm-2 col-form-label">Filename</label>
+                <label for="attachmentFilename" class="col-sm-2 col-form-label">Filename</label>
                 <div class="col-sm-10">
-                    <input v-model="clipboardDataDialog.filename" class="form-control" id="filename" type="text" />
+                    <input
+                        v-model="clipboardDataDialog.filename"
+                        class="form-control"
+                        id="attachmentFilename"
+                        type="text"
+                    />
                 </div>
             </div>
         </fieldset>

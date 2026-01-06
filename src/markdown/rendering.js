@@ -45,13 +45,6 @@ class MarkdownRenderer {
      */
     headingIdGeneration = false;
 
-    /**
-     * An array of strings which are forbidden to be generated as an "id" attribute
-     *
-     * @type {string[]}
-     */
-    forbiddenHeadingIds = [];
-
 
     constructor(allProjectsSupplier = null, issuesSupplier = null, imageResolver = null) {
         this.allProjectsSupplier = allProjectsSupplier;
@@ -134,15 +127,9 @@ class MarkdownRenderer {
 
     /**
      * Enables the feature to generate a unique "id" attribute for each heading.
-     *
-     * forbiddenIds can be used to ensure certain IDs will never be generated.
-     * They will be altered the same as with a non-unique ID.
-     *
-     * @param {string[]} forbiddenIds An array of strings which are forbidden to be generated
      */
-    enabledHeadingIdGeneration(forbiddenIds = []) {
+    enabledHeadingIdGeneration() {
         this.headingIdGeneration = true;
-        this.forbiddenHeadingIds = forbiddenIds;
     }
 
     // Render functions ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,7 +148,7 @@ class MarkdownRenderer {
         marked.use(hljsExtension);
         marked.use(gfmAlertExtension);
         if (this.headingIdGeneration) {
-            marked.use(headingsExtension(this.forbiddenHeadingIds));
+            marked.use(headingsExtension);
         }
 
         if (this.imageResolver) {
@@ -227,7 +214,7 @@ class MarkdownRenderer {
         marked2.use(hljsExtension);
         marked2.use(gfmAlertExtension);
         if (this.headingIdGeneration) {
-            marked2.use(headingsExtension(this.forbiddenHeadingIds));
+            marked2.use(headingsExtension);
         }
 
         if (this.imageResolver) {
