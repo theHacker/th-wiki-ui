@@ -88,76 +88,78 @@
             />
 
             <div v-if="wikiPage && !noPage">
-                <BaseHeading :tags="wikiPage.tags">
-                    {{ wikiPage.title }}
-                </BaseHeading>
+                <header class="sticky-top bg-body">
+                    <BaseHeading :tags="wikiPage.tags">
+                        {{ wikiPage.title }}
+                    </BaseHeading>
 
-                <div class="d-flex flex-wrap flex-lg-nowrap mb-4 row-gap-3">
-                    <div class="flex-grow-1 me-4">
-                        <div class="tabs">
-                            <ul class="nav nav-tabs">
-                                <TabItem
-                                    icon="image"
-                                    title="Content"
-                                    :active="tabState === TabStates.CONTENT"
-                                    @click="tabState = TabStates.CONTENT"
-                                />
-                                <TabItem
-                                    icon="file-text"
-                                    title="Markdown"
-                                    :active="tabState === TabStates.MARKDOWN"
-                                    @click="tabState = TabStates.MARKDOWN"
-                                />
-                                <TabItem
+                    <div class="d-flex flex-wrap flex-lg-nowrap mb-4 row-gap-3">
+                        <div class="flex-grow-1 me-4">
+                            <div class="tabs">
+                                <ul class="nav nav-tabs">
+                                    <TabItem
+                                        icon="image"
+                                        title="Content"
+                                        :active="tabState === TabStates.CONTENT"
+                                        @click="tabState = TabStates.CONTENT"
+                                    />
+                                    <TabItem
+                                        icon="file-text"
+                                        title="Markdown"
+                                        :active="tabState === TabStates.MARKDOWN"
+                                        @click="tabState = TabStates.MARKDOWN"
+                                    />
+                                    <TabItem
+                                        icon="tags"
+                                        title="Metadata"
+                                        :active="tabState === TabStates.METADATA"
+                                        @click="tabState = TabStates.METADATA"
+                                    />
+                                    <TabItem
+                                        icon="paperclip"
+                                        title="Attachments"
+                                        :badge="!attachmentsLoading && attachmentsCount > 0 ? attachmentsCount.toString() : null"
+                                        :active="tabState === TabStates.ATTACHMENTS"
+                                        :loading="attachmentsLoading"
+                                        @click="tabState = TabStates.ATTACHMENTS"
+                                    />
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="hstack gap-2">
+                            <BaseDropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
+                                <BaseDropdownItem
                                     icon="tags"
-                                    title="Metadata"
-                                    :active="tabState === TabStates.METADATA"
-                                    @click="tabState = TabStates.METADATA"
+                                    title="Manage tags"
+                                    fixedWidth
+                                    @click="openTagsDialog"
                                 />
-                                <TabItem
-                                    icon="paperclip"
-                                    title="Attachments"
-                                    :badge="!attachmentsLoading && attachmentsCount > 0 ? attachmentsCount.toString() : null"
-                                    :active="tabState === TabStates.ATTACHMENTS"
-                                    :loading="attachmentsLoading"
-                                    @click="tabState = TabStates.ATTACHMENTS"
+                                <BaseDropdownItem
+                                    icon="arrow-right-long"
+                                    title="Move"
+                                    fixedWidth
+                                    @click="onMoveAction"
                                 />
-                            </ul>
+                            </BaseDropdown>
+
+                            <BaseButton
+                                class="btn-text-lg"
+                                icon="pen"
+                                title="Edit"
+                                color="light"
+                                @click="$router.push({ name: 'wikiPageEdit', params: { wikiPageId: wikiPage.id } });"
+                            />
+                            <BaseButton
+                                class="btn-text-lg"
+                                icon="trash"
+                                title="Delete"
+                                color="danger"
+                                @click="deleteDialogOpen = true"
+                            />
                         </div>
                     </div>
-
-                    <div class="hstack gap-2">
-                        <BaseDropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
-                            <BaseDropdownItem
-                                icon="tags"
-                                title="Manage tags"
-                                fixedWidth
-                                @click="openTagsDialog"
-                            />
-                            <BaseDropdownItem
-                                icon="arrow-right-long"
-                                title="Move"
-                                fixedWidth
-                                @click="onMoveAction"
-                            />
-                        </BaseDropdown>
-
-                        <BaseButton
-                            class="btn-text-lg"
-                            icon="pen"
-                            title="Edit"
-                            color="light"
-                            @click="$router.push({ name: 'wikiPageEdit', params: { wikiPageId: wikiPage.id } });"
-                        />
-                        <BaseButton
-                            class="btn-text-lg"
-                            icon="trash"
-                            title="Delete"
-                            color="danger"
-                            @click="deleteDialogOpen = true"
-                        />
-                    </div>
-                </div>
+                </header>
 
                 <div v-if="tabState === TabStates.CONTENT">
                     <article v-html="wikiPage.renderedMarkdown" />
