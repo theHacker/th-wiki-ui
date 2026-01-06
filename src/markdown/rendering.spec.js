@@ -772,4 +772,124 @@ describe('MarkdownRenderer', () => {
                 .toEqual("<strong>This</strong> heading has <code>formatting</code>. Should <strong>be <em>parsed</em></strong>.");
         });
     });
+
+    describe('generateOutline()', () => {
+
+        it('generates a simple outline', () => {
+            const renderer = new MarkdownRenderer(null, null);
+            const markdown = trimIndent`
+                # This is the title
+                ## This is the subtitle
+                
+                Some text
+            `;
+
+            expect(renderer.generateOutline(markdown)).toEqual([
+                { title: 'This is the title', level: 1 },
+                { title: 'This is the subtitle', level: 2 }
+            ]);
+        });
+
+        it('generates a complex outline', () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                # Heading 1
+                # Heading 2
+                ## Heading 2.1
+                ## Heading 2.2
+                ## Heading 2.3
+                # Heading 3
+                # Heading 4
+                ## Heading 4.1
+                ### Heading 4.1.1
+                #### Heading 4.1.1.1
+                #### Heading 4.1.1.2
+                #### Heading 4.1.1.3
+                ## Heading 4.2
+                ## Heading 4.3
+                # Heading 5
+            `;
+
+            expect(renderer.generateOutline(markdown)).toEqual([
+                { title: 'Heading 1', level: 1 },
+                { title: 'Heading 2', level: 1 },
+                { title: 'Heading 2.1', level: 2 },
+                { title: 'Heading 2.2', level: 2 },
+                { title: 'Heading 2.3', level: 2 },
+                { title: 'Heading 3', level: 1 },
+                { title: 'Heading 4', level: 1 },
+                { title: 'Heading 4.1', level: 2 },
+                { title: 'Heading 4.1.1', level: 3 },
+                { title: 'Heading 4.1.1.1', level: 4 },
+                { title: 'Heading 4.1.1.2', level: 4 },
+                { title: 'Heading 4.1.1.3', level: 4 },
+                { title: 'Heading 4.2', level: 2 },
+                { title: 'Heading 4.3', level: 2 },
+                { title: 'Heading 5', level: 1 },
+            ]);
+        });
+
+        it('returns an empty list if there are no headings', () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                Just text.
+                
+                There is no heading at all.
+                
+                <blockquote>These are the headings you're looking for.</blockquote>
+                
+                :-)
+            `;
+
+            expect(renderer.generateOutline(markdown)).toEqual([]);
+        });
+
+        it('will detect and fix wrong heading levels', () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                # Heading 1
+                ### Heading 3 should be 2
+                ## Heading 2
+                ##### Heading 5 should be 3
+                #### Heading 4 will work for 3
+                # Heading 1 is ok
+                ## Heading 2 is ok
+                ##### Heading 5 should be 3
+                ##### Again heading 5 will be 4
+                #### Heading 4 fits
+                #### Heading 4 really fits
+                ## Ending with 2
+            `;
+
+            expect(renderer.generateOutline(markdown)).toEqual([
+                { title: 'Heading 1', level: 1 },
+                { title: 'Heading 3 should be 2', level: 2, hadIncorrectLevel: 3 },
+                { title: 'Heading 2', level: 2 },
+                { title: 'Heading 5 should be 3', level: 3, hadIncorrectLevel: 5 },
+                { title: 'Heading 4 will work for 3', level: 4 },
+                { title: 'Heading 1 is ok', level: 1 },
+                { title: 'Heading 2 is ok', level: 2 },
+                { title: 'Heading 5 should be 3', level: 3, hadIncorrectLevel: 5 },
+                { title: 'Again heading 5 will be 4', level: 4, hadIncorrectLevel: 5 },
+                { title: 'Heading 4 fits', level: 4 },
+                { title: 'Heading 4 really fits', level: 4 },
+                { title: 'Ending with 2', level: 2 }
+            ]);
+        });
+
+        it("returns rendered HTML", () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                # **This** heading has \`formatting\`. Should **be _parsed_**.
+                ## This is plain text
+                ## This has \`code\`
+            `;
+
+            expect(renderer.generateOutline(markdown)).toEqual([
+                { title: '<strong>This</strong> heading has <code>formatting</code>. Should <strong>be <em>parsed</em></strong>.', level: 1 },
+                { title: 'This is plain text', level: 2 },
+                { title: 'This has <code>code</code>', level: 2 }
+            ]);
+        });
+    });
 });

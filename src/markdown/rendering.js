@@ -285,6 +285,48 @@ class MarkdownRenderer {
 
         return title;
     }
+
+    /**
+     * Generates an HTML Outline from Markdown code.
+     * See https://html.spec.whatwg.org/multipage/sections.html#headings-and-outlines-2
+     *
+     * Invalid jumps in the heading level are detected and fixed.
+     * In these cases, hadIncorrectLevel is set to the original level.
+     *
+     * @param {string} markdown Markdown code
+     * @returns {{title: String, level: Number, hadIncorrectLevel: ?Number}[]} outline as flat list
+     */
+    generateOutline(markdown) {
+        const marked = new Marked();
+
+        const outline = [];
+        let currentLevel = 1;
+
+        marked.use({
+            renderer: {
+                heading({tokens, depth}) {
+                    const title = this.parser.parseInline(tokens);
+
+                    const outlineEntry = {
+                        title
+                    };
+
+                    if (depth < currentLevel || depth === currentLevel || depth === currentLevel + 1) {
+                        outlineEntry.level = depth;
+                    } else {
+                        outlineEntry.level = currentLevel + 1;
+                        outlineEntry.hadIncorrectLevel = depth;
+                    }
+
+                    outline.push(outlineEntry);
+                    currentLevel = outlineEntry.level;
+                }
+            }
+        });
+        marked.parse(markdown);
+
+        return outline;
+    }
 }
 
 export default MarkdownRenderer;
