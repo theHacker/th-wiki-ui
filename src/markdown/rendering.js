@@ -273,7 +273,6 @@ class MarkdownRenderer {
         const marked = new Marked();
         let title = null;
 
-        marked.parse(markdown);
         marked.use({
             renderer: {
                 heading({tokens, depth}) {
