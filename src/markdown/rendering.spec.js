@@ -156,6 +156,174 @@ describe('MarkdownRenderer', () => {
 
             expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
         });
+
+        describe('headings get ID attributes generated', () => {
+
+            it('generates id attributes', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    # This is a heading
+                    Here is some text.
+                    ## A sub heading
+                    More text.
+                    # And another heading
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="this-is-a-heading">This is a heading</h1>
+                    <p>Here is some text.</p>
+                    <h2 id="a-sub-heading">A sub heading</h2>
+                    <p>More text.</p>
+                    <h1 id="and-another-heading">And another heading</h1>
+                   
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+
+            it('generates id attribute for empty heading', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    #
+                    Nothing there!?
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="empty"></h1>
+                    <p>Nothing there!?</p>
+                   
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+
+            it('Special characters are removed from the ID', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    # This is a heading with just spaces
+                    # Heading, more heading, and nothing but the heading!!
+                    # Try me 😎🥳
+                    # German: äöüßÄÖÜẞ
+                    # Cyrillic: АВС (no, it's not ABC 🤡), Водка (🍸)
+                    # Greek: Γύρος και τζατζίκι
+                    # Japanese: こんにちは
+                    # More Unicode: ⁉𝜓⅓∈ℂ≡∭╔═╕▒✸➍➋🀋🃒🨱
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="this-is-a-heading-with-just-spaces">This is a heading with just spaces</h1>
+                    <h1 id="heading-more-heading-and-nothing-but-the-heading">Heading, more heading, and nothing but the heading!!</h1>
+                    <h1 id="try-me">Try me 😎🥳</h1>
+                    <h1 id="german">German: äöüßÄÖÜẞ</h1>
+                    <h1 id="cyrillic-no-its-not-abc">Cyrillic: АВС (no, it&#39;s not ABC 🤡), Водка (🍸)</h1>
+                    <h1 id="greek">Greek: Γύρος και τζατζίκι</h1>
+                    <h1 id="japanese">Japanese: こんにちは</h1>
+                    <h1 id="more-unicode">More Unicode: ⁉𝜓⅓∈ℂ≡∭╔═╕▒✸➍➋🀋🃒🨱</h1>
+                   
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+
+            it('IDs are unique', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    # This is a heading
+                    ## This is a heading
+                    ### This is a heading 2
+                    ## This is a heading 4
+                    # This is a heading
+                    # this IS a HeadinG
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="this-is-a-heading">This is a heading</h1>
+                    <h2 id="this-is-a-heading-2">This is a heading</h2>
+                    <h3 id="this-is-a-heading-2-2">This is a heading 2</h3>
+                    <h2 id="this-is-a-heading-4">This is a heading 4</h2>
+                    <h1 id="this-is-a-heading-3">This is a heading</h1>
+                    <h1 id="this-is-a-heading-5">this IS a HeadinG</h1>
+                   
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+
+            it('Special characters and uniqueness works together', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    # 🥴🥵🥳
+                    # 🥙🤣🤤
+                    # äöüßÄÖÜẞ
+                    # Γύρος και τζατζίκι
+                    # こんにちは
+                    # empty
+                    # empty-7
+                    # 
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="empty">🥴🥵🥳</h1>
+                    <h1 id="empty-2">🥙🤣🤤</h1>
+                    <h1 id="empty-3">äöüßÄÖÜẞ</h1>
+                    <h1 id="empty-4">Γύρος και τζατζίκι</h1>
+                    <h1 id="empty-5">こんにちは</h1>
+                    <h1 id="empty-6">empty</h1>
+                    <h1 id="empty-7">empty-7</h1>
+                    <h1 id="empty-8"></h1>
+                   
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+
+            it('Inline markdown gets striped for ID generation', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    # This is code
+                    ## This is \`code\`
+                    # Works with **any** inline _markdown_ stuff ;-)
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="this-is-code">This is code</h1>
+                    <h2 id="this-is-code-2">This is <code>code</code></h2>
+                    <h1 id="works-with-any-inline-markdown-stuff">Works with <strong>any</strong> inline <em>markdown</em> stuff ;-)</h1>
+                    
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+
+            it('More edge-cases for id generation', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    # With    lots    of       spaces
+                    # ----- with   ---   --- minuses -> en-masse
+                    #       trim me    done by Markdown parser     
+                    # double--hyphen---in-word
+                    # %%- trim start | trim end -%%
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="with-lots-of-spaces">With    lots    of       spaces</h1>
+                    <h1 id="with-minuses-en-masse">----- with   ---   --- minuses -&gt; en-masse</h1>
+                    <h1 id="trim-me-done-by-markdown-parser">trim me    done by Markdown parser</h1>
+                    <h1 id="double-hyphen-in-word">double--hyphen---in-word</h1>
+                    <h1 id="trim-start-trim-end">%%- trim start | trim end -%%</h1>
+                    
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+        });
     });
 
     describe('renderRich()', () => {

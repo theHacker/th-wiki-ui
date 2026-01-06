@@ -6,6 +6,7 @@ import hljsExtension from "./hljs";
 import {escapeHtmlAttribute} from "@/helper/string.js";
 import {createAttachmentsImageResolver, createBlobImageResolver, imageExtension} from "./images.js";
 import {gfmAlertExtension} from "./gfm-alert.js";
+import {headingsExtension} from "./headings.js";
 
 hljs.registerLanguage('markdown', markdown);
 
@@ -36,6 +37,13 @@ class MarkdownRenderer {
      * @type {?function(filename: string, href: string, title: string, text: string): string}
      */
     imageResolver = null;
+
+    /**
+     * Should we generate unique "id" attributes for each heading
+     *
+     * @type {Boolean}
+     */
+    headingIdGeneration = false;
 
 
     constructor(allProjectsSupplier = null, issuesSupplier = null, imageResolver = null) {
@@ -117,6 +125,13 @@ class MarkdownRenderer {
         this.imageResolver = createBlobImageResolver(currentPath, attachments);
     }
 
+    /**
+     * Enables the feature to generate a unique "id" attribute for each heading.
+     */
+    enabledHeadingIdGeneration() {
+        this.headingIdGeneration = true;
+    }
+
     // Render functions ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -132,6 +147,9 @@ class MarkdownRenderer {
         marked.use(mermaidExtension);
         marked.use(hljsExtension);
         marked.use(gfmAlertExtension);
+        if (this.headingIdGeneration) {
+            marked.use(headingsExtension);
+        }
 
         if (this.imageResolver) {
             marked.use(imageExtension(this.imageResolver));
@@ -195,6 +213,9 @@ class MarkdownRenderer {
         marked2.use(mermaidExtension);
         marked2.use(hljsExtension);
         marked2.use(gfmAlertExtension);
+        if (this.headingIdGeneration) {
+            marked2.use(headingsExtension);
+        }
 
         if (this.imageResolver) {
             marked2.use(imageExtension(this.imageResolver));
