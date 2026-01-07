@@ -249,7 +249,7 @@ const loading = ref(true);
 const attachmentsView = refSyncStateToUserPreferences({
     type: 'enum',
     defaultValue: AttachmentsView.TABLE,
-    key: UserPreferencesKeys.AttachmentsView,
+    key: UserPreferencesKeys.ATTACHMENTS__VIEW,
     enumObject: AttachmentsView
 });
 

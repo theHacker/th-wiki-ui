@@ -168,12 +168,12 @@ const dragDropInProgress = ref(null);
 const showTags = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: false,
-    key: UserPreferencesKeys.WikiPagesTreeShowTags
+    key: UserPreferencesKeys.WIKI_PAGES_TREE__SHOW_TAGS
 });
 const shortenTags = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: true,
-    key: UserPreferencesKeys.WikiPagesTreeShortenTags
+    key: UserPreferencesKeys.WIKI_PAGES_TREE__SHORTEN_TAGS
 });
 
 const wikiPagesResultingFromQuery = ref([]);

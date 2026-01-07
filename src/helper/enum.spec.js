@@ -7,7 +7,8 @@ describe('Enum<=>string translations', () => {
         FOO: Symbol('FOO'),
         BAR: Symbol('BAR'),
         OTHER: Symbol('OTHER'),
-        MULTIPLE_WORDS_IN_VALUE: Symbol('MULTIPLE_WORDS_IN_VALUE')
+        MULTIPLE_WORDS_IN_VALUE: Symbol('MULTIPLE_WORDS_IN_VALUE'),
+        SECTION_FOO__VALUE_X: Symbol('SECTION_FOO__VALUE_X')
     });
 
     const TestEnum2 = Object.freeze({
@@ -21,6 +22,7 @@ describe('Enum<=>string translations', () => {
             expect(serializeEnumValue(TestEnum1.FOO, TestEnum1)).toBe('foo');
             expect(serializeEnumValue(TestEnum1.OTHER, TestEnum1)).toBe('other');
             expect(serializeEnumValue(TestEnum1.MULTIPLE_WORDS_IN_VALUE, TestEnum1)).toBe('multiple-words-in-value');
+            expect(serializeEnumValue(TestEnum1.SECTION_FOO__VALUE_X, TestEnum1)).toBe('section-foo--value-x');
         });
 
         it('serializes non-enum values as null', () => {
@@ -80,6 +82,13 @@ describe('Enum<=>string translations', () => {
 
             expect(deserializeEnumValue("multIple-WORDS_iN-ValuE", TestEnum1))
                 .toBe(TestEnum1.MULTIPLE_WORDS_IN_VALUE);
+
+
+            expect(deserializeEnumValue("section-foo--value-x", TestEnum1))
+                .toBe(TestEnum1.SECTION_FOO__VALUE_X);
+
+            expect(deserializeEnumValue("secTion-FoO-_vaLue_X", TestEnum1))
+                .toBe(TestEnum1.SECTION_FOO__VALUE_X);
         });
 
         it('deserializes unknown values as null', () => {

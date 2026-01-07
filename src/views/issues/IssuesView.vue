@@ -494,33 +494,33 @@ const loading = ref(true);
 const showFilters = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: true,
-    key: UserPreferencesKeys.IssuesShowFilters
+    key: UserPreferencesKeys.ISSUES__SHOW_FILTERS
 });
 
 const showKeys = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: true,
-    key: UserPreferencesKeys.IssuesShowKeys
+    key: UserPreferencesKeys.ISSUES__SHOW_KEYS
 });
 const showIcons = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: true,
-    key: UserPreferencesKeys.IssuesShowIcons
+    key: UserPreferencesKeys.ISSUES__SHOW_ICONS
 });
 const showTags = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: true,
-    key: UserPreferencesKeys.IssuesShowTags
+    key: UserPreferencesKeys.ISSUES__SHOW_TAGS
 });
 const shortenTags = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: false,
-    key: UserPreferencesKeys.IssuesShortenTags
+    key: UserPreferencesKeys.ISSUES__SHORTEN_TAGS
 });
 const denseTable = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: false,
-    key: UserPreferencesKeys.IssuesDenseTable
+    key: UserPreferencesKeys.ISSUES__DENSE_TABLE
 });
 
 syncStateToHash([

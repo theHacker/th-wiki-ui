@@ -610,24 +610,24 @@ const attachmentsCount = ref(0);
 const fullWidth = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: false,
-    key: UserPreferencesKeys.IssueFullWidth
+    key: UserPreferencesKeys.ISSUE__FULL_WIDTH
 });
 
 const dependencyGraphDepth = refSyncStateToUserPreferences({
     type: 'number',
     defaultValue: 1,
-    key: UserPreferencesKeys.IssueDependencyGraphDepth,
+    key: UserPreferencesKeys.ISSUE_DEPENDENCY_GRAPH__DEPTH,
     isValid: (value) => value >= 0 && value <= 10
 });
 const dependencyGraphPruneDoneIssues = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: false,
-    key: UserPreferencesKeys.IssueDependencyGraphPruneDoneIssues
+    key: UserPreferencesKeys.ISSUE_DEPENDENCY_GRAPH__PRUNE_DONE_ISSUES
 });
 const dependencyGraphLineCurveStyle = refSyncStateToUserPreferences({
     type: 'string',
     defaultValue: 'basis',
-    key: UserPreferencesKeys.IssueDependencyGraphLineCurveStyle
+    key: UserPreferencesKeys.ISSUE_DEPENDENCY_GRAPH__LINE_CURVE_STYLE
 });
 
 const tabState = ref(TabStates.DESCRIPTION);

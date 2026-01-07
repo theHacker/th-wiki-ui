@@ -238,17 +238,17 @@ const errors = ref([]);
 const showColors = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: false,
-    key: UserPreferencesKeys.AdminTagsShowColors
+    key: UserPreferencesKeys.ADMIN_TAGS__SHOW_COLORS
 });
 const showDescription = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: true,
-    key: UserPreferencesKeys.AdminTagsShowDescription
+    key: UserPreferencesKeys.ADMIN_TAGS__SHOW_DESCRIPTION
 });
 const denseTable = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: false,
-    key: UserPreferencesKeys.AdminTagsDenseTable
+    key: UserPreferencesKeys.ADMIN_TAGS__DENSE_TABLE
 });
 
 const expandedProjectIds = ref([]);

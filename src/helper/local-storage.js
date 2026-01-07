@@ -1,29 +1,30 @@
 import {deserializeEnumValue, serializeEnumValue} from "@/helper/enum.js";
 import {onMounted, ref, watch} from "vue";
 
-const UserPreferencesKeys = {
+const UserPreferencesKeys = Object.freeze({
     // <AdminTagsView>
-    AdminTagsShowColors: Symbol('AdminTagsShowColors'),
-    AdminTagsShowDescription: Symbol('AdminTagsShowDescription'),
-    AdminTagsDenseTable: Symbol('AdminTagsDenseTable'),
+    ADMIN_TAGS__SHOW_COLORS: Symbol('ADMIN_TAGS__SHOW_COLORS'),
+    ADMIN_TAGS__SHOW_DESCRIPTION: Symbol('ADMIN_TAGS__SHOW_DESCRIPTION'),
+    ADMIN_TAGS__DENSE_TABLE: Symbol('ADMIN_TAGS__DENSE_TABLE'),
     // <AttachmentsTab>
-    AttachmentsView: Symbol('AttachmentsView'),
+    ATTACHMENTS__VIEW: Symbol('ATTACHMENTS__VIEW'),
     // <IssueView>
-    IssueFullWidth: Symbol('IssueFullWidth'),
-    IssueDependencyGraphDepth: Symbol('IssueDependencyGraphDepth'),
-    IssueDependencyGraphPruneDoneIssues: Symbol('IssueDependencyGraphPruneDoneIssues'),
-    IssueDependencyGraphLineCurveStyle: Symbol('IssueDependencyGraphLineCurveStyle'),
+    ISSUE__FULL_WIDTH: Symbol('ISSUE__FULL_WIDTH'),
+    // <IssueView> Dependency Graph
+    ISSUE_DEPENDENCY_GRAPH__DEPTH: Symbol('ISSUE_DEPENDENCY_GRAPH__DEPTH'),
+    ISSUE_DEPENDENCY_GRAPH__PRUNE_DONE_ISSUES: Symbol('ISSUE_DEPENDENCY_GRAPH__PRUNE_DONE_ISSUES'),
+    ISSUE_DEPENDENCY_GRAPH__LINE_CURVE_STYLE: Symbol('ISSUE_DEPENDENCY_GRAPH__LINE_CURVE_STYLE'),
     // <IssuesView>
-    IssuesShowFilters: Symbol('IssuesShowFilters'),
-    IssuesShowKeys: Symbol('IssuesShowKeys'),
-    IssuesShowIcons: Symbol('IssuesShowIcons'),
-    IssuesShowTags: Symbol('IssuesShowTags'),
-    IssuesShortenTags: Symbol('IssuesShortenTags'),
-    IssuesDenseTable: Symbol('IssuesDenseTable'),
+    ISSUES__SHOW_FILTERS: Symbol('ISSUES__SHOW_FILTERS'),
+    ISSUES__SHOW_KEYS: Symbol('ISSUES__SHOW_KEYS'),
+    ISSUES__SHOW_ICONS: Symbol('ISSUES__SHOW_ICONS'),
+    ISSUES__SHOW_TAGS: Symbol('ISSUES__SHOW_TAGS'),
+    ISSUES__SHORTEN_TAGS: Symbol('ISSUES__SHORTEN_TAGS'),
+    ISSUES__DENSE_TABLE: Symbol('ISSUES__DENSE_TABLE'),
     // <WikiPagesTree>
-    WikiPagesTreeShowTags: Symbol('WikiPagesTreeShowTags'),
-    WikiPagesTreeShortenTags: Symbol('WikiPagesTreeShortenTags'),
-};
+    WIKI_PAGES_TREE__SHOW_TAGS: Symbol('WIKI_PAGES_TREE__SHOW_TAGS'),
+    WIKI_PAGES_TREE__SHORTEN_TAGS: Symbol('WIKI_PAGES_TREE__SHORTEN_TAGS'),
+});
 
 /**
  * Holds user preferences in the browser's localStorage.
