@@ -1,7 +1,7 @@
 import {watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {watchImmediate} from "@vueuse/core";
-import {enumSymbolToString, stringToEnumSymbolToString} from "@/helper/enum.js";
+import {deserializeEnumValue, serializeEnumValue} from "@/helper/enum.js";
 
 /**
  * Callback function to check if a value is valid.
@@ -43,7 +43,7 @@ function syncStateToHash(stateConfigs) {
             .map(stateConfig => {
                 switch (stateConfig.type) {
                     case 'enum':
-                        return enumSymbolToString(stateConfig.ref.value, stateConfig.enumObject)
+                        return serializeEnumValue(stateConfig.ref.value, stateConfig.enumObject)
                     case 'string':
                         return stateConfig.ref.value;
                     case 'number':
@@ -74,7 +74,7 @@ function syncStateToHash(stateConfigs) {
             switch (stateConfig.type) {
                 case 'enum':
                     stateConfig.ref.value = decodedState ?
-                        stringToEnumSymbolToString(decodedState, stateConfig.enumObject) :
+                        deserializeEnumValue(decodedState, stateConfig.enumObject) :
                         Object.values(stateConfig.enumObject)[0];
                     break;
                 case 'string':

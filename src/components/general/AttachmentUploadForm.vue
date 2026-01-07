@@ -46,7 +46,7 @@
         <div class="col-12 col-sm-6">
             <label class="form-label">Select file to upload…</label>
             <input class="form-control" type="file" name="file" @change="onFileChange" />
-            <div v-if="feedbackMessage === FeedbackMessage.SelectedFile" class="form-text text-success">
+            <div v-if="feedbackMessage === FeedbackMessage.SELECTED_FILE" class="form-text text-success">
                 <i class="fas fa-check" /> File selected for upload.
             </div>
         </div>
@@ -54,13 +54,13 @@
         <div class="col-12 col-sm-6">
             <label class="form-label">… or paste here</label><br />
             <input class="form-control" type="text" readonly @paste="onPaste" />
-            <div v-if="feedbackMessage === FeedbackMessage.PastedFile" class="form-text text-success">
+            <div v-if="feedbackMessage === FeedbackMessage.PASTED_FILE" class="form-text text-success">
                 <i class="fas fa-check" /> File pasted from clipboard.
             </div>
-            <div v-if="feedbackMessage === FeedbackMessage.PastedData" class="form-text text-success">
+            <div v-if="feedbackMessage === FeedbackMessage.PASTED_DATA" class="form-text text-success">
                 <i class="fas fa-check" /> Data pasted from clipboard.
             </div>
-            <div v-if="feedbackMessage === FeedbackMessage.PastedUnsupported" class="form-text text-danger">
+            <div v-if="feedbackMessage === FeedbackMessage.PASTED_UNSUPPORTED" class="form-text text-danger">
                 <i class="fas fa-xmark" /> No supported data inside the clipboard.
             </div>
         </div>
@@ -111,12 +111,12 @@
 </template>
 
 <script>
-const FeedbackMessage = {
-    SelectedFile: Symbol('SelectedFile'),
-    PastedFile: Symbol('PastedFile'),
-    PastedData: Symbol('PastedData'),
-    PastedUnsupported: Symbol('PastedUnsupported')
-};
+const FeedbackMessage = Object.freeze({
+    SELECTED_FILE: Symbol('SELECTED_FILE'),
+    PASTED_FILE: Symbol('PASTED_FILE'),
+    PASTED_DATA: Symbol('PASTED_DATA'),
+    PASTED_UNSUPPORTED: Symbol('PASTED_UNSUPPORTED')
+});
 </script>
 
 <script setup>
@@ -145,7 +145,7 @@ function onFileChange(e) {
         model.value.file = file;
         model.value.filename = file.name;
         model.value.lastModifiedTime = formatDateAsUTCWithoutTimezone(new Date(file.lastModified));
-        feedbackMessage.value = FeedbackMessage.SelectedFile;
+        feedbackMessage.value = FeedbackMessage.SELECTED_FILE;
     }
 }
 
@@ -159,7 +159,7 @@ async function onPaste(e) {
         model.value.file = file;
         model.value.filename = file.name;
         model.value.lastModifiedTime = formatDateAsUTCWithoutTimezone(new Date(file.lastModified));
-        feedbackMessage.value = FeedbackMessage.PastedFile;
+        feedbackMessage.value = FeedbackMessage.PASTED_FILE;
         return;
     }
 
@@ -169,7 +169,7 @@ async function onPaste(e) {
         model.value.file = null;
         model.value.filename = '';
         model.value.lastModifiedTime = null;
-        feedbackMessage.value = FeedbackMessage.PastedUnsupported;
+        feedbackMessage.value = FeedbackMessage.PASTED_UNSUPPORTED;
         return;
     }
 
@@ -236,7 +236,7 @@ function processClipboardDataDialog() {
     model.value.file = file;
     model.value.filename = file.name;
     model.value.lastModifiedTime = null;
-    feedbackMessage.value = FeedbackMessage.PastedData;
+    feedbackMessage.value = FeedbackMessage.PASTED_DATA;
 
     clipboardDataDialog.value = null;
 }

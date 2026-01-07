@@ -1,4 +1,4 @@
-import {enumSymbolToString, stringToEnumSymbolToString} from "@/helper/enum.js";
+import {deserializeEnumValue, serializeEnumValue} from "@/helper/enum.js";
 import {onMounted, ref, watch} from "vue";
 
 const UserPreferencesKeys = {
@@ -42,7 +42,7 @@ class UserPreferences {
         const storage = window.localStorage;
         if (!storage) return;
 
-        storage.setItem(this.PREFIX + enumSymbolToString(key, UserPreferencesKeys), value);
+        storage.setItem(this.PREFIX + serializeEnumValue(key, UserPreferencesKeys), value);
     }
 
     /**
@@ -73,7 +73,7 @@ class UserPreferences {
      * @param {Symbol} value
      */
     static storeEnum(key, enumObject, value) {
-        this.storeString(key, enumSymbolToString(value, enumObject));
+        this.storeString(key, serializeEnumValue(value, enumObject));
     }
 
     /**
@@ -88,7 +88,7 @@ class UserPreferences {
         const storage = window.localStorage;
         if (!storage) return defaultValue;
 
-        const value = storage.getItem(this.PREFIX + enumSymbolToString(key, UserPreferencesKeys));
+        const value = storage.getItem(this.PREFIX + serializeEnumValue(key, UserPreferencesKeys));
         if (value === null) return defaultValue;
 
         return value;
@@ -143,7 +143,7 @@ class UserPreferences {
         const value = this.retrieveString(key, null);
         if (value === null) return defaultValue;
 
-        return stringToEnumSymbolToString(value, enumObject) || defaultValue;
+        return deserializeEnumValue(value, enumObject) || defaultValue;
     }
 }
 

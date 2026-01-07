@@ -1,18 +1,30 @@
-function enumSymbolToString(symbol, enumObject) {
+function serializeEnumValue(symbol, enumObject) {
     if (typeof enumObject !== 'object' || !enumObject) {
         throw new Error('Illegal enumObject');
     }
 
-    return Object.keys(enumObject)
-        .find(key => enumObject[key] === symbol) || null;
+    const key = Object
+        .keys(enumObject)
+        .find(k => enumObject[k] === symbol);
+
+    if (key) {
+        return key.toLowerCase().replaceAll('_', '-');
+    } else {
+        return null;
+    }
 }
 
-function stringToEnumSymbolToString(string, enumObject) {
+function deserializeEnumValue(string, enumObject) {
     if (typeof enumObject !== 'object' || !enumObject) {
         throw new Error('Illegal enumObject');
     }
+    if (typeof string !== 'string') {
+        throw new Error(`Invalid value "${string}".`);
+    }
 
-    return enumObject[string] || null;
+    const key = string.toUpperCase().replaceAll('-', '_');
+
+    return enumObject[key] || null;
 }
 
-export { enumSymbolToString, stringToEnumSymbolToString };
+export { serializeEnumValue, deserializeEnumValue };

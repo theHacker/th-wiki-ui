@@ -27,22 +27,22 @@
                         icon="table-list"
                         tooltip="Show table"
                         fixedWidth
-                        :active="attachmentsView === AttachmentsView.Table"
-                        @click="attachmentsView = AttachmentsView.Table"
+                        :active="attachmentsView === AttachmentsView.TABLE"
+                        @click="attachmentsView = AttachmentsView.TABLE"
                     />
                     <BaseButton
                         icon="image"
                         tooltip="Show thumbnails"
                         fixedWidth
-                        :active="attachmentsView === AttachmentsView.Thumbnails"
-                        @click="attachmentsView = AttachmentsView.Thumbnails"
+                        :active="attachmentsView === AttachmentsView.THUMBNAILS"
+                        @click="attachmentsView = AttachmentsView.THUMBNAILS"
                     />
                 </div>
             </div>
         </div>
 
         <table
-            v-if="attachmentsView === AttachmentsView.Table"
+            v-if="attachmentsView === AttachmentsView.TABLE"
             class="table table-responsive table-hover align-middle mb-5 attachments"
         >
             <thead>
@@ -115,7 +115,7 @@
             </tbody>
         </table>
 
-        <div v-if="attachmentsView === AttachmentsView.Thumbnails" class="pt-3 pb-4">
+        <div v-if="attachmentsView === AttachmentsView.THUMBNAILS" class="pt-3 pb-4">
             <div v-if="attachments.length === 0">
                 <i>No attachments.</i>
             </div>
@@ -201,10 +201,10 @@
 </template>
 
 <script>
-const AttachmentsView = {
-    Table: Symbol('Table'),
-    Thumbnails: Symbol('Thumbnails')
-};
+const AttachmentsView = Object.freeze({
+    TABLE: Symbol('TABLE'),
+    THUMBNAILS: Symbol('THUMBNAILS')
+});
 </script>
 
 <script setup>
@@ -248,7 +248,7 @@ const loading = ref(true);
 
 const attachmentsView = refSyncStateToUserPreferences({
     type: 'enum',
-    defaultValue: AttachmentsView.Table,
+    defaultValue: AttachmentsView.TABLE,
     key: UserPreferencesKeys.AttachmentsView,
     enumObject: AttachmentsView
 });
