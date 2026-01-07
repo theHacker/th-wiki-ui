@@ -1,6 +1,6 @@
 function serializeEnumValue(symbol, enumObject) {
     if (typeof enumObject !== 'object' || !enumObject) {
-        throw new Error('Illegal enumObject');
+        throw new Error('Illegal enumObject.');
     }
 
     const key = Object
@@ -16,7 +16,7 @@ function serializeEnumValue(symbol, enumObject) {
 
 function deserializeEnumValue(string, enumObject) {
     if (typeof enumObject !== 'object' || !enumObject) {
-        throw new Error('Illegal enumObject');
+        throw new Error('Illegal enumObject.');
     }
     if (typeof string !== 'string') {
         throw new Error(`Invalid value "${string}".`);

@@ -49,7 +49,7 @@ function syncStateToHash(stateConfigs) {
                     case 'number':
                         return stateConfig.ref.value.toString();
                     default:
-                        throw new Error(`Unsupported type "${stateConfig.type}"`);
+                        throw new Error(`Unsupported type "${stateConfig.type}".`);
                 }
             })
             .map(s => s.replaceAll('\\', '\\\\').replaceAll(':', '\\:'))
@@ -87,7 +87,7 @@ function syncStateToHash(stateConfigs) {
                     break;
                 }
                 default:
-                    throw new Error(`Unsupported type "${stateConfig.type}"`);
+                    throw new Error(`Unsupported type "${stateConfig.type}".`);
             }
         }
     });

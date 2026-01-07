@@ -185,7 +185,7 @@ function refSyncStateToUserPreferences(config) {
                 break;
             }
             default:
-                throw new Error(`Unsupported type "${config.type}"`);
+                throw new Error(`Unsupported type "${config.type}".`);
         }
     });
 
@@ -204,7 +204,7 @@ function refSyncStateToUserPreferences(config) {
                 UserPreferences.storeNumber(config.key, vueRef.value);
                 break;
             default:
-                throw new Error(`Unsupported type "${config.type}"`);
+                throw new Error(`Unsupported type "${config.type}".`);
         }
     });
 
