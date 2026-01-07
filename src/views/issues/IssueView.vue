@@ -117,35 +117,35 @@
                                     <TabItem
                                         icon="image"
                                         title="Description"
-                                        :active="tabState === TabStates.Description"
-                                        @click="tabState = TabStates.Description"
+                                        :active="tabState === TabStates.DESCRIPTION"
+                                        @click="tabState = TabStates.DESCRIPTION"
                                     />
                                     <TabItem
                                         icon="file-text"
                                         title="Markdown"
-                                        :active="tabState === TabStates.Markdown"
-                                        @click="tabState = TabStates.Markdown"
+                                        :active="tabState === TabStates.MARKDOWN"
+                                        @click="tabState = TabStates.MARKDOWN"
                                     />
                                     <TabItem
                                         icon="tags"
                                         title="Metadata"
-                                        :active="tabState === TabStates.Metadata"
-                                        @click="tabState = TabStates.Metadata"
+                                        :active="tabState === TabStates.METADATA"
+                                        @click="tabState = TabStates.METADATA"
                                     />
                                     <TabItem
                                         icon="diagram-predecessor"
                                         title="Links"
                                         :badge="issue.issueLinks.length > 0 ? issue.issueLinks.length.toString() : null"
-                                        :active="tabState === TabStates.Links"
-                                        @click="tabState = TabStates.Links"
+                                        :active="tabState === TabStates.LINKS"
+                                        @click="tabState = TabStates.LINKS"
                                     />
                                     <TabItem
                                         icon="paperclip"
                                         title="Attachments"
                                         :badge="!attachmentsLoading && attachmentsCount > 0 ? attachmentsCount.toString() : null"
-                                        :active="tabState === TabStates.Attachments"
+                                        :active="tabState === TabStates.ATTACHMENTS"
                                         :loading="attachmentsLoading"
-                                        @click="tabState = TabStates.Attachments"
+                                        @click="tabState = TabStates.ATTACHMENTS"
                                     />
                                 </ul>
                             </div>
@@ -235,18 +235,18 @@
                 </div>
 
                 <div :class="hideFieldsPanel ? 'col-12' : 'col-12 col-lg-9 order-1 order-lg-0'">
-                    <div v-if="tabState === TabStates.Description">
+                    <div v-if="tabState === TabStates.DESCRIPTION">
                         <article v-html="issue.renderedMarkdown" />
                     </div>
 
-                    <div v-else-if="tabState === TabStates.Markdown">
+                    <div v-else-if="tabState === TabStates.MARKDOWN">
                         <div class="highlightedCode">
                             <span class="language">Markdown</span>
                             <pre><code v-html="issue.highlightedMarkdown" class="language-markdown" /></pre>
                         </div>
                     </div>
 
-                    <div v-else-if="tabState === TabStates.Metadata">
+                    <div v-else-if="tabState === TabStates.METADATA">
                         <div class="row g-2">
                             <div class="col-12 col-md-6">
                                 <div class="icon-link">
@@ -265,25 +265,25 @@
                         </div>
                     </div>
 
-                    <div v-else-if="tabState === TabStates.Links">
+                    <div v-else-if="tabState === TabStates.LINKS">
                         <div class="tabs mb-4 mt-lg-n4">
                             <ul class="nav nav-tabs">
                                 <TabItem
                                     icon="table-list"
                                     title="Table"
-                                    :active="linksTabState === LinksTabStates.Table"
-                                    @click="linksTabState = LinksTabStates.Table"
+                                    :active="linksTabState === LinksTabStates.TABLE"
+                                    @click="linksTabState = LinksTabStates.TABLE"
                                 />
                                 <TabItem
                                     icon="chart-diagram"
                                     title="Dependency graph"
-                                    :active="linksTabState === LinksTabStates.Graph"
-                                    @click="linksTabState = LinksTabStates.Graph"
+                                    :active="linksTabState === LinksTabStates.GRAPH"
+                                    @click="linksTabState = LinksTabStates.GRAPH"
                                 />
                             </ul>
                         </div>
 
-                        <div v-if="linksTabState === LinksTabStates.Table">
+                        <div v-if="linksTabState === LinksTabStates.TABLE">
                             <template v-for="linkGroup in linkGroups" :key="linkGroup.caption">
                                 <h2 class="fs-5">
                                     <i
@@ -359,7 +359,7 @@
                             <p v-if="issue.issueLinks.length === 0">No links.</p>
                         </div>
 
-                        <div v-else-if="linksTabState === LinksTabStates.Graph">
+                        <div v-else-if="linksTabState === LinksTabStates.GRAPH">
                             <div class="hstack gap-2 mb-3">
                                 <BaseButton
                                     icon="check"
@@ -422,7 +422,7 @@
                         />
                     </div>
 
-                    <div v-show="tabState === TabStates.Attachments">
+                    <div v-show="tabState === TabStates.ATTACHMENTS">
                         <AttachmentsTab
                             :issueId="issue.id"
                             @loadingStarted="attachmentsLoading = true"
@@ -545,16 +545,16 @@
 
 <script>
 const TabStates = {
-    Description: Symbol('Description'),
-    Markdown: Symbol('Markdown'),
-    Metadata: Symbol('Metadata'),
-    Links: Symbol('Links'),
-    Attachments: Symbol('Attachments')
+    DESCRIPTION: Symbol('DESCRIPTION'),
+    MARKDOWN: Symbol('MARKDOWN'),
+    METADATA: Symbol('METADATA'),
+    LINKS: Symbol('LINKS'),
+    ATTACHMENTS: Symbol('ATTACHMENTS')
 };
 
 const LinksTabStates = {
-    Table: Symbol('Table'),
-    Graph: Symbol('Graph')
+    TABLE: Symbol('TABLE'),
+    GRAPH: Symbol('GRAPH')
 };
 
 const issueLinkTypeIcons = {
@@ -610,28 +610,28 @@ const attachmentsCount = ref(0);
 const fullWidth = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: false,
-    key: UserPreferencesKeys.IssueFullWidth
+    key: UserPreferencesKeys.ISSUE__FULL_WIDTH
 });
 
 const dependencyGraphDepth = refSyncStateToUserPreferences({
     type: 'number',
     defaultValue: 1,
-    key: UserPreferencesKeys.IssueDependencyGraphDepth,
+    key: UserPreferencesKeys.ISSUE_DEPENDENCY_GRAPH__DEPTH,
     isValid: (value) => value >= 0 && value <= 10
 });
 const dependencyGraphPruneDoneIssues = refSyncStateToUserPreferences({
     type: 'boolean',
     defaultValue: false,
-    key: UserPreferencesKeys.IssueDependencyGraphPruneDoneIssues
+    key: UserPreferencesKeys.ISSUE_DEPENDENCY_GRAPH__PRUNE_DONE_ISSUES
 });
 const dependencyGraphLineCurveStyle = refSyncStateToUserPreferences({
     type: 'string',
     defaultValue: 'basis',
-    key: UserPreferencesKeys.IssueDependencyGraphLineCurveStyle
+    key: UserPreferencesKeys.ISSUE_DEPENDENCY_GRAPH__LINE_CURVE_STYLE
 });
 
-const tabState = ref(TabStates.Description);
-const linksTabState = ref(LinksTabStates.Table);
+const tabState = ref(TabStates.DESCRIPTION);
+const linksTabState = ref(LinksTabStates.TABLE);
 
 const deleteDialogOpen = ref(null);
 const deleting = ref(false);
@@ -651,7 +651,7 @@ const assignedTagIdsInDialog = ref([]);
 
 const hideFieldsPanel = computed(() => {
     // Hide the field panel when fullWidth mode is on, and Dependency Graph is visible, so there is more space
-    return fullWidth.value === true && tabState.value === TabStates.Links && linksTabState.value === LinksTabStates.Graph;
+    return fullWidth.value === true && tabState.value === TabStates.LINKS && linksTabState.value === LinksTabStates.GRAPH;
 });
 
 const movingProjectDisallowedBecauseOfProjectTags = computed(() => {
@@ -1058,8 +1058,8 @@ function deleteIssue(issueId) {
 
 function addNewIssueLink() {
     // Switch to tab (if called from the "Actions" menu)
-    tabState.value = TabStates.Links;
-    linksTabState.value = LinksTabStates.Table;
+    tabState.value = TabStates.LINKS;
+    linksTabState.value = LinksTabStates.TABLE;
 
     // Open dialog
     addIssueLinkDialogOpen.value = true;

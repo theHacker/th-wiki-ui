@@ -145,7 +145,6 @@ class MarkdownRenderer {
      *
      * This function does two passes to collect issue keys first.
      * Call only, after you set at least allProjectsSupplier and issuesSupplier.
-
      *
      * @param {string} markdown Markdown
      * @returns {Promise<string>} Rendered Markdown as HTML code
@@ -273,7 +272,6 @@ class MarkdownRenderer {
         const marked = new Marked();
         let title = null;
 
-        marked.parse(markdown);
         marked.use({
             renderer: {
                 heading({tokens, depth}) {

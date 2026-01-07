@@ -8,38 +8,38 @@
                     tooltip="Text view (regular font)"
                     size="small"
                     fixedWidth
-                    :active="buttonState === ButtonStates.Text"
-                    @click="buttonState = ButtonStates.Text"
+                    :active="buttonState === ButtonStates.TEXT"
+                    @click="buttonState = ButtonStates.TEXT"
                 />
                 <BaseButton
                     icon="code"
                     tooltip="Code view (monospace font)"
                     size="small"
                     fixedWidth
-                    :active="buttonState === ButtonStates.Code"
-                    @click="buttonState = ButtonStates.Code"
+                    :active="buttonState === ButtonStates.CODE"
+                    @click="buttonState = ButtonStates.CODE"
                 />
                 <BaseButton
                     icon="newspaper"
                     tooltip="Preview view"
                     size="small"
                     fixedWidth
-                    :active="buttonState === ButtonStates.Preview"
-                    @click="buttonState = ButtonStates.Preview"
+                    :active="buttonState === ButtonStates.PREVIEW"
+                    @click="buttonState = ButtonStates.PREVIEW"
                 />
             </div>
         </div>
 
         <textarea
             v-model="model"
-            v-show="buttonState !== ButtonStates.Preview"
+            v-show="buttonState !== ButtonStates.PREVIEW"
             class="form-control"
-            :class="{'is-invalid': !!errorMessage, 'font-monospace': buttonState === ButtonStates.Code}"
+            :class="{'is-invalid': !!errorMessage, 'font-monospace': buttonState === ButtonStates.CODE}"
             rows="15"
             :placeholder="placeholder"
         />
 
-        <div v-if="buttonState === ButtonStates.Preview" class="card">
+        <div v-if="buttonState === ButtonStates.PREVIEW" class="card">
             <div class="card-header text-bg-info">
                 <i class="fas fa-newspaper pe-1" />
                 Preview
@@ -50,16 +50,16 @@
         </div>
 
         <div v-if="errorMessage" class="invalid-feedback">{{ errorMessage }}</div>
-        <div v-show="buttonState !== ButtonStates.Preview" class="form-text">Content will be parsed as Markdown.</div>
+        <div v-show="buttonState !== ButtonStates.PREVIEW" class="form-text">Content will be parsed as Markdown.</div>
     </div>
 </template>
 
 <script>
-const ButtonStates = {
-    Text: Symbol('Text'),
-    Code: Symbol('Code'),
-    Preview: Symbol('Preview')
-};
+const ButtonStates = Object.freeze({
+    TEXT: Symbol('TEXT'),
+    CODE: Symbol('CODE'),
+    PREVIEW: Symbol('PREVIEW')
+});
 </script>
 
 <script setup>
@@ -86,13 +86,13 @@ defineProps({
     }
 });
 
-const buttonState = ref(ButtonStates.Text);
+const buttonState = ref(ButtonStates.TEXT);
 
 const markdownRenderer = new MarkdownRenderer();
 markdownRenderer.enableIssueLookupByAxios(axios);
 
 const preview = computedAsync(async () => {
-    if (buttonState.value === ButtonStates.Preview) {
+    if (buttonState.value === ButtonStates.PREVIEW) {
         return await markdownRenderer.renderPlain(model.value);
     } else {
         return null; // don't render on every change when preview is not visible

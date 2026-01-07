@@ -1,44 +1,48 @@
 import {describe, expect, it} from 'vitest';
-import {enumSymbolToString, stringToEnumSymbolToString} from './enum.js';
+import {deserializeEnumValue, serializeEnumValue} from './enum.js';
 
 describe('Enum<=>string translations', () => {
 
-    const TestEnum1 = {
-        Foo: Symbol('Foo'),
-        Bar: Symbol('Bar'),
-        Other: Symbol("This description is differently from the enum's name")
-    };
+    const TestEnum1 = Object.freeze({
+        FOO: Symbol('FOO'),
+        BAR: Symbol('BAR'),
+        OTHER: Symbol('OTHER'),
+        MULTIPLE_WORDS_IN_VALUE: Symbol('MULTIPLE_WORDS_IN_VALUE'),
+        SECTION_FOO__VALUE_X: Symbol('SECTION_FOO__VALUE_X')
+    });
 
-    const TestEnum2 = {
+    const TestEnum2 = Object.freeze({
         A: Symbol('A'),
         B: Symbol('B')
-    };
+    });
 
-    describe('enumSymbolToString()', () => {
+    describe('serializeEnumValue()', () => {
 
-        it('serializes correctly', () => {
-            expect(enumSymbolToString(TestEnum1.Foo, TestEnum1)).toBe('Foo');
-            expect(enumSymbolToString(TestEnum1.Other, TestEnum1)).toBe('Other');
+        it('serializes correctly and in lowercase kebab-case', () => {
+            expect(serializeEnumValue(TestEnum1.FOO, TestEnum1)).toBe('foo');
+            expect(serializeEnumValue(TestEnum1.OTHER, TestEnum1)).toBe('other');
+            expect(serializeEnumValue(TestEnum1.MULTIPLE_WORDS_IN_VALUE, TestEnum1)).toBe('multiple-words-in-value');
+            expect(serializeEnumValue(TestEnum1.SECTION_FOO__VALUE_X, TestEnum1)).toBe('section-foo--value-x');
         });
 
         it('serializes non-enum values as null', () => {
-            expect(enumSymbolToString(null, TestEnum1)).toBeNull();
-            expect(enumSymbolToString(undefined, TestEnum1)).toBeNull();
-            expect(enumSymbolToString(false, TestEnum1)).toBeNull();
-            expect(enumSymbolToString("Foo", TestEnum1)).toBeNull();
-            expect(enumSymbolToString(42, TestEnum1)).toBeNull();
-            expect(enumSymbolToString({ A: 42, B: 'whatever' }, TestEnum1)).toBeNull();
+            expect(serializeEnumValue(null, TestEnum1)).toBeNull();
+            expect(serializeEnumValue(undefined, TestEnum1)).toBeNull();
+            expect(serializeEnumValue(false, TestEnum1)).toBeNull();
+            expect(serializeEnumValue("Foo", TestEnum1)).toBeNull();
+            expect(serializeEnumValue(42, TestEnum1)).toBeNull();
+            expect(serializeEnumValue({ A: 42, B: 'whatever' }, TestEnum1)).toBeNull();
         });
 
         it('serializes foreign enums values as null', () => {
-            expect(enumSymbolToString(TestEnum1.Foo, TestEnum2)).toBeNull();
+            expect(serializeEnumValue(TestEnum1.FOO, TestEnum2)).toBeNull();
         });
 
         it('will throw when no object is used for enumObject', () => {
-            expect(() => enumSymbolToString(TestEnum1.Foo, "notAnObject")).toThrow("Illegal enumObject");
-            expect(() => enumSymbolToString(TestEnum1.Foo, 6666666)).toThrow("Illegal enumObject");
-            expect(() => enumSymbolToString(TestEnum1.Foo, null)).toThrow("Illegal enumObject");
-            expect(() => enumSymbolToString(TestEnum1.Foo, undefined)).toThrow("Illegal enumObject");
+            expect(() => serializeEnumValue(TestEnum1.FOO, "notAnObject")).toThrow("Illegal enumObject");
+            expect(() => serializeEnumValue(TestEnum1.FOO, 6666666)).toThrow("Illegal enumObject");
+            expect(() => serializeEnumValue(TestEnum1.FOO, null)).toThrow("Illegal enumObject");
+            expect(() => serializeEnumValue(TestEnum1.FOO, undefined)).toThrow("Illegal enumObject");
         });
 
         it('has unexpected behavior when there is no valid object is used for enumObject', () => {
@@ -49,55 +53,83 @@ describe('Enum<=>string translations', () => {
                 }
             }
 
-            expect(enumSymbolToString(TestEnum2.A, notRealAnEnumObject)).toBeNull(); // "===" won't match, so null is returned
-            expect(enumSymbolToString(TestEnum2.B, notRealAnEnumObject)).toBeNull();
+            expect(serializeEnumValue(TestEnum2.A, notRealAnEnumObject)).toBeNull(); // "===" won't match, so null is returned
+            expect(serializeEnumValue(TestEnum2.B, notRealAnEnumObject)).toBeNull();
         });
     });
 
-    describe('stringToEnumSymbolToString()', () => {
+    describe('deserializeEnumValue()', () => {
 
         it('deserializes correctly', () => {
-            expect(stringToEnumSymbolToString("Foo", TestEnum1)).toBe(TestEnum1.Foo);
-            expect(stringToEnumSymbolToString("Other", TestEnum1)).toBe(TestEnum1.Other);
+            expect(deserializeEnumValue("FOO", TestEnum1)).toBe(TestEnum1.FOO);
+            expect(deserializeEnumValue("OTHER", TestEnum1)).toBe(TestEnum1.OTHER);
         });
 
-        it('deserializes case-sensitive', () => {
-            expect(stringToEnumSymbolToString("Bar", TestEnum1)).toBe(TestEnum1.Bar);
-            expect(stringToEnumSymbolToString("Вar", TestEnum1)).toBeNull(); // cyrillic Ve, just looks like "B"
-            expect(stringToEnumSymbolToString("bar", TestEnum1)).toBeNull();
-            expect(stringToEnumSymbolToString("bAR", TestEnum1)).toBeNull();
+        it('deserializes case-insensitive', () => {
+            expect(deserializeEnumValue("Bar", TestEnum1)).toBe(TestEnum1.BAR);
+            expect(deserializeEnumValue("bar", TestEnum1)).toBe(TestEnum1.BAR);
+            expect(deserializeEnumValue("bAR", TestEnum1)).toBe(TestEnum1.BAR);
+
+            expect(deserializeEnumValue("Вar", TestEnum1)).toBeNull(); // cyrillic Ve, just looks like "B"
+        });
+
+        it('deserializes hyphens and underscores', () => {
+            expect(deserializeEnumValue("multiple-words-in-value", TestEnum1))
+                .toBe(TestEnum1.MULTIPLE_WORDS_IN_VALUE);
+
+            expect(deserializeEnumValue("MULTIPLE_WORDS_IN_VALUE", TestEnum1))
+                .toBe(TestEnum1.MULTIPLE_WORDS_IN_VALUE);
+
+            expect(deserializeEnumValue("multIple-WORDS_iN-ValuE", TestEnum1))
+                .toBe(TestEnum1.MULTIPLE_WORDS_IN_VALUE);
+
+
+            expect(deserializeEnumValue("section-foo--value-x", TestEnum1))
+                .toBe(TestEnum1.SECTION_FOO__VALUE_X);
+
+            expect(deserializeEnumValue("secTion-FoO-_vaLue_X", TestEnum1))
+                .toBe(TestEnum1.SECTION_FOO__VALUE_X);
         });
 
         it('deserializes unknown values as null', () => {
-            expect(stringToEnumSymbolToString("NonExisting", TestEnum1)).toBeNull();
-            expect(stringToEnumSymbolToString("C", TestEnum2)).toBeNull();
+            expect(deserializeEnumValue("NonExisting", TestEnum1)).toBeNull();
+            expect(deserializeEnumValue("C", TestEnum2)).toBeNull();
         });
 
-        it('deserializes non-strings values as null', () => {
-            expect(stringToEnumSymbolToString(null, TestEnum2)).toBeNull();
-            expect(stringToEnumSymbolToString(undefined, TestEnum2)).toBeNull();
-            expect(stringToEnumSymbolToString(false, TestEnum2)).toBeNull();
-            expect(stringToEnumSymbolToString(42, TestEnum2)).toBeNull();
-            expect(stringToEnumSymbolToString({ A: 42, B: 'whatever' }, TestEnum2)).toBeNull();
+        it('throws when trying to deserialize non-strings values', () => {
+            expect(() => { deserializeEnumValue(null, TestEnum2) })
+                .toThrow('Invalid value "null".');
+
+            expect(() => { deserializeEnumValue(undefined, TestEnum2) })
+                .toThrow('Invalid value "undefined".');
+
+            expect(() => { deserializeEnumValue(false, TestEnum2) })
+                .toThrow('Invalid value "false".');
+
+            expect(() => { deserializeEnumValue(42, TestEnum2) })
+                .toThrow('Invalid value "42".');
+
+            expect(() => { deserializeEnumValue({ A: 42, B: 'whatever' }, TestEnum2) })
+                .toThrow('Invalid value "[object Object]".');
         });
 
         it('will throw when no object is used for enumObject', () => {
-            expect(() => stringToEnumSymbolToString("Foo", "notAnObject")).toThrow("Illegal enumObject");
-            expect(() => stringToEnumSymbolToString("Foo", 6666666)).toThrow("Illegal enumObject");
-            expect(() => stringToEnumSymbolToString("Foo", null)).toThrow("Illegal enumObject");
-            expect(() => stringToEnumSymbolToString("Foo", undefined)).toThrow("Illegal enumObject");
+            expect(() => deserializeEnumValue("foo", "notAnObject")).toThrow("Illegal enumObject");
+            expect(() => deserializeEnumValue("foo", 6666666)).toThrow("Illegal enumObject");
+            expect(() => deserializeEnumValue("foo", null)).toThrow("Illegal enumObject");
+            expect(() => deserializeEnumValue("foo", undefined)).toThrow("Illegal enumObject");
         });
 
         it('has unexpected behavior when there is no valid object is used for enumObject', () => {
             const notRealAnEnumObject = {
-                foo: {
+                FOO: {
                     a: 42,
                     b: "baz"
                 }
             }
 
-            expect(stringToEnumSymbolToString("foo", notRealAnEnumObject)).toStrictEqual({ a: 42, b: "baz" }); // just returns the property as is
-            expect(stringToEnumSymbolToString("bar", notRealAnEnumObject)).toBeNull();
+            expect(deserializeEnumValue("foo", notRealAnEnumObject)).toStrictEqual({ a: 42, b: "baz" }); // just returns the property as is
+            expect(deserializeEnumValue("bar", notRealAnEnumObject)).toBeNull();
         });
     });
 });

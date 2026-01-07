@@ -99,28 +99,28 @@
                                 <TabItem
                                     icon="image"
                                     title="Content"
-                                    :active="tabState === TabStates.Content"
-                                    @click="tabState = TabStates.Content"
+                                    :active="tabState === TabStates.CONTENT"
+                                    @click="tabState = TabStates.CONTENT"
                                 />
                                 <TabItem
                                     icon="file-text"
                                     title="Markdown"
-                                    :active="tabState === TabStates.Markdown"
-                                    @click="tabState = TabStates.Markdown"
+                                    :active="tabState === TabStates.MARKDOWN"
+                                    @click="tabState = TabStates.MARKDOWN"
                                 />
                                 <TabItem
                                     icon="tags"
                                     title="Metadata"
-                                    :active="tabState === TabStates.Metadata"
-                                    @click="tabState = TabStates.Metadata"
+                                    :active="tabState === TabStates.METADATA"
+                                    @click="tabState = TabStates.METADATA"
                                 />
                                 <TabItem
                                     icon="paperclip"
                                     title="Attachments"
                                     :badge="!attachmentsLoading && attachmentsCount > 0 ? attachmentsCount.toString() : null"
-                                    :active="tabState === TabStates.Attachments"
+                                    :active="tabState === TabStates.ATTACHMENTS"
                                     :loading="attachmentsLoading"
-                                    @click="tabState = TabStates.Attachments"
+                                    @click="tabState = TabStates.ATTACHMENTS"
                                 />
                             </ul>
                         </div>
@@ -159,18 +159,18 @@
                     </div>
                 </div>
 
-                <div v-if="tabState === TabStates.Content">
+                <div v-if="tabState === TabStates.CONTENT">
                     <article v-html="wikiPage.renderedMarkdown" />
                 </div>
 
-                <div v-else-if="tabState === TabStates.Markdown">
+                <div v-else-if="tabState === TabStates.MARKDOWN">
                     <div class="highlightedCode">
                         <span class="language">Markdown</span>
                         <pre><code v-html="wikiPage.highlightedMarkdown" class="language-markdown" /></pre>
                     </div>
                 </div>
 
-                <div v-else-if="tabState === TabStates.Metadata">
+                <div v-else-if="tabState === TabStates.METADATA">
                     <div class="row g-2">
                         <div class="col-12 col-md-6">
                             <div class="icon-link">
@@ -189,7 +189,7 @@
                     </div>
                 </div>
 
-                <div v-show="tabState === TabStates.Attachments">
+                <div v-show="tabState === TabStates.ATTACHMENTS">
                     <AttachmentsTab
                         :wikiPageId="wikiPage.id"
                         @loadingStarted="attachmentsLoading = true"
@@ -206,10 +206,10 @@
 
 <script>
 const TabStates = {
-    Content: Symbol('Content'),
-    Markdown: Symbol('Markdown'),
-    Metadata: Symbol('Metadata'),
-    Attachments: Symbol('Attachments')
+    CONTENT: Symbol('CONTENT'),
+    MARKDOWN: Symbol('MARKDOWN'),
+    METADATA: Symbol('METADATA'),
+    ATTACHMENTS: Symbol('ATTACHMENTS')
 };
 </script>
 
@@ -251,7 +251,7 @@ const attachmentsCount = ref(0);
 const wikiPagesTree = useTemplateRef('wikiPagesTree');
 const allWikiPagesTree = ref(null);
 
-const tabState = ref(TabStates.Content);
+const tabState = ref(TabStates.CONTENT);
 
 const deleteDialogOpen = ref(false);
 const deleting = ref(false);
