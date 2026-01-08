@@ -592,7 +592,7 @@ import BaseHeading from "@/components/BaseHeading.vue";
 import TagsDialog from "@/components/tags/TagsDialog.vue";
 import BaseAlert from "@/components/BaseAlert.vue";
 import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
-import {syncStateToHash} from "@/helper/hash-state.js";
+import {syncStateToQueryString} from "@/helper/query-string-state.js";
 import {UserPreferencesKeys, refSyncStateToUserPreferences} from "@/helper/local-storage.js";
 
 const route = useRoute();
@@ -777,9 +777,9 @@ useHead({
 
 watch(() => route.params.issueId, fetchData, { immediate: true });
 
-syncStateToHash([
-    { type: 'enum', ref: tabState, enumObject: TabStates },
-    { type: 'enum', ref: linksTabState, enumObject: LinksTabStates }
+syncStateToQueryString([
+    { name: 'tab', type: 'enum', ref: tabState, enumObject: TabStates },
+    { name: 'links-tab', type: 'enum', ref: linksTabState, enumObject: LinksTabStates }
 ]);
 
 function fetchData(id) {

@@ -13,9 +13,10 @@ import {deserializeEnumValue, serializeEnumValue} from "@/helper/enum.js";
  */
 
 /**
- * Configuration object for a state to sync to the URL's hash.
+ * Configuration object for a state to sync to the URL's query string.
  *
  * @typedef {Object} StateConfig
+ * @property {string} name Name to use for the query parameter
  * @property {'enum'|'string'|'number'} type
  * @property {Ref<Symbol | Number>} ref Vue ref to state
  * @property {Object | null} enumObject (for 'enum' type) which enum object to use to serialize/deserialize
@@ -26,12 +27,12 @@ import {deserializeEnumValue, serializeEnumValue} from "@/helper/enum.js";
  */
 
 /**
- * Synchronize a number of reactive variables to the URL's hash.
+ * Synchronize a number of reactive variables to the URL's query string.
  * Supported are enums and numbers.
  *
  * @param {Array<StateConfig>} stateConfigs
  */
-function syncStateToHash(stateConfigs) {
+function syncStateToQueryString(stateConfigs) {
     const route = useRoute();
     const router = useRouter();
 
@@ -39,37 +40,35 @@ function syncStateToHash(stateConfigs) {
 
     // State changed => adapt hash
     watch(refs, () => {
-        const encodedStates = stateConfigs
-            .map(stateConfig => {
+        const query = Object.fromEntries(
+            stateConfigs.map(stateConfig => {
+                let value;
                 switch (stateConfig.type) {
                     case 'enum':
-                        return serializeEnumValue(stateConfig.ref.value, stateConfig.enumObject)
+                        value = serializeEnumValue(stateConfig.ref.value, stateConfig.enumObject)
+                        break;
                     case 'string':
-                        return stateConfig.ref.value;
+                        value = stateConfig.ref.value;
+                        break;
                     case 'number':
-                        return stateConfig.ref.value.toString();
+                        value = stateConfig.ref.value.toString();
+                        break;
                     default:
                         throw new Error(`Unsupported type "${stateConfig.type}".`);
                 }
-            })
-            .map(s => s.replaceAll('\\', '\\\\').replaceAll(':', '\\:'))
-            .join(':');
 
-        router.replace({
-            hash: '#' + encodedStates
-        });
+                return [stateConfig.name, value];
+            })
+        );
+
+        router.replace({ query });
     });
 
-    // Hash changed => adapt state
-    watchImmediate(() => route.hash, () => {
-        const decodedStates = (route.hash || '#')
-            .replace(/^#/, '')
-            .split(/(?<!\\):/)
-            .map(s => s.replaceAll('\\:', ':').replaceAll('\\\\', '\\'));
-
+    // Query changed => adapt state
+    watchImmediate(() => route.query, (query) => {
         for (let i = 0; i < stateConfigs.length; i++){
             const stateConfig = stateConfigs[i];
-            const decodedState = decodedStates[i];
+            const decodedState = query[stateConfig.name];
 
             switch (stateConfig.type) {
                 case 'enum':
@@ -93,4 +92,4 @@ function syncStateToHash(stateConfigs) {
     });
 }
 
-export { syncStateToHash };
+export { syncStateToQueryString };

@@ -235,7 +235,7 @@ import BaseDropdown from "@/components/BaseDropdown.vue";
 import BaseHeading from "@/components/BaseHeading.vue";
 import TagsDialog from "@/components/tags/TagsDialog.vue";
 import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
-import {syncStateToHash} from "@/helper/hash-state.js";
+import {syncStateToQueryString} from "@/helper/query-string-state.js";
 import BaseAlert from "@/components/BaseAlert.vue";
 
 const route = useRoute();
@@ -278,8 +278,8 @@ useHead({
 
 watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 
-syncStateToHash([
-    { type: 'enum', ref: tabState, enumObject: TabStates }
+syncStateToQueryString([
+    { name: 'tab', type: 'enum', ref: tabState, enumObject: TabStates }
 ]);
 
 function fetchData(id) {
