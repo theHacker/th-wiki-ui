@@ -7,6 +7,7 @@
             <li v-for="heading in headings" :key="heading.id">
                 <a
                     :href="'#' + heading.id"
+                    :class="{ wrongLevel: heading.hadIncorrectLevel !== undefined }"
                     :style="{ marginLeft: `${(heading.level - 1) * 16}px` }"
                     v-html="heading.titleHtml"
                     @click="$emit('headingClick')"
@@ -26,3 +27,9 @@ defineProps({
 
 defineEmits(['headingClick']);
 </script>
+
+<style lang="scss" scoped>
+.wrongLevel {
+    text-decoration: underline wavy rgba(red, 0.5);
+}
+</style>
