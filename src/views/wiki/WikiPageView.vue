@@ -128,6 +128,17 @@
                         </div>
 
                         <div class="hstack gap-2">
+                            <div v-if="tabState === TabStates.CONTENT && wikiPage.headings.length > 0">
+                                <BaseButton
+                                    class="btn-text-lg"
+                                    icon="book-bookmark"
+                                    tooltip="Table of contents"
+                                    color="info"
+                                    :active="showTableOfContents"
+                                    @click="showTableOfContents = !showTableOfContents"
+                                />
+                            </div>
+
                             <BaseDropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
                                 <BaseDropdownItem
                                     icon="tags"
@@ -162,7 +173,14 @@
                 </header>
 
                 <div v-if="tabState === TabStates.CONTENT">
-                    <article v-html="wikiPage.renderedMarkdown" />
+                    <article>
+                        <div v-show="!showTableOfContents" v-html="wikiPage.renderedMarkdown" />
+                        <TableOfContents
+                            v-show="showTableOfContents"
+                            :headings="wikiPage.headings"
+                            @headingClick="showTableOfContents = false"
+                        />
+                    </article>
                 </div>
 
                 <div v-else-if="tabState === TabStates.MARKDOWN">
@@ -239,6 +257,7 @@ import TagsDialog from "@/components/tags/TagsDialog.vue";
 import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
 import {syncStateToQueryString} from "@/helper/query-string-state.js";
 import BaseAlert from "@/components/BaseAlert.vue";
+import TableOfContents from "@/components/wiki/TableOfContents.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -254,6 +273,7 @@ const wikiPagesTree = useTemplateRef('wikiPagesTree');
 const allWikiPagesTree = ref(null);
 
 const tabState = ref(TabStates.CONTENT);
+const showTableOfContents = ref(false);
 
 const deleteDialogOpen = ref(false);
 const deleting = ref(false);
@@ -313,6 +333,8 @@ function updateStickyHeaderHeight() {
 function fetchData(id) {
     errors.value = [];
     wikiPage.value = null;
+
+    showTableOfContents.value = false; // When switching the pages, close the ToC
 
     if (id == null) {
         noPage.value = true;
@@ -381,7 +403,8 @@ function fetchData(id) {
                 wikiPage.value = {
                     ...data.wikiPage,
                     renderedMarkdown: await markdownRenderer.renderRich(data.wikiPage.content),
-                    highlightedMarkdown: markdownRenderer.highlightMarkdown(data.wikiPage.content)
+                    highlightedMarkdown: markdownRenderer.highlightMarkdown(data.wikiPage.content),
+                    headings: markdownRenderer.generateOutline(data.wikiPage.content)
                 };
                 allWikiPagesTree.value = new Tree({
                     items: data.wikiPages,
