@@ -1,6 +1,14 @@
-const headingsExtension = {
+/**
+ * Generates the extension.
+ *
+ * @param {Array} outlineReceiver receives the outline with the generated IDs
+ * @returns {{renderer: {heading(*): string}}} Marked.js extension
+ */
+const headingsExtension = (outlineReceiver = []) => ({
     renderer: {
-        heading({tokens, depth}) {
+        heading(token) {
+            const {tokens, depth} = token;
+
             const parsedText = this.parser.parseInline(tokens);
             const plainText = parsedText
                 .replace(/<[^>]+>/g, '') // remove HTML tags
@@ -35,10 +43,29 @@ const headingsExtension = {
             }
             this.alreadyGeneratedHeadingIds.add(uniqueId);
 
+            // Note down the outline, so the caller can access it
+            this.currentLevel = (this.currentLevel !== undefined) ? this.currentLevel : 1;
+
+            const outlineEntry = {
+                titleHtml: parsedText,
+                titlePlain: plainText,
+                id: uniqueId
+            };
+
+            if (depth < this.currentLevel || depth === this.currentLevel || depth === this.currentLevel + 1) {
+                outlineEntry.level = depth;
+            } else {
+                outlineEntry.level = this.currentLevel + 1;
+                outlineEntry.hadIncorrectLevel = depth;
+            }
+            this.currentLevel = outlineEntry.level;
+
+            outlineReceiver.push(outlineEntry);
+
             // Render
             return `<h${depth} id="${uniqueId}">${parsedText}</h${depth}>` + '\n';
         }
     }
-};
+});
 
 export {headingsExtension};

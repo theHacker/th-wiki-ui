@@ -953,8 +953,8 @@ describe('MarkdownRenderer', () => {
             `;
 
             expect(renderer.generateOutline(markdown)).toEqual([
-                { title: 'This is the title', level: 1 },
-                { title: 'This is the subtitle', level: 2 }
+                { titleHtml: 'This is the title', titlePlain: 'This is the title', level: 1, id: 'this-is-the-title' },
+                { titleHtml: 'This is the subtitle', titlePlain: 'This is the subtitle', level: 2, id: 'this-is-the-subtitle' }
             ]);
         });
 
@@ -979,21 +979,21 @@ describe('MarkdownRenderer', () => {
             `;
 
             expect(renderer.generateOutline(markdown)).toEqual([
-                { title: 'Heading 1', level: 1 },
-                { title: 'Heading 2', level: 1 },
-                { title: 'Heading 2.1', level: 2 },
-                { title: 'Heading 2.2', level: 2 },
-                { title: 'Heading 2.3', level: 2 },
-                { title: 'Heading 3', level: 1 },
-                { title: 'Heading 4', level: 1 },
-                { title: 'Heading 4.1', level: 2 },
-                { title: 'Heading 4.1.1', level: 3 },
-                { title: 'Heading 4.1.1.1', level: 4 },
-                { title: 'Heading 4.1.1.2', level: 4 },
-                { title: 'Heading 4.1.1.3', level: 4 },
-                { title: 'Heading 4.2', level: 2 },
-                { title: 'Heading 4.3', level: 2 },
-                { title: 'Heading 5', level: 1 },
+                { titleHtml: 'Heading 1', titlePlain: 'Heading 1', level: 1, id: 'heading-1' },
+                { titleHtml: 'Heading 2', titlePlain: 'Heading 2', level: 1, id: 'heading-2' },
+                { titleHtml: 'Heading 2.1', titlePlain: 'Heading 2.1', level: 2, id: 'heading-21' },
+                { titleHtml: 'Heading 2.2', titlePlain: 'Heading 2.2', level: 2, id: 'heading-22' },
+                { titleHtml: 'Heading 2.3', titlePlain: 'Heading 2.3', level: 2, id: 'heading-23' },
+                { titleHtml: 'Heading 3', titlePlain: 'Heading 3', level: 1, id: 'heading-3' },
+                { titleHtml: 'Heading 4', titlePlain: 'Heading 4', level: 1, id: 'heading-4' },
+                { titleHtml: 'Heading 4.1', titlePlain: 'Heading 4.1', level: 2, id: 'heading-41' },
+                { titleHtml: 'Heading 4.1.1', titlePlain: 'Heading 4.1.1', level: 3, id: 'heading-411' },
+                { titleHtml: 'Heading 4.1.1.1', titlePlain: 'Heading 4.1.1.1', level: 4, id: 'heading-4111' },
+                { titleHtml: 'Heading 4.1.1.2', titlePlain: 'Heading 4.1.1.2', level: 4, id: 'heading-4112' },
+                { titleHtml: 'Heading 4.1.1.3', titlePlain: 'Heading 4.1.1.3', level: 4, id: 'heading-4113' },
+                { titleHtml: 'Heading 4.2', titlePlain: 'Heading 4.2', level: 2, id: 'heading-42' },
+                { titleHtml: 'Heading 4.3', titlePlain: 'Heading 4.3', level: 2, id: 'heading-43' },
+                { titleHtml: 'Heading 5', titlePlain: 'Heading 5', level: 1, id: 'heading-5' },
             ]);
         });
 
@@ -1030,18 +1030,82 @@ describe('MarkdownRenderer', () => {
             `;
 
             expect(renderer.generateOutline(markdown)).toEqual([
-                { title: 'Heading 1', level: 1 },
-                { title: 'Heading 3 should be 2', level: 2, hadIncorrectLevel: 3 },
-                { title: 'Heading 2', level: 2 },
-                { title: 'Heading 5 should be 3', level: 3, hadIncorrectLevel: 5 },
-                { title: 'Heading 4 will work for 3', level: 4 },
-                { title: 'Heading 1 is ok', level: 1 },
-                { title: 'Heading 2 is ok', level: 2 },
-                { title: 'Heading 5 should be 3', level: 3, hadIncorrectLevel: 5 },
-                { title: 'Again heading 5 will be 4', level: 4, hadIncorrectLevel: 5 },
-                { title: 'Heading 4 fits', level: 4 },
-                { title: 'Heading 4 really fits', level: 4 },
-                { title: 'Ending with 2', level: 2 }
+                {
+                    titleHtml: 'Heading 1',
+                    titlePlain: 'Heading 1',
+                    level: 1,
+                    id: 'heading-1'
+                },
+                {
+                    titleHtml: 'Heading 3 should be 2',
+                    titlePlain: 'Heading 3 should be 2',
+                    level: 2,
+                    hadIncorrectLevel: 3,
+                    id: 'heading-3-should-be-2'
+                },
+                {
+                    titleHtml: 'Heading 2',
+                    titlePlain: 'Heading 2',
+                    level: 2,
+                    id: 'heading-2'
+                },
+                {
+                    titleHtml: 'Heading 5 should be 3',
+                    titlePlain: 'Heading 5 should be 3',
+                    level: 3,
+                    hadIncorrectLevel: 5,
+                    id: 'heading-5-should-be-3'
+                },
+                {
+                    titleHtml: 'Heading 4 will work for 3',
+                    titlePlain: 'Heading 4 will work for 3',
+                    level: 4,
+                    id: 'heading-4-will-work-for-3'
+                },
+                {
+                    titleHtml: 'Heading 1 is ok',
+                    titlePlain: 'Heading 1 is ok',
+                    level: 1,
+                    id: 'heading-1-is-ok'
+                },
+                {
+                    titleHtml: 'Heading 2 is ok',
+                    titlePlain: 'Heading 2 is ok',
+                    level: 2,
+                    id: 'heading-2-is-ok'
+                },
+                {
+                    titleHtml: 'Heading 5 should be 3',
+                    titlePlain: 'Heading 5 should be 3',
+                    level: 3,
+                    hadIncorrectLevel: 5,
+                    id: 'heading-5-should-be-3-2'
+                },
+                {
+                    titleHtml: 'Again heading 5 will be 4',
+                    titlePlain: 'Again heading 5 will be 4',
+                    level: 4,
+                    hadIncorrectLevel: 5,
+                    id: 'again-heading-5-will-be-4'
+                },
+                {
+                    titleHtml: 'Heading 4 fits',
+                    titlePlain: 'Heading 4 fits',
+                    level: 4,
+                    id: 'heading-4-fits'
+                },
+                {
+                    titleHtml: 'Heading 4 really fits',
+                    titlePlain: 'Heading 4 really fits',
+                    level: 4,
+                    id: 'heading-4-really-fits'
+                },
+                {
+                    titleHtml: 'Ending with 2',
+                    titlePlain: 'Ending with 2',
+                    level: 2,
+                    id: 'ending-with-2'
+                }
             ]);
         });
 
@@ -1054,9 +1118,23 @@ describe('MarkdownRenderer', () => {
             `;
 
             expect(renderer.generateOutline(markdown)).toEqual([
-                { title: '<strong>This</strong> heading has <code>formatting</code>. Should <strong>be <em>parsed</em></strong>.', level: 1 },
-                { title: 'This is plain text', level: 2 },
-                { title: 'This has <code>code</code>', level: 2 }
+                {
+                    titleHtml: '<strong>This</strong> heading has <code>formatting</code>. Should <strong>be <em>parsed</em></strong>.',
+                    titlePlain: 'This heading has formatting. Should be parsed.',
+                    level: 1,
+                    id: 'this-heading-has-formatting-should-be-parsed'
+                },
+                {
+                    titleHtml: 'This is plain text',
+                    titlePlain: 'This is plain text',
+                    level: 2,
+                    id: 'this-is-plain-text' },
+                {
+                    titleHtml: 'This has <code>code</code>',
+                    titlePlain: 'This has code',
+                    level: 2,
+                    id: 'this-has-code'
+                }
             ]);
         });
     });

@@ -148,7 +148,7 @@ class MarkdownRenderer {
         marked.use(hljsExtension);
         marked.use(gfmAlertExtension);
         if (this.headingIdGeneration) {
-            marked.use(headingsExtension);
+            marked.use(headingsExtension());
         }
 
         if (this.imageResolver) {
@@ -214,7 +214,7 @@ class MarkdownRenderer {
         marked2.use(hljsExtension);
         marked2.use(gfmAlertExtension);
         if (this.headingIdGeneration) {
-            marked2.use(headingsExtension);
+            marked2.use(headingsExtension());
         }
 
         if (this.imageResolver) {
@@ -320,33 +320,12 @@ class MarkdownRenderer {
     generateOutline(markdown) {
         const marked = new Marked();
 
-        const outline = [];
-        let currentLevel = 1;
+        const outlineReceiver = [];
+        marked.use(headingsExtension(outlineReceiver));
 
-        marked.use({
-            renderer: {
-                heading({tokens, depth}) {
-                    const title = this.parser.parseInline(tokens);
-
-                    const outlineEntry = {
-                        title
-                    };
-
-                    if (depth < currentLevel || depth === currentLevel || depth === currentLevel + 1) {
-                        outlineEntry.level = depth;
-                    } else {
-                        outlineEntry.level = currentLevel + 1;
-                        outlineEntry.hadIncorrectLevel = depth;
-                    }
-
-                    outline.push(outlineEntry);
-                    currentLevel = outlineEntry.level;
-                }
-            }
-        });
         marked.parse(markdown);
 
-        return outline;
+        return outlineReceiver;
     }
 }
 
