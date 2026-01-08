@@ -934,6 +934,7 @@ function fetchData(id) {
                 const markdownRenderer = new MarkdownRenderer();
                 markdownRenderer.enableIssueLookupByAxios(axios);
                 markdownRenderer.enableAttachmentByGetRequest(data.issue.attachments);
+                markdownRenderer.enabledHeadingIdGeneration();
 
                 issue.value = {
                     ...data.issue,

@@ -217,7 +217,7 @@ const TabStates = {
 
 <script setup>
 import axios from "@/axios.js";
-import {ref, watch, useTemplateRef, computed} from 'vue';
+import {ref, watch, useTemplateRef, computed, onMounted, onUnmounted, nextTick} from 'vue';
 import {useHead} from "@unhead/vue";
 import {useRoute, useRouter} from "vue-router";
 import MarkdownRenderer from "@/markdown/rendering.js";
@@ -283,6 +283,32 @@ watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 syncStateToQueryString([
     { name: 'tab', type: 'enum', ref: tabState, enumObject: TabStates }
 ]);
+
+onMounted(() => {
+    window.addEventListener('resize', updateStickyHeaderHeight);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', updateStickyHeaderHeight);
+});
+
+/**
+ * Adjusts CSS variable --sticky-header-height (used for property scroll-margin-top), so that #anchor links
+ * scroll the heading to the correct position, i.e. beneath the header.
+ * Since the header's height is dynamic we have to do this via JS.
+ *
+ * Call each time the header's height (might have) changed.
+ */
+function updateStickyHeaderHeight() {
+    const header = document.querySelector('header.sticky-top');
+    if (!header) {
+        return;
+    }
+
+    document.documentElement
+        .style
+        .setProperty('--sticky-header-height', `${header.offsetHeight}px`);
+}
 
 function fetchData(id) {
     errors.value = [];
@@ -350,6 +376,7 @@ function fetchData(id) {
                 const markdownRenderer = new MarkdownRenderer();
                 markdownRenderer.enableIssueLookupByAxios(axios);
                 markdownRenderer.enableAttachmentByGetRequest(data.wikiPage.attachments);
+                markdownRenderer.enabledHeadingIdGeneration();
 
                 wikiPage.value = {
                     ...data.wikiPage,
@@ -365,6 +392,10 @@ function fetchData(id) {
 
                 availableGlobalTags.value = data.globalTags;
             }
+
+            // After initial page load, or switching to another page (with differently long title)
+            // recalculate the header's height.
+            await nextTick(updateStickyHeaderHeight);
         })
         .catch(e => {
             errors.value = handleError(e).genericErrors;
@@ -583,3 +614,11 @@ function updateTags() {
         });
 }
 </script>
+
+<style lang="scss" scoped>
+:deep(article) {
+    h1, h2, h3, h4, h5, h6 {
+        scroll-margin-top: calc(var(--sticky-header-height) + 1rem);
+    }
+}
+</style>
