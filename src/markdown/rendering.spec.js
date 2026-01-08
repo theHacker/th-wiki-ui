@@ -1109,6 +1109,19 @@ describe('MarkdownRenderer', () => {
             ]);
         });
 
+        it('special case: first heading already wrong', () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                ## Broken
+                # Ok
+            `;
+
+            expect(renderer.generateOutline(markdown)).toEqual([
+                { titleHtml: 'Broken', titlePlain: 'Broken', level: 1, hadIncorrectLevel: 2, id: 'broken' },
+                { titleHtml: 'Ok', titlePlain: 'Ok', level: 1, id: 'ok' }
+            ]);
+        });
+
         it("returns rendered HTML", () => {
             const renderer = new MarkdownRenderer();
             const markdown = trimIndent`

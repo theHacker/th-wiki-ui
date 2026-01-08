@@ -44,7 +44,7 @@ const headingsExtension = (outlineReceiver = []) => ({
             this.alreadyGeneratedHeadingIds.add(uniqueId);
 
             // Note down the outline, so the caller can access it
-            this.currentLevel = (this.currentLevel !== undefined) ? this.currentLevel : 1;
+            this.currentLevel = (this.currentLevel !== undefined) ? this.currentLevel : 0;
 
             const outlineEntry = {
                 titleHtml: parsedText,
