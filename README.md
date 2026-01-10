@@ -20,6 +20,18 @@ Setup
 - Copy `.env.local.template` to `.env.local` and point it to the API.
 
 
+Architecture Decisions
+-----------------------
+
+### DOM IDs
+
+`MarkdownRenderer` generates `id` attributes for heading tags (`<h1>`, ... `<h6>`). These generated IDs
+are all lowercased kebab identifiers.
+
+To not clash with any other `id` attribute that may be present on the page, e.g. an ID for a `<label for="id">`,
+IDs in the general code may only be camelCased identifiers with at least one upper case character.
+
+
 Useful Links
 -------------
 

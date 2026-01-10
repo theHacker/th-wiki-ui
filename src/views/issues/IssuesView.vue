@@ -456,7 +456,7 @@ import ErrorMessage from "@/components/ErrorMessage.vue";
 import {parseColor} from "@/helper/color.js";
 import TagBadge from "@/components/TagBadge.vue";
 import {sortTags} from "@/helper/sort-tags.js";
-import {syncStateToHash} from "@/helper/hash-state.js";
+import {syncStateToQueryString} from "@/helper/query-string-state.js";
 import {refSyncStateToUserPreferences, UserPreferencesKeys} from "@/helper/local-storage.js";
 
 useHead({
@@ -523,8 +523,8 @@ const denseTable = refSyncStateToUserPreferences({
     key: UserPreferencesKeys.ISSUES__DENSE_TABLE
 });
 
-syncStateToHash([
-    { type: 'string', ref: query }
+syncStateToQueryString([
+    { name: 'q', type: 'string', ref: query }
 ]);
 
 watch(

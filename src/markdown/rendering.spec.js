@@ -156,6 +156,174 @@ describe('MarkdownRenderer', () => {
 
             expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
         });
+
+        describe('headings get ID attributes generated', () => {
+
+            it('generates id attributes', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    # This is a heading
+                    Here is some text.
+                    ## A sub heading
+                    More text.
+                    # And another heading
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="this-is-a-heading">This is a heading</h1>
+                    <p>Here is some text.</p>
+                    <h2 id="a-sub-heading">A sub heading</h2>
+                    <p>More text.</p>
+                    <h1 id="and-another-heading">And another heading</h1>
+                   
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+
+            it('generates id attribute for empty heading', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    #
+                    Nothing there!?
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="empty"></h1>
+                    <p>Nothing there!?</p>
+                   
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+
+            it('Special characters are removed from the ID', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    # This is a heading with just spaces
+                    # Heading, more heading, and nothing but the heading!!
+                    # Try me 😎🥳
+                    # German: äöüßÄÖÜẞ
+                    # Cyrillic: АВС (no, it's not ABC 🤡), Водка (🍸)
+                    # Greek: Γύρος και τζατζίκι
+                    # Japanese: こんにちは
+                    # More Unicode: ⁉𝜓⅓∈ℂ≡∭╔═╕▒✸➍➋🀋🃒🨱
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="this-is-a-heading-with-just-spaces">This is a heading with just spaces</h1>
+                    <h1 id="heading-more-heading-and-nothing-but-the-heading">Heading, more heading, and nothing but the heading!!</h1>
+                    <h1 id="try-me">Try me 😎🥳</h1>
+                    <h1 id="german">German: äöüßÄÖÜẞ</h1>
+                    <h1 id="cyrillic-no-its-not-abc">Cyrillic: АВС (no, it&#39;s not ABC 🤡), Водка (🍸)</h1>
+                    <h1 id="greek">Greek: Γύρος και τζατζίκι</h1>
+                    <h1 id="japanese">Japanese: こんにちは</h1>
+                    <h1 id="more-unicode">More Unicode: ⁉𝜓⅓∈ℂ≡∭╔═╕▒✸➍➋🀋🃒🨱</h1>
+                   
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+
+            it('IDs are unique', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    # This is a heading
+                    ## This is a heading
+                    ### This is a heading 2
+                    ## This is a heading 4
+                    # This is a heading
+                    # this IS a HeadinG
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="this-is-a-heading">This is a heading</h1>
+                    <h2 id="this-is-a-heading-2">This is a heading</h2>
+                    <h3 id="this-is-a-heading-2-2">This is a heading 2</h3>
+                    <h2 id="this-is-a-heading-4">This is a heading 4</h2>
+                    <h1 id="this-is-a-heading-3">This is a heading</h1>
+                    <h1 id="this-is-a-heading-5">this IS a HeadinG</h1>
+                   
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+
+            it('Special characters and uniqueness works together', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    # 🥴🥵🥳
+                    # 🥙🤣🤤
+                    # äöüßÄÖÜẞ
+                    # Γύρος και τζατζίκι
+                    # こんにちは
+                    # empty
+                    # empty-7
+                    # 
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="empty">🥴🥵🥳</h1>
+                    <h1 id="empty-2">🥙🤣🤤</h1>
+                    <h1 id="empty-3">äöüßÄÖÜẞ</h1>
+                    <h1 id="empty-4">Γύρος και τζατζίκι</h1>
+                    <h1 id="empty-5">こんにちは</h1>
+                    <h1 id="empty-6">empty</h1>
+                    <h1 id="empty-7">empty-7</h1>
+                    <h1 id="empty-8"></h1>
+                   
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+
+            it('Inline markdown gets striped for ID generation', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    # This is code
+                    ## This is \`code\`
+                    # Works with **any** inline _markdown_ stuff ;-)
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="this-is-code">This is code</h1>
+                    <h2 id="this-is-code-2">This is <code>code</code></h2>
+                    <h1 id="works-with-any-inline-markdown-stuff">Works with <strong>any</strong> inline <em>markdown</em> stuff ;-)</h1>
+                    
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+
+            it('More edge-cases for id generation', async () => {
+                const renderer = new MarkdownRenderer();
+                renderer.enabledHeadingIdGeneration();
+
+                const markdown = trimIndent`
+                    # With    lots    of       spaces
+                    # ----- with   ---   --- minuses -> en-masse
+                    #       trim me    done by Markdown parser     
+                    # double--hyphen---in-word
+                    # %%- trim start | trim end -%%
+                `;
+                const expectedHtml = trimIndent`
+                    <h1 id="with-lots-of-spaces">With    lots    of       spaces</h1>
+                    <h1 id="with-minuses-en-masse">----- with   ---   --- minuses -&gt; en-masse</h1>
+                    <h1 id="trim-me-done-by-markdown-parser">trim me    done by Markdown parser</h1>
+                    <h1 id="double-hyphen-in-word">double--hyphen---in-word</h1>
+                    <h1 id="trim-start-trim-end">%%- trim start | trim end -%%</h1>
+                    
+                `;
+
+                expect(await renderer.renderPlain(markdown)).toEqual(expectedHtml);
+            });
+        });
     });
 
     describe('renderRich()', () => {
@@ -770,6 +938,217 @@ describe('MarkdownRenderer', () => {
 
             expect(renderer.extractTitle(markdown))
                 .toEqual("<strong>This</strong> heading has <code>formatting</code>. Should <strong>be <em>parsed</em></strong>.");
+        });
+    });
+
+    describe('generateOutline()', () => {
+
+        it('generates a simple outline', () => {
+            const renderer = new MarkdownRenderer(null, null);
+            const markdown = trimIndent`
+                # This is the title
+                ## This is the subtitle
+                
+                Some text
+            `;
+
+            expect(renderer.generateOutline(markdown)).toEqual([
+                { titleHtml: 'This is the title', titlePlain: 'This is the title', level: 1, id: 'this-is-the-title' },
+                { titleHtml: 'This is the subtitle', titlePlain: 'This is the subtitle', level: 2, id: 'this-is-the-subtitle' }
+            ]);
+        });
+
+        it('generates a complex outline', () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                # Heading 1
+                # Heading 2
+                ## Heading 2.1
+                ## Heading 2.2
+                ## Heading 2.3
+                # Heading 3
+                # Heading 4
+                ## Heading 4.1
+                ### Heading 4.1.1
+                #### Heading 4.1.1.1
+                #### Heading 4.1.1.2
+                #### Heading 4.1.1.3
+                ## Heading 4.2
+                ## Heading 4.3
+                # Heading 5
+            `;
+
+            expect(renderer.generateOutline(markdown)).toEqual([
+                { titleHtml: 'Heading 1', titlePlain: 'Heading 1', level: 1, id: 'heading-1' },
+                { titleHtml: 'Heading 2', titlePlain: 'Heading 2', level: 1, id: 'heading-2' },
+                { titleHtml: 'Heading 2.1', titlePlain: 'Heading 2.1', level: 2, id: 'heading-21' },
+                { titleHtml: 'Heading 2.2', titlePlain: 'Heading 2.2', level: 2, id: 'heading-22' },
+                { titleHtml: 'Heading 2.3', titlePlain: 'Heading 2.3', level: 2, id: 'heading-23' },
+                { titleHtml: 'Heading 3', titlePlain: 'Heading 3', level: 1, id: 'heading-3' },
+                { titleHtml: 'Heading 4', titlePlain: 'Heading 4', level: 1, id: 'heading-4' },
+                { titleHtml: 'Heading 4.1', titlePlain: 'Heading 4.1', level: 2, id: 'heading-41' },
+                { titleHtml: 'Heading 4.1.1', titlePlain: 'Heading 4.1.1', level: 3, id: 'heading-411' },
+                { titleHtml: 'Heading 4.1.1.1', titlePlain: 'Heading 4.1.1.1', level: 4, id: 'heading-4111' },
+                { titleHtml: 'Heading 4.1.1.2', titlePlain: 'Heading 4.1.1.2', level: 4, id: 'heading-4112' },
+                { titleHtml: 'Heading 4.1.1.3', titlePlain: 'Heading 4.1.1.3', level: 4, id: 'heading-4113' },
+                { titleHtml: 'Heading 4.2', titlePlain: 'Heading 4.2', level: 2, id: 'heading-42' },
+                { titleHtml: 'Heading 4.3', titlePlain: 'Heading 4.3', level: 2, id: 'heading-43' },
+                { titleHtml: 'Heading 5', titlePlain: 'Heading 5', level: 1, id: 'heading-5' },
+            ]);
+        });
+
+        it('returns an empty list if there are no headings', () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                Just text.
+                
+                There is no heading at all.
+                
+                <blockquote>These are the headings you're looking for.</blockquote>
+                
+                :-)
+            `;
+
+            expect(renderer.generateOutline(markdown)).toEqual([]);
+        });
+
+        it('will detect and fix wrong heading levels', () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                # Heading 1
+                ### Heading 3 should be 2
+                ## Heading 2
+                ##### Heading 5 should be 3
+                #### Heading 4 will work for 3
+                # Heading 1 is ok
+                ## Heading 2 is ok
+                ##### Heading 5 should be 3
+                ##### Again heading 5 will be 4
+                #### Heading 4 fits
+                #### Heading 4 really fits
+                ## Ending with 2
+            `;
+
+            expect(renderer.generateOutline(markdown)).toEqual([
+                {
+                    titleHtml: 'Heading 1',
+                    titlePlain: 'Heading 1',
+                    level: 1,
+                    id: 'heading-1'
+                },
+                {
+                    titleHtml: 'Heading 3 should be 2',
+                    titlePlain: 'Heading 3 should be 2',
+                    level: 2,
+                    hadIncorrectLevel: 3,
+                    id: 'heading-3-should-be-2'
+                },
+                {
+                    titleHtml: 'Heading 2',
+                    titlePlain: 'Heading 2',
+                    level: 2,
+                    id: 'heading-2'
+                },
+                {
+                    titleHtml: 'Heading 5 should be 3',
+                    titlePlain: 'Heading 5 should be 3',
+                    level: 3,
+                    hadIncorrectLevel: 5,
+                    id: 'heading-5-should-be-3'
+                },
+                {
+                    titleHtml: 'Heading 4 will work for 3',
+                    titlePlain: 'Heading 4 will work for 3',
+                    level: 4,
+                    id: 'heading-4-will-work-for-3'
+                },
+                {
+                    titleHtml: 'Heading 1 is ok',
+                    titlePlain: 'Heading 1 is ok',
+                    level: 1,
+                    id: 'heading-1-is-ok'
+                },
+                {
+                    titleHtml: 'Heading 2 is ok',
+                    titlePlain: 'Heading 2 is ok',
+                    level: 2,
+                    id: 'heading-2-is-ok'
+                },
+                {
+                    titleHtml: 'Heading 5 should be 3',
+                    titlePlain: 'Heading 5 should be 3',
+                    level: 3,
+                    hadIncorrectLevel: 5,
+                    id: 'heading-5-should-be-3-2'
+                },
+                {
+                    titleHtml: 'Again heading 5 will be 4',
+                    titlePlain: 'Again heading 5 will be 4',
+                    level: 4,
+                    hadIncorrectLevel: 5,
+                    id: 'again-heading-5-will-be-4'
+                },
+                {
+                    titleHtml: 'Heading 4 fits',
+                    titlePlain: 'Heading 4 fits',
+                    level: 4,
+                    id: 'heading-4-fits'
+                },
+                {
+                    titleHtml: 'Heading 4 really fits',
+                    titlePlain: 'Heading 4 really fits',
+                    level: 4,
+                    id: 'heading-4-really-fits'
+                },
+                {
+                    titleHtml: 'Ending with 2',
+                    titlePlain: 'Ending with 2',
+                    level: 2,
+                    id: 'ending-with-2'
+                }
+            ]);
+        });
+
+        it('special case: first heading already wrong', () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                ## Broken
+                # Ok
+            `;
+
+            expect(renderer.generateOutline(markdown)).toEqual([
+                { titleHtml: 'Broken', titlePlain: 'Broken', level: 1, hadIncorrectLevel: 2, id: 'broken' },
+                { titleHtml: 'Ok', titlePlain: 'Ok', level: 1, id: 'ok' }
+            ]);
+        });
+
+        it("returns rendered HTML", () => {
+            const renderer = new MarkdownRenderer();
+            const markdown = trimIndent`
+                # **This** heading has \`formatting\`. Should **be _parsed_**.
+                ## This is plain text
+                ## This has \`code\`
+            `;
+
+            expect(renderer.generateOutline(markdown)).toEqual([
+                {
+                    titleHtml: '<strong>This</strong> heading has <code>formatting</code>. Should <strong>be <em>parsed</em></strong>.',
+                    titlePlain: 'This heading has formatting. Should be parsed.',
+                    level: 1,
+                    id: 'this-heading-has-formatting-should-be-parsed'
+                },
+                {
+                    titleHtml: 'This is plain text',
+                    titlePlain: 'This is plain text',
+                    level: 2,
+                    id: 'this-is-plain-text' },
+                {
+                    titleHtml: 'This has <code>code</code>',
+                    titlePlain: 'This has code',
+                    level: 2,
+                    id: 'this-has-code'
+                }
+            ]);
         });
     });
 });

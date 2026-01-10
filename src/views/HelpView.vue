@@ -158,6 +158,7 @@ axios
         for (const markdownResource of markdowns) {
             const markdownRenderer = new MarkdownRenderer();
             markdownRenderer.enableAttachmentByBlobs(markdownResource.path, helpResourcesApi.value);
+            markdownRenderer.enabledHeadingIdGeneration();
 
             let path = markdownResource.path;
             const data = base64ToUtf8String(markdownResource.dataBase64);
@@ -219,6 +220,7 @@ Promise.all(
         for (let {path, data} of pathsAndData) {
             const markdownRenderer = new MarkdownRenderer();
             markdownRenderer.enableAttachmentByBlobs(path, helpResourcesUi.value);
+            markdownRenderer.enabledHeadingIdGeneration();
 
             const parentPath = path.replace(/(.*)(\/.+?)$/, '$1');
             let title = markdownRenderer.extractTitle(data) || ('<i>' + path.replace(/.*\/(.+?)$/, '$1') + '</i>');

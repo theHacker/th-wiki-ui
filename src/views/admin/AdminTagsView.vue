@@ -351,21 +351,23 @@ function _groupToId(group) {
 }
 
 function goToUsages(tag) {
-    let hash = '#';
+    let q = '';
 
-    // TODO Escaping is a little brittle: colon-escape duplicated from hash-state.js,
-    //      special chars easily break the string. However, the ANTLR implementation with the
-    //      client-side search function has issues anyway. We will rework, when the server-side
-    //      fulltext search is ready.
+    // TODO Escaping is a little brittle: special chars easily break the string.
+    //      However, the ANTLR implementation with the client-side search function has issues anyway.
+    //      We will rework, when the server-side fulltext search is ready.
     //      Also, we only go to issues page. The fulltext search will later also display wiki pages
     //      associated with that tag.
 
     if (tag.scope) {
-        hash += `tagscope\\:"${tag.scope}" `;
+        q += `tagscope:"${tag.scope}" `;
     }
-    hash += `tagtitle\\:"${tag.title}"`;
+    q += `tagtitle:"${tag.title}"`;
 
-    router.push({name: 'issues', hash });
+    const params = new URLSearchParams();
+    params.set("q", q);
+
+    router.push({name: 'issues', query: Object.fromEntries(params) });
 }
 
 function deleteTag() {

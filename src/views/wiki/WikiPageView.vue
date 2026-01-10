@@ -88,79 +88,99 @@
             />
 
             <div v-if="wikiPage && !noPage">
-                <BaseHeading :tags="wikiPage.tags">
-                    {{ wikiPage.title }}
-                </BaseHeading>
+                <header class="sticky-top bg-body">
+                    <BaseHeading :tags="wikiPage.tags">
+                        {{ wikiPage.title }}
+                    </BaseHeading>
 
-                <div class="d-flex flex-wrap flex-lg-nowrap mb-4 row-gap-3">
-                    <div class="flex-grow-1 me-4">
-                        <div class="tabs">
-                            <ul class="nav nav-tabs">
-                                <TabItem
-                                    icon="image"
-                                    title="Content"
-                                    :active="tabState === TabStates.CONTENT"
-                                    @click="tabState = TabStates.CONTENT"
+                    <div class="d-flex flex-wrap flex-lg-nowrap mb-4 row-gap-3">
+                        <div class="flex-grow-1 me-4">
+                            <div class="tabs">
+                                <ul class="nav nav-tabs">
+                                    <TabItem
+                                        icon="image"
+                                        title="Content"
+                                        :active="tabState === TabStates.CONTENT"
+                                        @click="tabState = TabStates.CONTENT"
+                                    />
+                                    <TabItem
+                                        icon="file-text"
+                                        title="Markdown"
+                                        :active="tabState === TabStates.MARKDOWN"
+                                        @click="tabState = TabStates.MARKDOWN"
+                                    />
+                                    <TabItem
+                                        icon="tags"
+                                        title="Metadata"
+                                        :active="tabState === TabStates.METADATA"
+                                        @click="tabState = TabStates.METADATA"
+                                    />
+                                    <TabItem
+                                        icon="paperclip"
+                                        title="Attachments"
+                                        :badge="!attachmentsLoading && attachmentsCount > 0 ? attachmentsCount.toString() : null"
+                                        :active="tabState === TabStates.ATTACHMENTS"
+                                        :loading="attachmentsLoading"
+                                        @click="tabState = TabStates.ATTACHMENTS"
+                                    />
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="hstack gap-2">
+                            <div v-if="tabState === TabStates.CONTENT && wikiPage.headings.length > 0">
+                                <BaseButton
+                                    class="btn-text-lg"
+                                    icon="book-bookmark"
+                                    tooltip="Table of contents"
+                                    color="info"
+                                    :active="showTableOfContents"
+                                    @click="showTableOfContents = !showTableOfContents"
                                 />
-                                <TabItem
-                                    icon="file-text"
-                                    title="Markdown"
-                                    :active="tabState === TabStates.MARKDOWN"
-                                    @click="tabState = TabStates.MARKDOWN"
-                                />
-                                <TabItem
+                            </div>
+
+                            <BaseDropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
+                                <BaseDropdownItem
                                     icon="tags"
-                                    title="Metadata"
-                                    :active="tabState === TabStates.METADATA"
-                                    @click="tabState = TabStates.METADATA"
+                                    title="Manage tags"
+                                    fixedWidth
+                                    @click="openTagsDialog"
                                 />
-                                <TabItem
-                                    icon="paperclip"
-                                    title="Attachments"
-                                    :badge="!attachmentsLoading && attachmentsCount > 0 ? attachmentsCount.toString() : null"
-                                    :active="tabState === TabStates.ATTACHMENTS"
-                                    :loading="attachmentsLoading"
-                                    @click="tabState = TabStates.ATTACHMENTS"
+                                <BaseDropdownItem
+                                    icon="arrow-right-long"
+                                    title="Move"
+                                    fixedWidth
+                                    @click="onMoveAction"
                                 />
-                            </ul>
+                            </BaseDropdown>
+
+                            <BaseButton
+                                class="btn-text-lg"
+                                icon="pen"
+                                title="Edit"
+                                color="light"
+                                @click="$router.push({ name: 'wikiPageEdit', params: { wikiPageId: wikiPage.id } });"
+                            />
+                            <BaseButton
+                                class="btn-text-lg"
+                                icon="trash"
+                                title="Delete"
+                                color="danger"
+                                @click="deleteDialogOpen = true"
+                            />
                         </div>
                     </div>
-
-                    <div class="hstack gap-2">
-                        <BaseDropdown buttonClass="btn-text-lg" icon="gears" title="Actions">
-                            <BaseDropdownItem
-                                icon="tags"
-                                title="Manage tags"
-                                fixedWidth
-                                @click="openTagsDialog"
-                            />
-                            <BaseDropdownItem
-                                icon="arrow-right-long"
-                                title="Move"
-                                fixedWidth
-                                @click="onMoveAction"
-                            />
-                        </BaseDropdown>
-
-                        <BaseButton
-                            class="btn-text-lg"
-                            icon="pen"
-                            title="Edit"
-                            color="light"
-                            @click="$router.push({ name: 'wikiPageEdit', params: { wikiPageId: wikiPage.id } });"
-                        />
-                        <BaseButton
-                            class="btn-text-lg"
-                            icon="trash"
-                            title="Delete"
-                            color="danger"
-                            @click="deleteDialogOpen = true"
-                        />
-                    </div>
-                </div>
+                </header>
 
                 <div v-if="tabState === TabStates.CONTENT">
-                    <article v-html="wikiPage.renderedMarkdown" />
+                    <article>
+                        <div v-show="!showTableOfContents" v-html="wikiPage.renderedMarkdown" />
+                        <TableOfContents
+                            v-show="showTableOfContents"
+                            :headings="wikiPage.headings"
+                            @headingClick="showTableOfContents = false"
+                        />
+                    </article>
                 </div>
 
                 <div v-else-if="tabState === TabStates.MARKDOWN">
@@ -215,7 +235,7 @@ const TabStates = {
 
 <script setup>
 import axios from "@/axios.js";
-import {ref, watch, useTemplateRef, computed} from 'vue';
+import {ref, watch, useTemplateRef, computed, onMounted, onUnmounted, nextTick} from 'vue';
 import {useHead} from "@unhead/vue";
 import {useRoute, useRouter} from "vue-router";
 import MarkdownRenderer from "@/markdown/rendering.js";
@@ -235,8 +255,9 @@ import BaseDropdown from "@/components/BaseDropdown.vue";
 import BaseHeading from "@/components/BaseHeading.vue";
 import TagsDialog from "@/components/tags/TagsDialog.vue";
 import AttachmentsTab from "@/components/general/AttachmentsTab.vue";
-import {syncStateToHash} from "@/helper/hash-state.js";
+import {syncStateToQueryString} from "@/helper/query-string-state.js";
 import BaseAlert from "@/components/BaseAlert.vue";
+import TableOfContents from "@/components/wiki/TableOfContents.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -252,6 +273,7 @@ const wikiPagesTree = useTemplateRef('wikiPagesTree');
 const allWikiPagesTree = ref(null);
 
 const tabState = ref(TabStates.CONTENT);
+const showTableOfContents = ref(false);
 
 const deleteDialogOpen = ref(false);
 const deleting = ref(false);
@@ -278,13 +300,41 @@ useHead({
 
 watch(() => route.params.wikiPageId, fetchData, { immediate: true });
 
-syncStateToHash([
-    { type: 'enum', ref: tabState, enumObject: TabStates }
+syncStateToQueryString([
+    { name: 'tab', type: 'enum', ref: tabState, enumObject: TabStates }
 ]);
+
+onMounted(() => {
+    window.addEventListener('resize', updateStickyHeaderHeight);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', updateStickyHeaderHeight);
+});
+
+/**
+ * Adjusts CSS variable --sticky-header-height (used for property scroll-margin-top), so that #anchor links
+ * scroll the heading to the correct position, i.e. beneath the header.
+ * Since the header's height is dynamic we have to do this via JS.
+ *
+ * Call each time the header's height (might have) changed.
+ */
+function updateStickyHeaderHeight() {
+    const header = document.querySelector('header.sticky-top');
+    if (!header) {
+        return;
+    }
+
+    document.documentElement
+        .style
+        .setProperty('--sticky-header-height', `${header.offsetHeight}px`);
+}
 
 function fetchData(id) {
     errors.value = [];
     wikiPage.value = null;
+
+    showTableOfContents.value = false; // When switching the pages, close the ToC
 
     if (id == null) {
         noPage.value = true;
@@ -348,11 +398,13 @@ function fetchData(id) {
                 const markdownRenderer = new MarkdownRenderer();
                 markdownRenderer.enableIssueLookupByAxios(axios);
                 markdownRenderer.enableAttachmentByGetRequest(data.wikiPage.attachments);
+                markdownRenderer.enabledHeadingIdGeneration();
 
                 wikiPage.value = {
                     ...data.wikiPage,
                     renderedMarkdown: await markdownRenderer.renderRich(data.wikiPage.content),
-                    highlightedMarkdown: markdownRenderer.highlightMarkdown(data.wikiPage.content)
+                    highlightedMarkdown: markdownRenderer.highlightMarkdown(data.wikiPage.content),
+                    headings: markdownRenderer.generateOutline(data.wikiPage.content)
                 };
                 allWikiPagesTree.value = new Tree({
                     items: data.wikiPages,
@@ -363,6 +415,10 @@ function fetchData(id) {
 
                 availableGlobalTags.value = data.globalTags;
             }
+
+            // After initial page load, or switching to another page (with differently long title)
+            // recalculate the header's height.
+            await nextTick(updateStickyHeaderHeight);
         })
         .catch(e => {
             errors.value = handleError(e).genericErrors;
@@ -581,3 +637,11 @@ function updateTags() {
         });
 }
 </script>
+
+<style lang="scss" scoped>
+:deep(article) {
+    h1, h2, h3, h4, h5, h6 {
+        scroll-margin-top: calc(var(--sticky-header-height) + 1rem);
+    }
+}
+</style>
