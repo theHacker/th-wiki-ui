@@ -10,7 +10,7 @@
                     <div class="card-body">
                         <div v-if="version.ui?.gitTag && version.ui?.gitDistance !== null" class="mb-2">
                             <span class="icon-link">
-                                <i class="fas fa-tag" />
+                                <i class="fas fa-fw fa-tag" />
                                 <code>{{ version.ui.gitTag }}</code>
                                 <small v-if="version.ui.gitDistance > 0">
                                     + {{ version.ui.gitDistance }} {{ version.ui.gitDistance > 1 ? 'commits' : 'commit' }}
@@ -19,13 +19,13 @@
                         </div>
                         <div>
                             <span class="icon-link">
-                                <i class="fas fa-code-commit" />
+                                <i class="fas fa-fw fa-code-commit" />
                                 <code>{{ version.ui.gitHash }}</code>
                             </span>
                         </div>
                         <div v-if="version.ui.gitDirty" class="mt-2">
                             <span class="icon-link">
-                                <i class="fas fa-pen-fancy" />
+                                <i class="fas fa-fw fa-pen-fancy" />
                                 Working copy is dirty.
                             </span>
                         </div>
@@ -42,7 +42,7 @@
 
                         <div v-if="version.api?.gitTag && version.api?.gitDistance !== null" class="mb-2">
                             <span class="icon-link">
-                                <i class="fas fa-tag" />
+                                <i class="fas fa-fw fa-tag" />
                                 <code>{{ version.api.gitTag }}</code>
                                 <small v-if="version.api.gitDistance > 0">
                                     + {{ version.api.gitDistance }} {{ version.api.gitDistance > 1 ? 'commits' : 'commit' }}
@@ -51,13 +51,13 @@
                         </div>
                         <div v-if="version.api?.gitHash">
                             <span class="icon-link">
-                                <i class="fas fa-code-commit" />
+                                <i class="fas fa-fw fa-code-commit" />
                                 <code>{{ version.api.gitHash }}</code>
                             </span>
                         </div>
                         <div v-if="version.api?.gitDirty" class="mt-2">
                             <span class="icon-link">
-                                <i class="fas fa-pen-fancy" />
+                                <i class="fas fa-fw fa-pen-fancy" />
                                 Working copy is dirty.
                             </span>
                         </div>
