@@ -81,16 +81,19 @@ build:
 dockerize:
   stage: dockerize
   rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^feature\/.+$/
+    - if: $CI_COMMIT_TAG || $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^feature\/.+$/
   dependencies:
     - build
   tags:
     - docker-daemon
   cache: []
   script:
+    - DOCKER_TAG="${CI_COMMIT_TAG#v}"
+    - DOCKER_TAG="${DOCKER_TAG:-latest}"
+    - echo "Building docker tag '${DOCKER_TAG}'..."
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - docker build -t $CI_REGISTRY/th-wiki/th-wiki-ui .
-    - docker push $CI_REGISTRY/th-wiki/th-wiki-ui
+    - docker build -t "$CI_REGISTRY/th-wiki/th-wiki-ui:$DOCKER_TAG" .
+    - docker push "$CI_REGISTRY/th-wiki/th-wiki-ui:$DOCKER_TAG"
 
 deploy-test:
   stage: deploy
