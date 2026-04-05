@@ -85,7 +85,7 @@ dockerize:
     - docker-daemon
   cache: []
   script:
-    - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - docker build -t $CI_REGISTRY/th-wiki/th-wiki-ui .
     - docker push $CI_REGISTRY/th-wiki/th-wiki-ui
 
