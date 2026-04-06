@@ -9,6 +9,8 @@ but I do not want proprietary software.
 This is the frontend repository `th-wiki-ui`, see the backend repository `th-wiki` for additional
 general documentation about tH-Wiki.
 
+Generation of the `CHANGELOG.md` is done by backend's Gradle task `generateFrontendChangelog`.
+
 
 Setup
 ------
