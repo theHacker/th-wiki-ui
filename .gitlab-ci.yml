@@ -128,13 +128,25 @@ deploy-test:
 deploy-prod:
   stage: deploy
   rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG || $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
   image: alpine:3.20.2
-  script:
-    - apk add openssh
-    - mkdir -p ~/.ssh
-    - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
-    - chmod 600 "$SSH_PRIVATE_KEY"
-    - ssh -i "$SSH_PRIVATE_KEY" "$SSH_LOGIN" "cd $DOCKER_DIRECTORY_PROD && docker compose pull && docker compose up -d"
+  script: |
+    if [ -z "$DOCKER_TAG" ]; then
+      echo "Error: DOCKER_TAG is not defined. Previous dockerize step should have set that."
+      exit 1
+    fi
+    echo "Deploying docker image version '${DOCKER_TAG}'..."
+    
+    apk add openssh
+    mkdir -p ~/.ssh
+    cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
+    chmod 600 "$SSH_PRIVATE_KEY"
+    
+    ssh -i "$SSH_PRIVATE_KEY" "$SSH_LOGIN" sh -s <<SSHCOMMANDS
+      cd $DOCKER_DIRECTORY_PROD && \
+      sed -i 's|\(image: '"${CI_REGISTRY}"'/th-wiki/th-wiki-ui:\).*|\1'"${DOCKER_TAG}"'|' docker-compose.yml && \
+      docker compose pull && \
+      docker compose up -d
+    SSHCOMMANDS
   cache: []
   when: manual
