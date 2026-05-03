@@ -9,10 +9,14 @@ try {
     const gitInfo = GitDescribe.gitDescribeSync({
         customArguments: ['--abbrev=40']
     });
-    process.env.VITE_GIT_HASH = gitInfo.hash;
+    process.env.VITE_GIT_TAG = gitInfo.tag ?? '';
+    process.env.VITE_GIT_DISTANCE = gitInfo.distance?.toString() ?? '';
+    process.env.VITE_GIT_HASH = gitInfo.hash.replace('g', ''); // commit hash can have a "g" prefix, see https://git-scm.com/docs/git-describe
     process.env.VITE_GIT_DIRTY = gitInfo.dirty.toString();
 } catch {
     // ignore, we end up here when running tests on CI (error is "Git executable not found in PATH")
+    process.env.VITE_GIT_TAG = '';
+    process.env.VITE_GIT_DISTANCE = '';
     process.env.VITE_GIT_HASH = '';
     process.env.VITE_GIT_DIRTY = '';
 }

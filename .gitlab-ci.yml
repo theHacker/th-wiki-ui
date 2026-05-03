@@ -2,6 +2,9 @@ workflow:
   auto_cancel:
     on_new_commit: conservative
 
+variables:
+  GIT_DEPTH: 0 # Disable shallow clone, so git-describe works for our version detection
+
 default:
   image: oven/bun:1.3.5-alpine
   cache: &global-cache
@@ -78,40 +81,72 @@ build:
 dockerize:
   stage: dockerize
   rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^feature\/.+$/
+    - if: $CI_COMMIT_TAG || $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^feature\/.+$/
   dependencies:
     - build
   tags:
     - docker-daemon
   cache: []
-  script:
-    - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - docker build -t $CI_REGISTRY/th-wiki/th-wiki-ui .
-    - docker push $CI_REGISTRY/th-wiki/th-wiki-ui
+  script: |
+    DOCKER_TAG="${CI_COMMIT_TAG#v}"
+    DOCKER_TAG="${DOCKER_TAG:-latest}"
+    echo "Building docker tag '${DOCKER_TAG}'..."
+    echo "DOCKER_TAG=${DOCKER_TAG}" > docker-tag.env
+    
+    echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    docker build -t "$CI_REGISTRY/th-wiki/th-wiki-ui:$DOCKER_TAG" .
+    docker push "$CI_REGISTRY/th-wiki/th-wiki-ui:$DOCKER_TAG"
+  artifacts:
+    reports:
+      dotenv: docker-tag.env
 
 deploy-test:
   stage: deploy
   rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^feature\/.+$/
+    - if: $CI_COMMIT_TAG || $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^feature\/.+$/
   image: alpine:3.20.2
-  script:
-    - apk add openssh
-    - mkdir -p ~/.ssh
-    - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
-    - chmod 600 "$SSH_PRIVATE_KEY"
-    - ssh -i "$SSH_PRIVATE_KEY" "$SSH_LOGIN" "cd $DOCKER_DIRECTORY_TEST && docker compose pull && docker compose up -d"
+  script: |
+    if [ -z "$DOCKER_TAG" ]; then
+      echo "Error: DOCKER_TAG is not defined. Previous dockerize step should have set that."
+      exit 1
+    fi
+    echo "Deploying docker image version '${DOCKER_TAG}'..."
+    
+    apk add openssh
+    mkdir -p ~/.ssh
+    cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
+    chmod 600 "$SSH_PRIVATE_KEY"
+    
+    ssh -i "$SSH_PRIVATE_KEY" "$SSH_LOGIN" sh -s <<SSHCOMMANDS
+      cd $DOCKER_DIRECTORY_TEST && \
+      sed -i 's|\(image: '"${CI_REGISTRY}"'/th-wiki/th-wiki-ui:\).*|\1'"${DOCKER_TAG}"'|' docker-compose.yml && \
+      docker compose pull && \
+      docker compose up -d
+    SSHCOMMANDS
   cache: []
 
 deploy-prod:
   stage: deploy
   rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG || $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
   image: alpine:3.20.2
-  script:
-    - apk add openssh
-    - mkdir -p ~/.ssh
-    - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
-    - chmod 600 "$SSH_PRIVATE_KEY"
-    - ssh -i "$SSH_PRIVATE_KEY" "$SSH_LOGIN" "cd $DOCKER_DIRECTORY_PROD && docker compose pull && docker compose up -d"
+  script: |
+    if [ -z "$DOCKER_TAG" ]; then
+      echo "Error: DOCKER_TAG is not defined. Previous dockerize step should have set that."
+      exit 1
+    fi
+    echo "Deploying docker image version '${DOCKER_TAG}'..."
+    
+    apk add openssh
+    mkdir -p ~/.ssh
+    cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
+    chmod 600 "$SSH_PRIVATE_KEY"
+    
+    ssh -i "$SSH_PRIVATE_KEY" "$SSH_LOGIN" sh -s <<SSHCOMMANDS
+      cd $DOCKER_DIRECTORY_PROD && \
+      sed -i 's|\(image: '"${CI_REGISTRY}"'/th-wiki/th-wiki-ui:\).*|\1'"${DOCKER_TAG}"'|' docker-compose.yml && \
+      docker compose pull && \
+      docker compose up -d
+    SSHCOMMANDS
   cache: []
   when: manual
