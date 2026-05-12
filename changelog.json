@@ -1,11 +1,21 @@
 {
   "$schema": "./changelog.schema.json",
   "versions": {
-    "UNRELEASED": {
+    "1.3.0": {
+      "date": "2026-05-12",
+      "title": "Changelog and automated public release",
       "changes": [
         {
           "type": "build",
           "text": "GitLab CI will create public releases to Codeberg and GitHub"
+        },
+        {
+          "type": "build",
+          "text": "Added changelog `CHANGELOG.md` as well as scripts to generate it from the `changelog.json`"
+        },
+        {
+          "type": "build",
+          "text": "Added a structured changelog `changelog.json`"
         },
         {
           "type": "feature",

@@ -10,9 +10,12 @@ Changelog
   article h3 { font-size: 1.25rem }
 </style>
 
-## 🛠️ _(Unreleased)_
+## 📦️ **1.3.0** · Changelog and automated public release · _2026-05-12_
 
 ### Changes
+- 🏗️ GitLab CI will create public releases to Codeberg and GitHub
+- 🏗️ Added changelog `CHANGELOG.md` as well as scripts to generate it from the `changelog.json`
+- 🏗️ Added a structured changelog `changelog.json`
 - ✨️ Version info shows version number (= Git tag and distance from `git-describe`)
 
 ## 📦️ **1.2.0** · Table of Contents (TOC) · _2026-01-05_
