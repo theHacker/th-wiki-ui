@@ -4,6 +4,10 @@
     "UNRELEASED": {
       "changes": [
         {
+          "type": "build",
+          "text": "GitLab CI will create public releases to Codeberg and GitHub"
+        },
+        {
           "type": "feature",
           "text": "Version info shows version number (= Git tag and distance from `git-describe`)"
         }
